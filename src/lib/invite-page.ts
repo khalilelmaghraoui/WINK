@@ -92,3 +92,29 @@ export function shouldShowCompatibilityReport(
 ): boolean {
   return state === "respondable";
 }
+
+export function shouldShowLawyerMode({
+  mode,
+  state
+}: {
+  mode: Invite["mode"];
+  state: RecipientPageState;
+}): boolean {
+  return mode === "lawyer" && state === "respondable";
+}
+
+export function isMissingRequiredLawyerSignature({
+  requiresSignature,
+  response,
+  signatureApproval
+}: {
+  requiresSignature: boolean;
+  response: string | null;
+  signatureApproval: string | null;
+}): boolean {
+  return (
+    requiresSignature &&
+    response === "yes" &&
+    signatureApproval?.trim() !== "approved"
+  );
+}

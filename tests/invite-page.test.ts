@@ -6,8 +6,10 @@ import {
   getInvitePageMetadata,
   getRecipientPageState,
   invitePageGenericPreview,
+  isMissingRequiredLawyerSignature,
   isPreviewModeParam,
-  shouldShowCompatibilityReport
+  shouldShowCompatibilityReport,
+  shouldShowLawyerMode
 } from "../src/lib/invite-page";
 import { InMemoryInviteStore } from "../src/lib/invite-store";
 import type { InviteWriteOptions } from "../src/lib/invite-store";
@@ -135,4 +137,54 @@ test("compatibility report appears only for respondable states", () => {
   assert.equal(shouldShowCompatibilityReport("expired"), false);
   assert.equal(shouldShowCompatibilityReport("cancelled"), false);
   assert.equal(shouldShowCompatibilityReport("unavailable"), false);
+});
+
+test("lawyer mode renders only for lawyer respondable invites", () => {
+  assert.equal(
+    shouldShowLawyerMode({ mode: "lawyer", state: "respondable" }),
+    true
+  );
+  assert.equal(
+    shouldShowLawyerMode({ mode: "unbothered", state: "respondable" }),
+    false
+  );
+  assert.equal(
+    shouldShowLawyerMode({ mode: "lawyer", state: "accepted" }),
+    false
+  );
+});
+
+test("lawyer signature validation applies only to yes", () => {
+  assert.equal(
+    isMissingRequiredLawyerSignature({
+      requiresSignature: true,
+      response: "yes",
+      signatureApproval: ""
+    }),
+    true
+  );
+  assert.equal(
+    isMissingRequiredLawyerSignature({
+      requiresSignature: true,
+      response: "yes",
+      signatureApproval: "approved"
+    }),
+    false
+  );
+  assert.equal(
+    isMissingRequiredLawyerSignature({
+      requiresSignature: true,
+      response: "raincheck",
+      signatureApproval: ""
+    }),
+    false
+  );
+  assert.equal(
+    isMissingRequiredLawyerSignature({
+      requiresSignature: true,
+      response: "no",
+      signatureApproval: ""
+    }),
+    false
+  );
 });

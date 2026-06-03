@@ -2,12 +2,14 @@ import type { Metadata } from "next";
 
 import { flagUnknownSenderAction, respondToInviteAction } from "./actions";
 import { CompatibilityReport } from "./compatibility-report";
+import { LawyerMode } from "./lawyer-mode";
 import {
   getInviteForRecipientPage,
   getInvitePageMetadata,
   getRecipientPageState,
   isPreviewModeParam,
-  shouldShowCompatibilityReport
+  shouldShowCompatibilityReport,
+  shouldShowLawyerMode
 } from "@/lib/invite-page";
 import { inviteStore } from "@/lib/invite-store";
 import type { Invite } from "@/lib/invite-store";
@@ -23,6 +25,7 @@ interface InvitePageProps {
   };
   searchParams?: {
     previewMode?: string | string[];
+    signatureError?: string | string[];
   };
 }
 
@@ -55,6 +58,11 @@ export default async function InvitePage({
 
   const pageState = getRecipientPageState(invite.status);
   const presentation = getModePresentation(invite);
+  const showLawyerMode = shouldShowLawyerMode({
+    mode: invite.mode,
+    state: pageState
+  });
+  const signatureError = isPreviewModeParam(searchParams?.signatureError);
 
   return (
     <main className="mx-auto flex min-h-screen w-full max-w-2xl flex-col px-5 py-8">
@@ -104,20 +112,30 @@ export default async function InvitePage({
           </>
         ) : null}
 
-        <section
-          aria-labelledby="invite-message-heading"
-          className="space-y-3 rounded-lg border border-stone-300 bg-white p-5"
-        >
-          <h2
-            className="text-lg font-semibold text-stone-950"
-            id="invite-message-heading"
+        {showLawyerMode ? (
+          <LawyerMode
+            invite={invite}
+            previewMode={previewMode}
+            signatureError={signatureError}
+          />
+        ) : null}
+
+        {!showLawyerMode ? (
+          <section
+            aria-labelledby="invite-message-heading"
+            className="space-y-3 rounded-lg border border-stone-300 bg-white p-5"
           >
-            Message
-          </h2>
-          <p className="whitespace-pre-wrap text-base leading-7 text-stone-800">
-            {invite.message}
-          </p>
-        </section>
+            <h2
+              className="text-lg font-semibold text-stone-950"
+              id="invite-message-heading"
+            >
+              Message
+            </h2>
+            <p className="whitespace-pre-wrap text-base leading-7 text-stone-800">
+              {invite.message}
+            </p>
+          </section>
+        ) : null}
 
         <section
           aria-labelledby="invite-details-heading"
@@ -142,7 +160,7 @@ export default async function InvitePage({
           </dl>
         </section>
 
-        {pageState === "respondable" ? (
+        {pageState === "respondable" && !showLawyerMode ? (
           <ResponseActions
             invite={invite}
             presentation={presentation}
