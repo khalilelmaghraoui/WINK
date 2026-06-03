@@ -1,0 +1,168 @@
+# Frisson Product And Technical Context
+
+This document preserves local project context for Codex runs. External uploaded
+strategy or architecture documents may not be available inside the repository,
+so this file summarizes the working product and architecture rules.
+
+## Product Summary
+
+Frisson / DateCard is a romantic invitation microsite builder, not a dating app.
+It lets someone create a cinematic private invitation link for a date, apology,
+surprise, or romantic moment. The recipient opens the link in a browser and
+answers Yes, Raincheck, or No.
+
+The first product goal is to validate invite sharing and recipient response
+before expanding.
+
+Core loop:
+
+1. Ask.
+2. Reveal.
+3. Date.
+4. Memory.
+5. Next invite.
+
+Build Act I first.
+
+## MVP Product Principles
+
+- The app may be playful, but must never make refusal difficult.
+- No must always remain possible and clear.
+- The recipient experience must include an "I do not know this person" escape
+  action.
+- Flagging unknown sender sends no notification to the sender.
+- Romantic and cinematic does not mean manipulative.
+- Privacy rules are product requirements, not post-launch cleanup.
+
+## Current MVP Modes
+
+Allowed now:
+
+- `lawyer`
+- `unbothered`
+
+Future modes, not now:
+
+- `ceo`
+- `desperate`
+- `scratch`
+- `classic`
+- any invented mode
+
+## Architecture Summary
+
+The MVP is web-first:
+
+- Next.js 14.
+- TypeScript.
+- Tailwind CSS.
+- App Router.
+- Mock storage first.
+- Supabase later only when explicitly requested.
+
+Everything revolves around the Invite primitive. Feature modules should depend
+on InviteCore and provider interfaces. No feature code should import
+third-party SDKs directly. Provider interfaces protect against vendor lock-in
+and make later persistence or AI integrations replaceable.
+
+## InviteCore Direction
+
+The Invite primitive owns the core domain state:
+
+- invite identity and slug
+- mode and tone
+- date type
+- status and phase
+- recipient-facing invitation content
+- date and place details
+- response state
+- counter-offer state
+- write-once `openedAt`
+- safety flags
+- cancellation and expiration state
+
+The `InviteStore` interface is the boundary for persistence. The current
+adapter is in-memory. Sprint 3 may add Supabase behind the same interface.
+
+## Privacy Baseline
+
+Non-negotiable rules:
+
+- `/i/[slug]` must be `noindex,nofollow`.
+- Open Graph/social preview must be generic.
+- Do not expose sender name, recipient name, message, place, date, time, or
+  address in metadata.
+- Generic preview text: "You have a surprise waiting."
+- `openedAt` is set once only.
+- Never implement `openCount`.
+- Do not track device, location, hover, cursor path, repeated opens, or dwell
+  time.
+- `previewMode=true` blocks all writes.
+
+## Sprint Status
+
+Sprint 0 - Foundation is implemented:
+
+- App foundation.
+- Invite primitive.
+- In-memory `InviteStore`.
+- Slug generator.
+- Route skeletons.
+- Privacy metadata baseline.
+- Tests.
+
+Sprint 0.1 - Documentation alignment:
+
+- Root `AGENTS.md`.
+- Non-empty `docs/BACKLOG_MVP.md`.
+- Local `docs/FRISSON_CONTEXT.md`.
+- No product features.
+
+Sprint 1 - Core Ask:
+
+- 3-step creation flow.
+- Preview/share screen.
+- Recipient invite page.
+- Lawyer and Unbothered modes only.
+- Compatibility report.
+- Yes / Raincheck / No response flow.
+- Same URL becomes confirmation page after Yes.
+- "I do not know this person" escape action.
+- Noindex/nofollow and generic Open Graph metadata.
+
+Sprint 2 - Ethics and Polish:
+
+- Kind Reply Assistant.
+- Better Raincheck / counter-offer UX.
+- Reduced-motion fallback.
+- Accessibility hardening.
+- Mobile polish.
+- No dark patterns.
+
+Sprint 3 - Persistence:
+
+- Supabase adapter behind the existing `InviteStore` interface.
+- No direct Supabase imports in feature UI.
+- Environment variables.
+- Real shareable links.
+- Data persistence tests.
+
+## Not In Current MVP Work
+
+Do not add these unless explicitly requested:
+
+- Supabase before Sprint 3.
+- Prisma.
+- Authentication.
+- Dashboard.
+- Notifications.
+- Payments.
+- Native mobile app.
+- Expo.
+- Maps.
+- Music.
+- AI generation.
+- Partners.
+- Camera.
+- Scrapbook.
+- Reveal drip.
