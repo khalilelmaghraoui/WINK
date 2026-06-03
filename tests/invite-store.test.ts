@@ -4,6 +4,7 @@ import { test } from "node:test";
 import { InMemoryInviteStore } from "../src/lib/invite-store";
 import type {
   CreateInviteInput,
+  InviteTone,
   InviteResponse
 } from "../src/lib/invite-store";
 
@@ -11,7 +12,7 @@ const baseInput: CreateInviteInput = {
   recipientName: "Recipient",
   message: "A small invitation.",
   mode: "lawyer",
-  tone: "playful",
+  tone: "romantic",
   dateType: "date",
   dateDetails: {
     title: "Dinner"
@@ -20,6 +21,20 @@ const baseInput: CreateInviteInput = {
     name: "Somewhere nice"
   }
 };
+
+test("createInvite stores each supported tone", async () => {
+  const tones: InviteTone[] = ["cute", "funny", "romantic", "bold"];
+
+  for (const tone of tones) {
+    const store = new InMemoryInviteStore();
+    const invite = await store.createInvite({
+      ...baseInput,
+      tone
+    });
+
+    assert.equal(invite.tone, tone);
+  }
+});
 
 test("getInviteBySlug returns null for a missing slug", async () => {
   const store = new InMemoryInviteStore();

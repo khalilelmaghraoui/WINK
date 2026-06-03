@@ -2,12 +2,7 @@ import { randomUUID } from "node:crypto";
 
 import { generateSlug } from "./generate-slug";
 
-export type InviteTone =
-  | "romantic"
-  | "playful"
-  | "apologetic"
-  | "surprise"
-  | "custom";
+export type InviteTone = "cute" | "funny" | "romantic" | "bold";
 
 export type InviteMode = "lawyer" | "unbothered";
 
@@ -39,6 +34,7 @@ export interface Invite {
   dateType: DateType;
   status: InviteStatus;
   phase: InvitePhase;
+  senderName: string;
   recipientName: string;
   message: string;
   dateDetails: {
@@ -64,6 +60,7 @@ export interface Invite {
 }
 
 export interface CreateInviteInput {
+  senderName?: string;
   recipientName: string;
   message: string;
   mode: InviteMode;
@@ -136,10 +133,11 @@ export class InMemoryInviteStore implements InviteStore {
       id: randomUUID(),
       slug: this.createUniqueSlug(),
       mode: input.mode,
-      tone: input.tone ?? "custom",
+      tone: input.tone ?? "romantic",
       dateType: input.dateType ?? "date",
       status: "pending",
       phase: "sent",
+      senderName: input.senderName ?? "",
       recipientName: input.recipientName,
       message: input.message,
       dateDetails: input.dateDetails ?? {},
