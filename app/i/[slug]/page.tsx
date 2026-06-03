@@ -1,14 +1,17 @@
 import type { Metadata } from "next";
 
 import { flagUnknownSenderAction, respondToInviteAction } from "./actions";
+import { CompatibilityReport } from "./compatibility-report";
 import {
   getInviteForRecipientPage,
   getInvitePageMetadata,
   getRecipientPageState,
-  isPreviewModeParam
+  isPreviewModeParam,
+  shouldShowCompatibilityReport
 } from "@/lib/invite-page";
 import { inviteStore } from "@/lib/invite-store";
 import type { Invite } from "@/lib/invite-store";
+import { getModePresentation } from "@/lib/mode-engine";
 
 export const dynamic = "force-dynamic";
 
@@ -51,6 +54,7 @@ export default async function InvitePage({
   }
 
   const pageState = getRecipientPageState(invite.status);
+  const presentation = getModePresentation(invite);
 
   return (
     <main className="mx-auto flex min-h-screen w-full max-w-2xl flex-col px-5 py-8">
@@ -60,8 +64,9 @@ export default async function InvitePage({
             Frisson invite
           </p>
           <h1 className="text-2xl font-semibold text-stone-950">
-            {invite.recipientName}, you have an invitation.
+            {presentation.headline}
           </h1>
+          <p className="text-base text-stone-700">{presentation.subtitle}</p>
           {previewMode ? (
             <p className="rounded-md border border-stone-300 bg-stone-50 px-3 py-2 text-sm text-stone-700">
               Preview mode is on. No opens or actions will be saved.
@@ -71,6 +76,32 @@ export default async function InvitePage({
 
         {pageState !== "respondable" ? (
           <StateMessage invite={invite} pageState={pageState} />
+        ) : null}
+
+        {shouldShowCompatibilityReport(pageState) ? (
+          <>
+            <section
+              aria-labelledby="mode-presentation-heading"
+              className="space-y-3 rounded-lg border border-stone-300 bg-white p-5"
+            >
+              <p className="text-sm font-medium text-stone-600">
+                {presentation.modeLabel} mode
+              </p>
+              <h2
+                className="text-lg font-semibold text-stone-950"
+                id="mode-presentation-heading"
+              >
+                {invite.recipientName}, you have an invitation.
+              </h2>
+              <p className="text-base leading-7 text-stone-800">
+                {presentation.body}
+              </p>
+              <p className="text-sm text-stone-700">
+                {presentation.safetyNote}
+              </p>
+            </section>
+            <CompatibilityReport presentation={presentation} />
+          </>
         ) : null}
 
         <section
@@ -112,7 +143,11 @@ export default async function InvitePage({
         </section>
 
         {pageState === "respondable" ? (
-          <ResponseActions invite={invite} previewMode={previewMode} />
+          <ResponseActions
+            invite={invite}
+            presentation={presentation}
+            previewMode={previewMode}
+          />
         ) : null}
       </article>
     </main>
@@ -184,9 +219,11 @@ function StateMessage({
 
 function ResponseActions({
   invite,
+  presentation,
   previewMode
 }: {
   invite: Invite;
+  presentation: ReturnType<typeof getModePresentation>;
   previewMode: boolean;
 }) {
   return (
@@ -215,7 +252,7 @@ function ResponseActions({
         <ResponseForm
           ariaLabel="Answer yes to this invitation"
           invite={invite}
-          label="Yes"
+          label={presentation.responseCopy.yes}
           previewMode={previewMode}
           response="yes"
           variant="primary"
@@ -223,7 +260,7 @@ function ResponseActions({
         <ResponseForm
           ariaLabel="Ask for a raincheck"
           invite={invite}
-          label="Raincheck"
+          label={presentation.responseCopy.raincheck}
           previewMode={previewMode}
           response="raincheck"
           variant="secondary"
@@ -231,7 +268,7 @@ function ResponseActions({
         <ResponseForm
           ariaLabel="Answer no to this invitation"
           invite={invite}
-          label="No"
+          label={presentation.responseCopy.no}
           previewMode={previewMode}
           response="no"
           variant="secondary"

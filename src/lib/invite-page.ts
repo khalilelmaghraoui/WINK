@@ -86,3 +86,9 @@ export function getRecipientPageState(status: InviteStatus): RecipientPageState 
       return "unavailable";
   }
 }
+
+export function shouldShowCompatibilityReport(
+  state: RecipientPageState
+): boolean {
+  return state === "respondable";
+}

@@ -6,7 +6,8 @@ import {
   getInvitePageMetadata,
   getRecipientPageState,
   invitePageGenericPreview,
-  isPreviewModeParam
+  isPreviewModeParam,
+  shouldShowCompatibilityReport
 } from "../src/lib/invite-page";
 import { InMemoryInviteStore } from "../src/lib/invite-store";
 import type { InviteWriteOptions } from "../src/lib/invite-store";
@@ -123,4 +124,15 @@ test("recipient page state maps statuses to living URL states", () => {
   assert.equal(getRecipientPageState("expired"), "expired");
   assert.equal(getRecipientPageState("cancelled"), "cancelled");
   assert.equal(getRecipientPageState("draft"), "unavailable");
+});
+
+test("compatibility report appears only for respondable states", () => {
+  assert.equal(shouldShowCompatibilityReport("respondable"), true);
+  assert.equal(shouldShowCompatibilityReport("accepted"), false);
+  assert.equal(shouldShowCompatibilityReport("raincheck"), false);
+  assert.equal(shouldShowCompatibilityReport("declined"), false);
+  assert.equal(shouldShowCompatibilityReport("flagged"), false);
+  assert.equal(shouldShowCompatibilityReport("expired"), false);
+  assert.equal(shouldShowCompatibilityReport("cancelled"), false);
+  assert.equal(shouldShowCompatibilityReport("unavailable"), false);
 });
