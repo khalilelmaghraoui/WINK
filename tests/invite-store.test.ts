@@ -96,7 +96,40 @@ test("respond applies status transitions", async () => {
     assert.equal(updatedInvite?.status, expectedStatus);
     assert.equal(updatedInvite?.response, response);
     assert.equal(updatedInvite?.phase, "responded");
+    assert.notEqual(updatedInvite?.respondedAt, null);
   }
+});
+
+test("raincheck response stores a minimal counter-offer message", async () => {
+  const store = new InMemoryInviteStore();
+  const invite = await store.createInvite(baseInput);
+  const updatedInvite = await store.respond(invite.slug, {
+    response: "raincheck",
+    counterOffer: {
+      message: "Could we try Saturday?"
+    }
+  });
+
+  assert.equal(updatedInvite?.status, "raincheck");
+  assert.equal(updatedInvite?.counterOffer?.message, "Could we try Saturday?");
+});
+
+test("safety and availability actions update status", async () => {
+  const store = new InMemoryInviteStore();
+  const flaggedInvite = await store.createInvite(baseInput);
+  const cancelledInvite = await store.createInvite(baseInput);
+  const expiringInvite = await store.createInvite({
+    ...baseInput,
+    expiresAt: "2026-06-03T10:00:00.000Z"
+  });
+
+  const flagged = await store.flagUnknownSender(flaggedInvite.slug);
+  const cancelled = await store.cancelInvite(cancelledInvite.slug);
+  const expired = await store.expireInvites("2026-06-03T10:01:00.000Z");
+
+  assert.equal(flagged?.status, "flagged");
+  assert.equal(cancelled?.status, "cancelled");
+  assert.equal(expired.find((invite) => invite.slug === expiringInvite.slug)?.status, "expired");
 });
 
 test("createInvite retries slug generation on collision", async () => {

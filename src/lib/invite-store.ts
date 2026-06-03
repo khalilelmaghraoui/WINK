@@ -14,7 +14,10 @@ export type InviteStatus =
   | "opened"
   | "accepted"
   | "raincheck"
-  | "declined";
+  | "declined"
+  | "expired"
+  | "cancelled"
+  | "flagged";
 
 export type InvitePhase = "compose" | "sent" | "opened" | "responded" | "closed";
 
@@ -228,6 +231,7 @@ export class InMemoryInviteStore implements InviteStore {
     const nowIso = this.now();
     const nextInvite: Invite = {
       ...invite,
+      status: "flagged",
       phase: "closed",
       unknownSenderFlaggedAt: nowIso,
       updatedAt: nowIso
@@ -253,6 +257,7 @@ export class InMemoryInviteStore implements InviteStore {
     const nowIso = this.now();
     const nextInvite: Invite = {
       ...invite,
+      status: "cancelled",
       phase: "closed",
       canceledAt: nowIso,
       updatedAt: nowIso
@@ -278,6 +283,7 @@ export class InMemoryInviteStore implements InviteStore {
 
       const nextInvite: Invite = {
         ...invite,
+        status: "expired",
         phase: "closed",
         expiredAt: nowIso,
         updatedAt: nowIso
@@ -340,4 +346,11 @@ function cloneInvite(invite: Invite): Invite {
   };
 }
 
-export const inviteStore: InviteStore = new InMemoryInviteStore();
+const globalInviteStore = globalThis as typeof globalThis & {
+  __frissonInviteStore?: InviteStore;
+};
+
+export const inviteStore: InviteStore =
+  globalInviteStore.__frissonInviteStore ?? new InMemoryInviteStore();
+
+globalInviteStore.__frissonInviteStore = inviteStore;
