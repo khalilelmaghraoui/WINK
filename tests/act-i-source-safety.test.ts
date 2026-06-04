@@ -4,7 +4,8 @@ import { join } from "node:path";
 import { test } from "node:test";
 
 const sourceRoots = ["app", "src"];
-const sourceText = readSourceFiles(sourceRoots).join("\n");
+const sourceFiles = readSourceFiles(sourceRoots);
+const sourceText = sourceFiles.map((file) => file.text).join("\n");
 const recipientPageSource = readFileSync("app/i/[slug]/page.tsx", "utf8");
 const unbotheredSource = readFileSync(
   "app/i/[slug]/unbothered-mode.tsx",
@@ -29,11 +30,18 @@ test("Act I source does not contain forbidden open or tracking fields", () => {
   assert.doesNotMatch(sourceText, /cursorPath|dwellTime|deviceFingerprint/i);
 });
 
-test("feature UI does not import future persistence or AI SDKs directly", () => {
-  assert.doesNotMatch(
-    sourceText,
-    /@supabase|PrismaClient|Anthropic|Claude|AIProvider/
-  );
+test("feature UI does not import Supabase or future AI SDKs directly", () => {
+  const appText = sourceFiles
+    .filter((file) => file.path.startsWith("app\\"))
+    .map((file) => file.text)
+    .join("\n");
+  const supabaseImportFiles = sourceFiles
+    .filter((file) => /@supabase/.test(file.text))
+    .map((file) => file.path.replaceAll("\\", "/"));
+
+  assert.deepEqual(supabaseImportFiles, ["src/lib/supabase/server.ts"]);
+  assert.doesNotMatch(appText, /@supabase|PrismaClient|Anthropic|Claude|AIProvider/);
+  assert.doesNotMatch(sourceText, /PrismaClient|Anthropic|Claude|AIProvider/);
 });
 
 test("recipient page gates mode and helper UI through state helpers", () => {
@@ -84,18 +92,23 @@ test("Kind Reply Assistant remains local-only and non-notifying", () => {
   assert.doesNotMatch(kindReplySource, /notification|notify|sendEmail|sendSms/i);
 });
 
-function readSourceFiles(roots: string[]): string[] {
+function readSourceFiles(roots: string[]): SourceFile[] {
   return roots.flatMap((root) => readSourceTree(root));
 }
 
-function readSourceTree(path: string): string[] {
+function readSourceTree(path: string): SourceFile[] {
   const stat = statSync(path);
 
   if (stat.isFile()) {
-    return isSourceFile(path) ? [readFileSync(path, "utf8")] : [];
+    return isSourceFile(path) ? [{ path, text: readFileSync(path, "utf8") }] : [];
   }
 
   return readdirSync(path).flatMap((entry) => readSourceTree(join(path, entry)));
+}
+
+interface SourceFile {
+  path: string;
+  text: string;
 }
 
 function isSourceFile(path: string): boolean {

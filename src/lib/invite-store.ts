@@ -1,6 +1,8 @@
 import { randomUUID } from "node:crypto";
 
 import { generateSlug } from "./generate-slug";
+import { SupabaseInviteStore } from "./storage/invite-store-supabase";
+import { getSupabaseServerConfig } from "./supabase/server";
 
 export type InviteTone = "cute" | "funny" | "romantic" | "bold";
 
@@ -114,7 +116,7 @@ export interface InviteStore {
   ): Promise<Invite[]>;
 }
 
-interface InMemoryInviteStoreOptions {
+export interface InMemoryInviteStoreOptions {
   slugLength?: number;
   slugGenerator?: (length?: number) => string;
   now?: () => string;
@@ -396,7 +398,23 @@ const globalInviteStore = globalThis as typeof globalThis & {
   __winkInviteStore?: InviteStore;
 };
 
+export function shouldUseSupabaseInviteStore(
+  env: Partial<NodeJS.ProcessEnv> = process.env
+): boolean {
+  return getSupabaseServerConfig(env) !== null;
+}
+
+export function createDefaultInviteStore(
+  env: Partial<NodeJS.ProcessEnv> = process.env
+): InviteStore {
+  if (shouldUseSupabaseInviteStore(env)) {
+    return new SupabaseInviteStore();
+  }
+
+  return new InMemoryInviteStore();
+}
+
 export const inviteStore: InviteStore =
-  globalInviteStore.__winkInviteStore ?? new InMemoryInviteStore();
+  globalInviteStore.__winkInviteStore ?? createDefaultInviteStore();
 
 globalInviteStore.__winkInviteStore = inviteStore;
