@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 
 import { flagUnknownSenderAction, respondToInviteAction } from "./actions";
 import { CompatibilityReport } from "./compatibility-report";
+import { KindReplyAssistant } from "./kind-reply-assistant";
 import { LawyerMode } from "./lawyer-mode";
 import { UnbotheredMode } from "./unbothered-mode";
 import {
@@ -10,6 +11,7 @@ import {
   getRecipientPageState,
   isPreviewModeParam,
   shouldShowCompatibilityReport,
+  shouldShowKindReplyAssistant,
   shouldShowLawyerMode,
   shouldShowUnbotheredMode
 } from "@/lib/invite-page";
@@ -90,6 +92,10 @@ export default async function InvitePage({
 
         {pageState !== "respondable" ? (
           <StateMessage invite={invite} pageState={pageState} />
+        ) : null}
+
+        {shouldShowKindReplyAssistant(pageState) ? (
+          <KindReplyAssistant invite={invite} />
         ) : null}
 
         {shouldShowCompatibilityReport(pageState) ? (
@@ -216,7 +222,7 @@ function StateMessage({
         : "This invitation is marked for a raincheck."
     },
     declined: {
-      heading: "Response sent.",
+      heading: "Fair enough. Thanks for being honest.",
       body: "This invitation has been respectfully declined."
     },
     flagged: {

@@ -113,6 +113,25 @@ export function shouldShowUnbotheredMode({
   return mode === "unbothered" && state === "respondable";
 }
 
+export function shouldShowKindReplyAssistant(
+  state: RecipientPageState
+): boolean {
+  return state === "declined";
+}
+
+export const kindReplyOptions = [
+  "That's really sweet, but I don't see it that way.",
+  "I appreciate it, but I'm not available for dating right now.",
+  "I'd rather keep things friendly, but this was genuinely cute."
+] as const;
+
+export function getKindReplyIntro(invite: Invite): string {
+  const sender = invite.senderName || "them";
+  const dateType = formatInviteToken(invite.dateType).toLowerCase();
+
+  return `If you want to reply to ${sender} about the ${dateType}, keep it simple and kind.`;
+}
+
 export function isMissingRequiredLawyerSignature({
   requiresSignature,
   response,
@@ -135,6 +154,21 @@ export const unbotheredSlotFinalResult =
   unbotheredSlotSequence[unbotheredSlotSequence.length - 1];
 
 export const unbotheredSlotTimings = [0, 200, 450, 650] as const;
+
+export const unbotheredSlotConfirmationLabel =
+  "Fine, I accept the rigged verdict";
+
+export function shouldSubmitUnbotheredSlotYes({
+  confirmationClicked,
+  previewMode,
+  slotState
+}: {
+  confirmationClicked: boolean;
+  previewMode: boolean;
+  slotState: "idle" | "spinning" | "landed";
+}): boolean {
+  return slotState === "landed" && confirmationClicked && !previewMode;
+}
 
 export const unbotheredNoTapHints = [
   "...okay that's fine. I'm fine.",

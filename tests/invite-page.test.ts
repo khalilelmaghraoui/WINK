@@ -4,6 +4,7 @@ import { test } from "node:test";
 import {
   getInviteForRecipientPage,
   getInvitePageMetadata,
+  getKindReplyIntro,
   getRecipientPageState,
   getUnbotheredHeader,
   getUnbotheredMainCopy,
@@ -12,10 +13,14 @@ import {
   invitePageGenericPreview,
   isMissingRequiredLawyerSignature,
   isPreviewModeParam,
+  kindReplyOptions,
   shouldShowCompatibilityReport,
+  shouldShowKindReplyAssistant,
   shouldShowLawyerMode,
   shouldShowUnbotheredMode,
+  shouldSubmitUnbotheredSlotYes,
   unbotheredNoTapHints,
+  unbotheredSlotConfirmationLabel,
   unbotheredSlotFinalResult,
   unbotheredSlotSequence,
   unbotheredSlotTimings
@@ -148,6 +153,39 @@ test("compatibility report appears only for respondable states", () => {
   assert.equal(shouldShowCompatibilityReport("unavailable"), false);
 });
 
+test("kind reply assistant appears only for declined state", () => {
+  assert.equal(shouldShowKindReplyAssistant("declined"), true);
+  assert.equal(shouldShowKindReplyAssistant("respondable"), false);
+  assert.equal(shouldShowKindReplyAssistant("accepted"), false);
+  assert.equal(shouldShowKindReplyAssistant("raincheck"), false);
+  assert.equal(shouldShowKindReplyAssistant("flagged"), false);
+  assert.equal(shouldShowKindReplyAssistant("expired"), false);
+  assert.equal(shouldShowKindReplyAssistant("cancelled"), false);
+  assert.equal(shouldShowKindReplyAssistant("unavailable"), false);
+});
+
+test("kind reply assistant has exactly three static reply options", () => {
+  assert.deepEqual(Array.from(kindReplyOptions), [
+    "That's really sweet, but I don't see it that way.",
+    "I appreciate it, but I'm not available for dating right now.",
+    "I'd rather keep things friendly, but this was genuinely cute."
+  ]);
+});
+
+test("kind reply intro can use safe invite context", async () => {
+  const store = new CountingInviteStore();
+  const invite = await store.createInvite({
+    ...inviteInput,
+    senderName: "Riley",
+    dateType: "romantic_moment"
+  });
+
+  assert.equal(
+    getKindReplyIntro(invite),
+    "If you want to reply to Riley about the romantic moment, keep it simple and kind."
+  );
+});
+
 test("lawyer mode renders only for lawyer respondable invites", () => {
   assert.equal(
     shouldShowLawyerMode({ mode: "lawyer", state: "respondable" }),
@@ -230,6 +268,48 @@ test("unbothered slot sequence is deterministic and lands on YES", () => {
   ]);
   assert.deepEqual(Array.from(unbotheredSlotTimings), [0, 200, 450, 650]);
   assert.equal(unbotheredSlotFinalResult, "YES");
+});
+
+test("unbothered slot landing does not submit yes without confirmation", () => {
+  assert.equal(
+    shouldSubmitUnbotheredSlotYes({
+      confirmationClicked: false,
+      previewMode: false,
+      slotState: "landed"
+    }),
+    false
+  );
+  assert.equal(
+    shouldSubmitUnbotheredSlotYes({
+      confirmationClicked: true,
+      previewMode: false,
+      slotState: "spinning"
+    }),
+    false
+  );
+});
+
+test("unbothered slot final confirmation is the only yes consent path", () => {
+  assert.equal(
+    shouldSubmitUnbotheredSlotYes({
+      confirmationClicked: true,
+      previewMode: false,
+      slotState: "landed"
+    }),
+    true
+  );
+  assert.equal(
+    shouldSubmitUnbotheredSlotYes({
+      confirmationClicked: true,
+      previewMode: true,
+      slotState: "landed"
+    }),
+    false
+  );
+  assert.equal(
+    unbotheredSlotConfirmationLabel,
+    "Fine, I accept the rigged verdict"
+  );
 });
 
 test("unbothered copy uses invite sender recipient and date type", async () => {

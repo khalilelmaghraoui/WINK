@@ -13,6 +13,7 @@ import {
   getUnbotheredMainCopy,
   getUnbotheredNoTapHint,
   getUnbotheredNoTapOutcome,
+  unbotheredSlotConfirmationLabel,
   unbotheredSlotFinalResult,
   unbotheredSlotSequence,
   unbotheredSlotTimings
@@ -365,7 +366,7 @@ function SlotPanel({
               className="min-h-11 w-full rounded-md bg-stone-950 px-4 py-2 text-sm font-medium text-white focus:outline-none focus:ring-2 focus:ring-stone-950 focus:ring-offset-2"
               type="submit"
             >
-              Fine, I accept the rigged verdict
+              {unbotheredSlotConfirmationLabel}
             </button>
           </form>
           {previewNotice ? (
