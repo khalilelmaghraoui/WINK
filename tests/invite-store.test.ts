@@ -36,6 +36,13 @@ test("createInvite stores each supported tone", async () => {
   }
 });
 
+test("createInvite initializes noTapCount to zero", async () => {
+  const store = new InMemoryInviteStore();
+  const invite = await store.createInvite(baseInput);
+
+  assert.equal(invite.noTapCount, 0);
+});
+
 test("getInviteBySlug returns null for a missing slug", async () => {
   const store = new InMemoryInviteStore();
 
@@ -79,6 +86,32 @@ test("preview mode blocks openedAt and response writes", async () => {
   assert.equal(persistedInvite?.openedAt, null);
   assert.equal(persistedInvite?.response, null);
   assert.equal(persistedInvite?.status, "pending");
+});
+
+test("recordNoTap stores only a capped integer", async () => {
+  const store = new InMemoryInviteStore();
+  const invite = await store.createInvite(baseInput);
+
+  const firstTap = await store.recordNoTap(invite.slug);
+  const secondTap = await store.recordNoTap(invite.slug);
+  const thirdTap = await store.recordNoTap(invite.slug);
+
+  assert.equal(firstTap?.noTapCount, 1);
+  assert.equal(secondTap?.noTapCount, 2);
+  assert.equal(thirdTap?.noTapCount, 2);
+});
+
+test("preview mode blocks noTapCount writes", async () => {
+  const store = new InMemoryInviteStore();
+  const invite = await store.createInvite(baseInput);
+
+  const previewTap = await store.recordNoTap(invite.slug, {
+    previewMode: true
+  });
+  const persistedInvite = await store.getInviteBySlug(invite.slug);
+
+  assert.equal(previewTap?.noTapCount, 0);
+  assert.equal(persistedInvite?.noTapCount, 0);
 });
 
 test("respond applies status transitions", async () => {

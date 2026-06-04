@@ -129,7 +129,11 @@ export default async function InvitePage({
         ) : null}
 
         {showUnbotheredMode ? (
-          <UnbotheredMode invite={invite} previewMode={previewMode} />
+          <UnbotheredMode
+            invite={invite}
+            noTapCount={invite.noTapCount}
+            previewMode={previewMode}
+          />
         ) : null}
 
         {!showLawyerMode && !showUnbotheredMode ? (

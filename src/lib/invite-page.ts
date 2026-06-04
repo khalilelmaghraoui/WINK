@@ -134,14 +134,46 @@ export const unbotheredSlotSequence = ["No", "Maybe", "Maybe", "YES"] as const;
 export const unbotheredSlotFinalResult =
   unbotheredSlotSequence[unbotheredSlotSequence.length - 1];
 
+export const unbotheredSlotTimings = [0, 200, 450, 650] as const;
+
 export const unbotheredNoTapHints = [
   "...okay that's fine. I'm fine.",
   "Cool cool cool."
 ] as const;
 
+export function getUnbotheredHeader(invite: Invite): string {
+  return `${invite.senderName || "Someone"} is asking... sort of.`;
+}
+
+export function getUnbotheredMainCopy(invite: Invite): {
+  line1: string;
+  line2: string;
+} {
+  return {
+    line1: `Yeah so... ${invite.recipientName}. ${formatInviteToken(
+      invite.dateType
+    )} or whatever. If you want. No pressure.`,
+    line2: "I probably have other plans anyway, but like... it could be cool."
+  };
+}
+
+export function getUnbotheredNoTapHint(
+  noTapCount: number
+): string | null {
+  if (noTapCount === 1) {
+    return unbotheredNoTapHints[0];
+  }
+
+  if (noTapCount >= 2) {
+    return unbotheredNoTapHints[1];
+  }
+
+  return null;
+}
+
 export function getUnbotheredNoTapOutcome(noTapCount: number): {
   hint: string | null;
-  nextNoTapCount: number;
+  nextNoTapCount: 0 | 1 | 2;
   shouldDecline: boolean;
   shiftRightPx: number;
 } {
@@ -169,4 +201,11 @@ export function getUnbotheredNoTapOutcome(noTapCount: number): {
     shouldDecline: true,
     shiftRightPx: 4
   };
+}
+
+function formatInviteToken(value: string): string {
+  return value
+    .split("_")
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(" ");
 }

@@ -60,6 +60,20 @@ export async function flagUnknownSenderAction(formData: FormData) {
   revalidatePath(`/i/${slug}`);
 }
 
+export async function recordNoTapAction(formData: FormData) {
+  const slug = formData.get("slug");
+  const previewMode = formData.get("previewMode") === "true";
+
+  if (typeof slug !== "string" || !slug) {
+    return null;
+  }
+
+  const invite = await inviteStore.recordNoTap(slug, { previewMode });
+  revalidatePath(`/i/${slug}`);
+
+  return invite?.noTapCount ?? null;
+}
+
 function isInviteResponse(value: FormDataEntryValue | null): value is InviteResponse {
   return value === "yes" || value === "raincheck" || value === "no";
 }

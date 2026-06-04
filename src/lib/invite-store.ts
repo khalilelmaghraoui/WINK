@@ -52,6 +52,7 @@ export interface Invite {
   };
   response: InviteResponse | null;
   counterOffer: CounterOffer | null;
+  noTapCount: 0 | 1 | 2;
   openedAt: string | null;
   respondedAt: string | null;
   unknownSenderFlaggedAt: string | null;
@@ -94,6 +95,7 @@ export interface InviteStore {
     opts?: InviteReadOptions
   ): Promise<Invite | null>;
   markOpened(slug: string, opts?: InviteWriteOptions): Promise<Invite | null>;
+  recordNoTap(slug: string, opts?: InviteWriteOptions): Promise<Invite | null>;
   respond(slug: string, payload: InviteResponsePayload): Promise<Invite | null>;
   flagUnknownSender(
     slug: string,
@@ -147,6 +149,7 @@ export class InMemoryInviteStore implements InviteStore {
       placeDetails: input.placeDetails ?? {},
       response: null,
       counterOffer: null,
+      noTapCount: 0,
       openedAt: null,
       respondedAt: null,
       unknownSenderFlaggedAt: null,
@@ -216,6 +219,31 @@ export class InMemoryInviteStore implements InviteStore {
     }
 
     return cloneInvite(nextInvite);
+  }
+
+  async recordNoTap(
+    slug: string,
+    opts: InviteWriteOptions = {}
+  ): Promise<Invite | null> {
+    const invite = this.invitesBySlug.get(slug);
+
+    if (!invite) {
+      return null;
+    }
+
+    const nextNoTapCount = capNoTapCount(invite.noTapCount + 1);
+    const nowIso = this.now();
+    const nextInvite: Invite = {
+      ...invite,
+      noTapCount: nextNoTapCount,
+      updatedAt: nowIso
+    };
+
+    if (!opts.previewMode) {
+      this.invitesBySlug.set(slug, nextInvite);
+    }
+
+    return cloneInvite(opts.previewMode ? invite : nextInvite);
   }
 
   async flagUnknownSender(
@@ -344,6 +372,18 @@ function cloneInvite(invite: Invite): Invite {
     placeDetails: { ...invite.placeDetails },
     counterOffer: invite.counterOffer ? { ...invite.counterOffer } : null
   };
+}
+
+function capNoTapCount(value: number): 0 | 1 | 2 {
+  if (value <= 0) {
+    return 0;
+  }
+
+  if (value === 1) {
+    return 1;
+  }
+
+  return 2;
 }
 
 const globalInviteStore = globalThis as typeof globalThis & {

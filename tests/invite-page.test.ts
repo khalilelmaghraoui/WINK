@@ -5,6 +5,9 @@ import {
   getInviteForRecipientPage,
   getInvitePageMetadata,
   getRecipientPageState,
+  getUnbotheredHeader,
+  getUnbotheredMainCopy,
+  getUnbotheredNoTapHint,
   getUnbotheredNoTapOutcome,
   invitePageGenericPreview,
   isMissingRequiredLawyerSignature,
@@ -14,7 +17,8 @@ import {
   shouldShowUnbotheredMode,
   unbotheredNoTapHints,
   unbotheredSlotFinalResult,
-  unbotheredSlotSequence
+  unbotheredSlotSequence,
+  unbotheredSlotTimings
 } from "../src/lib/invite-page";
 import { InMemoryInviteStore } from "../src/lib/invite-store";
 import type { InviteWriteOptions } from "../src/lib/invite-store";
@@ -224,7 +228,27 @@ test("unbothered slot sequence is deterministic and lands on YES", () => {
     "Maybe",
     "YES"
   ]);
+  assert.deepEqual(Array.from(unbotheredSlotTimings), [0, 200, 450, 650]);
   assert.equal(unbotheredSlotFinalResult, "YES");
+});
+
+test("unbothered copy uses invite sender recipient and date type", async () => {
+  const store = new CountingInviteStore();
+  const invite = await store.createInvite({
+    ...inviteInput,
+    senderName: "Riley",
+    recipientName: "Avery",
+    dateType: "romantic_moment",
+    mode: "unbothered"
+  });
+
+  assert.equal(getUnbotheredHeader(invite), "Riley is asking... sort of.");
+  assert.deepEqual(getUnbotheredMainCopy(invite), {
+    line1:
+      "Yeah so... Avery. Romantic Moment or whatever. If you want. No pressure.",
+    line2:
+      "I probably have other plans anyway, but like... it could be cool."
+  });
 });
 
 test("unbothered no tap outcome delays decline until the third tap", () => {
@@ -252,4 +276,11 @@ test("unbothered no tap outcome delays decline until the third tap", () => {
     shouldDecline: true,
     shiftRightPx: 4
   });
+});
+
+test("unbothered no tap hint is derived from capped count", () => {
+  assert.equal(getUnbotheredNoTapHint(0), null);
+  assert.equal(getUnbotheredNoTapHint(1), unbotheredNoTapHints[0]);
+  assert.equal(getUnbotheredNoTapHint(2), unbotheredNoTapHints[1]);
+  assert.equal(getUnbotheredNoTapHint(3), unbotheredNoTapHints[1]);
 });
