@@ -2,12 +2,12 @@
 
 ## Canonical Repository Instructions
 
-This root `AGENTS.md` is the canonical Codex instruction file for Frisson /
+This root `AGENTS.md` is the canonical Codex instruction file for WINK /
 DateCard. If older instruction copies exist elsewhere, prefer this root file.
 
 ## Project Identity
 
-Frisson is a romantic invitation microsite builder, not a dating app. It lets a
+WINK is a romantic invitation microsite builder, not a dating app. It lets a
 sender create a cinematic private invitation link for a date, apology, surprise,
 or romantic moment. The recipient opens the link in a browser and answers.
 
@@ -45,7 +45,7 @@ Sprint 0.1 is documentation alignment only:
 
 - Root `AGENTS.md`.
 - Non-empty `docs/BACKLOG_MVP.md`.
-- Local `docs/FRISSON_CONTEXT.md`.
+- Local `docs/WINK_CONTEXT.md`.
 - No product features.
 
 ## Stack
@@ -167,7 +167,7 @@ Sprint 0.1 - Documentation alignment:
 
 - Root `AGENTS.md`.
 - Non-empty `docs/BACKLOG_MVP.md`.
-- Local `docs/FRISSON_CONTEXT.md`.
+- Local `docs/WINK_CONTEXT.md`.
 - No product features.
 
 Sprint 1 - Core Ask:

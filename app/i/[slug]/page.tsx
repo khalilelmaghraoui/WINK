@@ -3,13 +3,15 @@ import type { Metadata } from "next";
 import { flagUnknownSenderAction, respondToInviteAction } from "./actions";
 import { CompatibilityReport } from "./compatibility-report";
 import { LawyerMode } from "./lawyer-mode";
+import { UnbotheredMode } from "./unbothered-mode";
 import {
   getInviteForRecipientPage,
   getInvitePageMetadata,
   getRecipientPageState,
   isPreviewModeParam,
   shouldShowCompatibilityReport,
-  shouldShowLawyerMode
+  shouldShowLawyerMode,
+  shouldShowUnbotheredMode
 } from "@/lib/invite-page";
 import { inviteStore } from "@/lib/invite-store";
 import type { Invite } from "@/lib/invite-store";
@@ -62,6 +64,10 @@ export default async function InvitePage({
     mode: invite.mode,
     state: pageState
   });
+  const showUnbotheredMode = shouldShowUnbotheredMode({
+    mode: invite.mode,
+    state: pageState
+  });
   const signatureError = isPreviewModeParam(searchParams?.signatureError);
 
   return (
@@ -69,7 +75,7 @@ export default async function InvitePage({
       <article className="space-y-6">
         <header className="space-y-3">
           <p className="text-sm font-medium uppercase text-stone-600">
-            Frisson invite
+            WINK invite
           </p>
           <h1 className="text-2xl font-semibold text-stone-950">
             {presentation.headline}
@@ -88,26 +94,28 @@ export default async function InvitePage({
 
         {shouldShowCompatibilityReport(pageState) ? (
           <>
-            <section
-              aria-labelledby="mode-presentation-heading"
-              className="space-y-3 rounded-lg border border-stone-300 bg-white p-5"
-            >
-              <p className="text-sm font-medium text-stone-600">
-                {presentation.modeLabel} mode
-              </p>
-              <h2
-                className="text-lg font-semibold text-stone-950"
-                id="mode-presentation-heading"
+            {!showUnbotheredMode ? (
+              <section
+                aria-labelledby="mode-presentation-heading"
+                className="space-y-3 rounded-lg border border-stone-300 bg-white p-5"
               >
-                {invite.recipientName}, you have an invitation.
-              </h2>
-              <p className="text-base leading-7 text-stone-800">
-                {presentation.body}
-              </p>
-              <p className="text-sm text-stone-700">
-                {presentation.safetyNote}
-              </p>
-            </section>
+                <p className="text-sm font-medium text-stone-600">
+                  {presentation.modeLabel} mode
+                </p>
+                <h2
+                  className="text-lg font-semibold text-stone-950"
+                  id="mode-presentation-heading"
+                >
+                  {invite.recipientName}, you have an invitation.
+                </h2>
+                <p className="text-base leading-7 text-stone-800">
+                  {presentation.body}
+                </p>
+                <p className="text-sm text-stone-700">
+                  {presentation.safetyNote}
+                </p>
+              </section>
+            ) : null}
             <CompatibilityReport presentation={presentation} />
           </>
         ) : null}
@@ -120,7 +128,11 @@ export default async function InvitePage({
           />
         ) : null}
 
-        {!showLawyerMode ? (
+        {showUnbotheredMode ? (
+          <UnbotheredMode invite={invite} previewMode={previewMode} />
+        ) : null}
+
+        {!showLawyerMode && !showUnbotheredMode ? (
           <section
             aria-labelledby="invite-message-heading"
             className="space-y-3 rounded-lg border border-stone-300 bg-white p-5"
@@ -160,7 +172,9 @@ export default async function InvitePage({
           </dl>
         </section>
 
-        {pageState === "respondable" && !showLawyerMode ? (
+        {pageState === "respondable" &&
+        !showLawyerMode &&
+        !showUnbotheredMode ? (
           <ResponseActions
             invite={invite}
             presentation={presentation}

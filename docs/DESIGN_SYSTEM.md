@@ -1,12 +1,12 @@
-# Frisson MVP Design System
+# WINK MVP Design System
 
-Frisson / DateCard is a romantic invitation microsite builder, not a dating app.
+WINK / DateCard is a romantic invitation microsite builder, not a dating app.
 The MVP design system should make a private browser invitation feel cinematic,
 premium, playful, and safe.
 
 ## Brand Personality
 
-Frisson should feel like a tasteful private invitation scene: intimate, lightly
+WINK should feel like a tasteful private invitation scene: intimate, lightly
 theatrical, and self-aware. The product should invite a moment, not simulate a
 relationship, a dating feed, or a dashboard.
 
@@ -246,7 +246,7 @@ Keyboard:
 ### `/`
 
 Use a compact product entry page only if explicitly included in the current
-slice. The first viewport should show the Frisson name, a direct value
+slice. The first viewport should show the WINK name, a direct value
 proposition, a primary CTA to create an invitation, and a realistic sample
 invitation preview.
 

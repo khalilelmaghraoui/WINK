@@ -1,4 +1,4 @@
-# Frisson MVP Backlog
+# WINK MVP Backlog
 
 This backlog is intentionally compact. It keeps future Codex runs aligned on
 the MVP sequence without pulling later platform ideas into early slices.
@@ -37,7 +37,7 @@ Deliverables:
 
 - Root `AGENTS.md` as canonical Codex instruction file.
 - Non-empty `docs/BACKLOG_MVP.md`.
-- Local `docs/FRISSON_CONTEXT.md` with product and technical architecture
+- Local `docs/WINK_CONTEXT.md` with product and technical architecture
   context.
 
 Verification:

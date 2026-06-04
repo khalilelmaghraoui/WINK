@@ -5,11 +5,16 @@ import {
   getInviteForRecipientPage,
   getInvitePageMetadata,
   getRecipientPageState,
+  getUnbotheredNoTapOutcome,
   invitePageGenericPreview,
   isMissingRequiredLawyerSignature,
   isPreviewModeParam,
   shouldShowCompatibilityReport,
-  shouldShowLawyerMode
+  shouldShowLawyerMode,
+  shouldShowUnbotheredMode,
+  unbotheredNoTapHints,
+  unbotheredSlotFinalResult,
+  unbotheredSlotSequence
 } from "../src/lib/invite-page";
 import { InMemoryInviteStore } from "../src/lib/invite-store";
 import type { InviteWriteOptions } from "../src/lib/invite-store";
@@ -93,7 +98,7 @@ test("invite page metadata is generic and noindex", () => {
     follow: false
   });
   assert.deepEqual(metadata.openGraph, {
-    title: "Frisson",
+    title: "WINK",
     description: invitePageGenericPreview,
     type: "website"
   });
@@ -154,6 +159,29 @@ test("lawyer mode renders only for lawyer respondable invites", () => {
   );
 });
 
+test("unbothered mode renders only for unbothered respondable invites", () => {
+  assert.equal(
+    shouldShowUnbotheredMode({ mode: "unbothered", state: "respondable" }),
+    true
+  );
+  assert.equal(
+    shouldShowUnbotheredMode({ mode: "lawyer", state: "respondable" }),
+    false
+  );
+  assert.equal(
+    shouldShowUnbotheredMode({ mode: "unbothered", state: "accepted" }),
+    false
+  );
+  assert.equal(
+    shouldShowUnbotheredMode({ mode: "unbothered", state: "raincheck" }),
+    false
+  );
+  assert.equal(
+    shouldShowUnbotheredMode({ mode: "unbothered", state: "declined" }),
+    false
+  );
+});
+
 test("lawyer signature validation applies only to yes", () => {
   assert.equal(
     isMissingRequiredLawyerSignature({
@@ -187,4 +215,41 @@ test("lawyer signature validation applies only to yes", () => {
     }),
     false
   );
+});
+
+test("unbothered slot sequence is deterministic and lands on YES", () => {
+  assert.deepEqual(Array.from(unbotheredSlotSequence), [
+    "No",
+    "Maybe",
+    "Maybe",
+    "YES"
+  ]);
+  assert.equal(unbotheredSlotFinalResult, "YES");
+});
+
+test("unbothered no tap outcome delays decline until the third tap", () => {
+  assert.deepEqual(getUnbotheredNoTapOutcome(0), {
+    hint: unbotheredNoTapHints[0],
+    nextNoTapCount: 1,
+    shouldDecline: false,
+    shiftRightPx: 4
+  });
+  assert.deepEqual(getUnbotheredNoTapOutcome(1), {
+    hint: unbotheredNoTapHints[1],
+    nextNoTapCount: 2,
+    shouldDecline: false,
+    shiftRightPx: 4
+  });
+  assert.deepEqual(getUnbotheredNoTapOutcome(2), {
+    hint: null,
+    nextNoTapCount: 2,
+    shouldDecline: true,
+    shiftRightPx: 4
+  });
+  assert.deepEqual(getUnbotheredNoTapOutcome(3), {
+    hint: null,
+    nextNoTapCount: 2,
+    shouldDecline: true,
+    shiftRightPx: 4
+  });
 });

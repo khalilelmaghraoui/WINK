@@ -1,7 +1,7 @@
-# Frisson / DateCard — MVP
+# WINK / DateCard — MVP
 
 ## Product
-Frisson is a romantic invitation microsite builder, not a dating app.
+WINK is a romantic invitation microsite builder, not a dating app.
 A sender creates a cinematic invitation link for a date, apology, surprise, or romantic moment.
 
 ## MVP scope: Act I only

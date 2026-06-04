@@ -347,10 +347,10 @@ function cloneInvite(invite: Invite): Invite {
 }
 
 const globalInviteStore = globalThis as typeof globalThis & {
-  __frissonInviteStore?: InviteStore;
+  __winkInviteStore?: InviteStore;
 };
 
 export const inviteStore: InviteStore =
-  globalInviteStore.__frissonInviteStore ?? new InMemoryInviteStore();
+  globalInviteStore.__winkInviteStore ?? new InMemoryInviteStore();
 
-globalInviteStore.__frissonInviteStore = inviteStore;
+globalInviteStore.__winkInviteStore = inviteStore;

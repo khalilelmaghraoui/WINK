@@ -1,4 +1,4 @@
-# Frisson Product And Technical Context
+# WINK Product And Technical Context
 
 This document preserves local project context for Codex runs. External uploaded
 strategy or architecture documents may not be available inside the repository,
@@ -6,7 +6,7 @@ so this file summarizes the working product and architecture rules.
 
 ## Product Summary
 
-Frisson / DateCard is a romantic invitation microsite builder, not a dating app.
+WINK / DateCard is a romantic invitation microsite builder, not a dating app.
 It lets someone create a cinematic private invitation link for a date, apology,
 surprise, or romantic moment. The recipient opens the link in a browser and
 answers Yes, Raincheck, or No.
@@ -115,7 +115,7 @@ Sprint 0.1 - Documentation alignment:
 
 - Root `AGENTS.md`.
 - Non-empty `docs/BACKLOG_MVP.md`.
-- Local `docs/FRISSON_CONTEXT.md`.
+- Local `docs/WINK_CONTEXT.md`.
 - No product features.
 
 Sprint 1 - Core Ask:
