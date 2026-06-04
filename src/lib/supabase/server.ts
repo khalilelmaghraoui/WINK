@@ -18,8 +18,10 @@ export function getSupabaseServerConfig(
   return { anonKey, url };
 }
 
-export function createSupabaseServerClient(): SupabaseClient {
-  const config = getSupabaseServerConfig();
+export function createSupabaseServerClient(
+  env: Partial<NodeJS.ProcessEnv> = process.env
+): SupabaseClient {
+  const config = getSupabaseServerConfig(env);
 
   if (!config) {
     throw new Error("Supabase environment variables are not configured.");

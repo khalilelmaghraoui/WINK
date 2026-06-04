@@ -107,6 +107,7 @@ export interface SupabaseInviteClient {
 
 export interface SupabaseInviteStoreOptions {
   client?: SupabaseInviteClient;
+  env?: Partial<NodeJS.ProcessEnv>;
   now?: () => string;
   slugGenerator?: (length?: number) => string;
   slugLength?: number;
@@ -121,7 +122,9 @@ export class SupabaseInviteStore implements InviteStore {
   constructor(options: SupabaseInviteStoreOptions = {}) {
     this.client =
       options.client ??
-      (createSupabaseServerClient() as unknown as SupabaseInviteClient);
+      (createSupabaseServerClient(
+        options.env
+      ) as unknown as SupabaseInviteClient);
     this.now = options.now ?? (() => new Date().toISOString());
     this.slugGenerator = options.slugGenerator ?? generateSlug;
     this.slugLength = options.slugLength ?? 10;

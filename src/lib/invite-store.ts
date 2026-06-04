@@ -408,7 +408,7 @@ export function createDefaultInviteStore(
   env: Partial<NodeJS.ProcessEnv> = process.env
 ): InviteStore {
   if (shouldUseSupabaseInviteStore(env)) {
-    return new SupabaseInviteStore();
+    return new SupabaseInviteStore({ env });
   }
 
   return new InMemoryInviteStore();

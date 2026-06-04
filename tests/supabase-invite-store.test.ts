@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import { test } from "node:test";
 
 import {
@@ -45,13 +46,13 @@ test("InviteStore selection falls back to memory without Supabase env", () => {
 });
 
 test("InviteStore selection uses Supabase only when both env vars exist", () => {
-  assert.equal(
-    shouldUseSupabaseInviteStore({
-      NEXT_PUBLIC_SUPABASE_ANON_KEY: "anon",
-      NEXT_PUBLIC_SUPABASE_URL: "https://example.supabase.co"
-    }),
-    true
-  );
+  const env = {
+    NEXT_PUBLIC_SUPABASE_ANON_KEY: "anon",
+    NEXT_PUBLIC_SUPABASE_URL: "https://example.supabase.co"
+  };
+
+  assert.equal(shouldUseSupabaseInviteStore(env), true);
+  assert.ok(createDefaultInviteStore(env) instanceof SupabaseInviteStore);
 });
 
 test("Supabase row mapping preserves the Invite model", async () => {
@@ -166,6 +167,14 @@ test("Supabase adapter preserves noTapCount cap and response transitions", async
     selectedOption: "different_day",
     proposedDateIso: "2026-06-25"
   });
+});
+
+test("Supabase schema documents RLS smoke posture without open count", () => {
+  const schema = readFileSync("docs/SUPABASE_SCHEMA.md", "utf8");
+
+  assert.match(schema, /alter table public\.invites enable row level security/);
+  assert.match(schema, /Do not treat the smoke policies above as production-safe/);
+  assert.doesNotMatch(schema, /\bopen_count\b/);
 });
 
 class FakeSupabaseInviteClient implements SupabaseInviteClient {

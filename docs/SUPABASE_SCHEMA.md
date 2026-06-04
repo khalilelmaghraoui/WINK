@@ -99,6 +99,104 @@ create index if not exists invites_expires_at_idx
   where expires_at is not null and expired_at is null;
 ```
 
+## Row Level Security Review
+
+Sprint 2.0.1 finding: the app currently uses the public anon key from server
+code and does not have authentication. That is enough for a local/staging smoke
+test, but it is not a strong production access-control model by itself.
+
+With no authenticated sender or recipient identity, table-level RLS cannot prove
+that an anon caller "owns" a specific invite. The invite slug acts like a
+capability link in the app, but Supabase table policies cannot reliably enforce
+"only requests that know this slug can read or update this exact row" unless
+the database API is moved behind server-only service-role code or dedicated
+security-definer RPC functions.
+
+### Current MVP Smoke Posture
+
+- RLS should be enabled before any non-local testing.
+- Anon users may insert invite rows for the `/create` flow.
+- Anon users may read invite rows for the `/i/[slug]` flow.
+- Anon users may update invite rows for opened/responded/flagged/cancelled/
+  expired state transitions.
+- Updates are restricted by the application adapter using `share_slug`, but
+  broad anon table policies are still callable outside the app if someone has
+  the anon key.
+- Metadata remains generic in application code and does not read from Supabase.
+- There is no `openCount`.
+- There are no device, location, hover, cursor, dwell-time, repeated-open, or
+  analytics fields.
+
+Use the following policies only for local smoke tests or private staging. They
+keep RLS enabled and preserve model constraints, but they are still broad
+because there is no auth layer yet.
+
+```sql
+alter table public.invites enable row level security;
+
+drop policy if exists "mvp_invites_insert" on public.invites;
+drop policy if exists "mvp_invites_select" on public.invites;
+drop policy if exists "mvp_invites_update" on public.invites;
+
+create policy "mvp_invites_insert"
+  on public.invites
+  for insert
+  to anon
+  with check (
+    status = 'pending'
+    and phase = 'sent'
+    and response is null
+    and opened_at is null
+    and responded_at is null
+    and unknown_sender_flagged_at is null
+    and canceled_at is null
+    and expired_at is null
+    and no_tap_count >= 0
+    and no_tap_count <= 2
+  );
+
+create policy "mvp_invites_select"
+  on public.invites
+  for select
+  to anon
+  using (true);
+
+create policy "mvp_invites_update"
+  on public.invites
+  for update
+  to anon
+  using (true)
+  with check (
+    status in (
+      'pending',
+      'opened',
+      'accepted',
+      'raincheck',
+      'declined',
+      'expired',
+      'cancelled',
+      'flagged'
+    )
+    and phase in ('sent', 'opened', 'responded', 'closed')
+    and no_tap_count >= 0
+    and no_tap_count <= 2
+  );
+```
+
+### Production Blocker
+
+Before public deployment, replace the broad anon table access with one of these
+server-controlled designs:
+
+- Use a server-only Supabase service-role key inside provider code only, keep it
+  out of `NEXT_PUBLIC_*`, and expose only app routes/server actions.
+- Or replace table access with security-definer RPC functions such as
+  `create_invite`, `get_invite_by_slug`, `mark_invite_opened`,
+  `respond_to_invite`, and `flag_unknown_sender`, with each function validating
+  allowed state transitions.
+
+Do not treat the smoke policies above as production-safe.
+
 ## Current Model Notes
 
 - `mysteryLevel`, `previewMode`, and `isDemo` are not in the current `Invite`
