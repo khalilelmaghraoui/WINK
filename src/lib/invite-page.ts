@@ -128,6 +128,15 @@ export function shouldShowRaincheckPanel(state: RecipientPageState): boolean {
   return state === "respondable";
 }
 
+export function shouldShowInviteDetails(state: RecipientPageState): boolean {
+  return (
+    state === "respondable" ||
+    state === "accepted" ||
+    state === "raincheck" ||
+    state === "declined"
+  );
+}
+
 export const raincheckQuickOptions: Array<{
   label: string;
   value: RaincheckOption;

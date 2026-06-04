@@ -13,6 +13,7 @@ import {
   getRecipientPageState,
   isPreviewModeParam,
   shouldShowCompatibilityReport,
+  shouldShowInviteDetails,
   shouldShowKindReplyAssistant,
   shouldShowLawyerMode,
   shouldShowRaincheckPanel,
@@ -73,6 +74,7 @@ export default async function InvitePage({
     mode: invite.mode,
     state: pageState
   });
+  const showInviteDetails = shouldShowInviteDetails(pageState);
   const signatureError = isPreviewModeParam(searchParams?.signatureError);
 
   return (
@@ -149,7 +151,7 @@ export default async function InvitePage({
           />
         ) : null}
 
-        {!showLawyerMode && !showUnbotheredMode ? (
+        {showInviteDetails && !showLawyerMode && !showUnbotheredMode ? (
           <section
             aria-labelledby="invite-message-heading"
             className="space-y-3 rounded-lg border border-stone-300 bg-white p-5"
@@ -166,28 +168,30 @@ export default async function InvitePage({
           </section>
         ) : null}
 
-        <section
-          aria-labelledby="invite-details-heading"
-          className="space-y-4 rounded-lg border border-stone-300 bg-white p-5"
-        >
-          <h2
-            className="text-lg font-semibold text-stone-950"
-            id="invite-details-heading"
+        {showInviteDetails ? (
+          <section
+            aria-labelledby="invite-details-heading"
+            className="space-y-4 rounded-lg border border-stone-300 bg-white p-5"
           >
-            Details
-          </h2>
-          <dl className="grid gap-4 text-sm sm:grid-cols-2">
-            <Detail label="From" value={invite.senderName} />
-            <Detail label="To" value={invite.recipientName} />
-            <Detail label="Mode" value={formatToken(invite.mode)} />
-            <Detail label="Tone" value={formatToken(invite.tone)} />
-            <Detail label="Date type" value={formatToken(invite.dateType)} />
-            <Detail label="Date and time" value={formatStartsAt(invite)} />
-            <Detail label="Place" value={invite.placeDetails.name} />
-            <Detail label="Address" value={invite.placeDetails.address} />
-            <Detail label="Dress hint" value={getDressHint(invite)} />
-          </dl>
-        </section>
+            <h2
+              className="text-lg font-semibold text-stone-950"
+              id="invite-details-heading"
+            >
+              Details
+            </h2>
+            <dl className="grid gap-4 text-sm sm:grid-cols-2">
+              <Detail label="From" value={invite.senderName} />
+              <Detail label="To" value={invite.recipientName} />
+              <Detail label="Mode" value={formatToken(invite.mode)} />
+              <Detail label="Tone" value={formatToken(invite.tone)} />
+              <Detail label="Date type" value={formatToken(invite.dateType)} />
+              <Detail label="Date and time" value={formatStartsAt(invite)} />
+              <Detail label="Place" value={invite.placeDetails.name} />
+              <Detail label="Address" value={invite.placeDetails.address} />
+              <Detail label="Dress hint" value={getDressHint(invite)} />
+            </dl>
+          </section>
+        ) : null}
 
         {pageState === "respondable" &&
         !showLawyerMode &&

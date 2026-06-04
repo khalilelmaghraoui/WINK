@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "lint": "next lint",
-    "test": "tsc -p tsconfig.test.json && node --test .test-dist/tests/generate-slug.test.js .test-dist/tests/invite-store.test.js .test-dist/tests/create-invite-validation.test.js .test-dist/tests/invite-page.test.js .test-dist/tests/mode-engine.test.js .test-dist/tests/unbothered-mode-source.test.js .test-dist/tests/kind-reply-assistant-source.test.js .test-dist/tests/raincheck-panel-source.test.js",
+    "test": "tsc -p tsconfig.test.json && node --test .test-dist/tests/generate-slug.test.js .test-dist/tests/invite-store.test.js .test-dist/tests/create-invite-validation.test.js .test-dist/tests/invite-page.test.js .test-dist/tests/mode-engine.test.js .test-dist/tests/unbothered-mode-source.test.js .test-dist/tests/kind-reply-assistant-source.test.js .test-dist/tests/raincheck-panel-source.test.js .test-dist/tests/act-i-flow.test.js .test-dist/tests/act-i-source-safety.test.js",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
