@@ -8,6 +8,7 @@ import {
   recordNoTapAction,
   respondToInviteAction
 } from "./actions";
+import { RaincheckPanel } from "./raincheck-panel";
 import {
   getUnbotheredHeader,
   getUnbotheredMainCopy,
@@ -220,14 +221,10 @@ export function UnbotheredMode({
             Let fate decide 🎰
           </button>
 
-          <ResponseForm
-            ariaLabel="Ask for a raincheck"
-            label="Maybe another day"
+          <RaincheckPanel
             previewMode={previewMode}
-            response="raincheck"
             slug={invite.slug}
-            variant="secondary"
-            onPreviewSubmit={blockPreviewSubmit}
+            triggerLabel="Maybe another day"
           />
 
           <form action={respondToInviteAction} onSubmit={handleNoSubmit}>
@@ -393,7 +390,7 @@ function ResponseForm({
   label: string;
   onPreviewSubmit: (event: FormEvent<HTMLFormElement>) => boolean;
   previewMode: boolean;
-  response: "yes" | "raincheck";
+  response: "yes";
   slug: string;
   variant: "secondary" | "understated";
 }) {

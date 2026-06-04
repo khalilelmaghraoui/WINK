@@ -4,6 +4,8 @@ import { flagUnknownSenderAction, respondToInviteAction } from "./actions";
 import { CompatibilityReport } from "./compatibility-report";
 import { KindReplyAssistant } from "./kind-reply-assistant";
 import { LawyerMode } from "./lawyer-mode";
+import { RaincheckPanel } from "./raincheck-panel";
+import { RaincheckState } from "./raincheck-state";
 import { UnbotheredMode } from "./unbothered-mode";
 import {
   getInviteForRecipientPage,
@@ -13,6 +15,7 @@ import {
   shouldShowCompatibilityReport,
   shouldShowKindReplyAssistant,
   shouldShowLawyerMode,
+  shouldShowRaincheckPanel,
   shouldShowUnbotheredMode
 } from "@/lib/invite-page";
 import { inviteStore } from "@/lib/invite-store";
@@ -90,8 +93,12 @@ export default async function InvitePage({
           ) : null}
         </header>
 
-        {pageState !== "respondable" ? (
-          <StateMessage invite={invite} pageState={pageState} />
+        {pageState === "raincheck" ? (
+          <RaincheckState invite={invite} />
+        ) : null}
+
+        {pageState !== "respondable" && pageState !== "raincheck" ? (
+          <StateMessage pageState={pageState} />
         ) : null}
 
         {shouldShowKindReplyAssistant(pageState) ? (
@@ -197,13 +204,10 @@ export default async function InvitePage({
 }
 
 function StateMessage({
-  invite,
   pageState
 }: {
-  invite: Invite;
   pageState:
     | "accepted"
-    | "raincheck"
     | "declined"
     | "flagged"
     | "expired"
@@ -214,12 +218,6 @@ function StateMessage({
     accepted: {
       heading: "You said yes.",
       body: "This invitation has been accepted."
-    },
-    raincheck: {
-      heading: "Raincheck sent.",
-      body: invite.counterOffer?.message
-        ? `Your note: ${invite.counterOffer.message}`
-        : "This invitation is marked for a raincheck."
     },
     declined: {
       heading: "Fair enough. Thanks for being honest.",
@@ -299,14 +297,13 @@ function ResponseActions({
           response="yes"
           variant="primary"
         />
-        <ResponseForm
-          ariaLabel="Ask for a raincheck"
-          invite={invite}
-          label={presentation.responseCopy.raincheck}
-          previewMode={previewMode}
-          response="raincheck"
-          variant="secondary"
-        />
+        {shouldShowRaincheckPanel("respondable") ? (
+          <RaincheckPanel
+            previewMode={previewMode}
+            slug={invite.slug}
+            triggerLabel={presentation.responseCopy.raincheck}
+          />
+        ) : null}
         <ResponseForm
           ariaLabel="Answer no to this invitation"
           invite={invite}
@@ -316,34 +313,6 @@ function ResponseActions({
           variant="secondary"
         />
       </div>
-
-      <form action={respondToInviteAction} className="space-y-2">
-        <input name="slug" type="hidden" value={invite.slug} />
-        <input
-          name="previewMode"
-          type="hidden"
-          value={previewMode ? "true" : "false"}
-        />
-        <input name="response" type="hidden" value="raincheck" />
-        <label
-          className="block text-sm font-medium text-stone-950"
-          htmlFor="counterOfferMessage"
-        >
-          Optional raincheck note
-        </label>
-        <textarea
-          className="min-h-24 w-full rounded-md border border-stone-300 bg-white px-3 py-2 text-base text-stone-950 outline-none focus:border-stone-950 focus:ring-2 focus:ring-stone-950/20"
-          id="counterOfferMessage"
-          name="counterOfferMessage"
-          rows={3}
-        />
-        <button
-          className="min-h-11 rounded-md border border-stone-300 px-4 py-2 text-sm font-medium text-stone-950 focus:outline-none focus:ring-2 focus:ring-stone-950 focus:ring-offset-2"
-          type="submit"
-        >
-          Send raincheck with note
-        </button>
-      </form>
 
       <form action={flagUnknownSenderAction}>
         <input name="slug" type="hidden" value={invite.slug} />
@@ -375,7 +344,7 @@ function ResponseForm({
   invite: Invite;
   label: string;
   previewMode: boolean;
-  response: "yes" | "raincheck" | "no";
+  response: "yes" | "no";
   variant: "primary" | "secondary";
 }) {
   const className =

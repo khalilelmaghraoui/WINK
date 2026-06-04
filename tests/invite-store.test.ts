@@ -147,6 +147,26 @@ test("raincheck response stores a minimal counter-offer message", async () => {
   assert.equal(updatedInvite?.counterOffer?.message, "Could we try Saturday?");
 });
 
+test("raincheck response stores option note and suggested date", async () => {
+  const store = new InMemoryInviteStore();
+  const invite = await store.createInvite(baseInput);
+  const updatedInvite = await store.respond(invite.slug, {
+    response: "raincheck",
+    counterOffer: {
+      message: "Maybe next week?",
+      selectedOption: "different_day",
+      proposedDateIso: "2026-06-20"
+    }
+  });
+
+  assert.equal(updatedInvite?.status, "raincheck");
+  assert.deepEqual(updatedInvite?.counterOffer, {
+    message: "Maybe next week?",
+    selectedOption: "different_day",
+    proposedDateIso: "2026-06-20"
+  });
+});
+
 test("safety and availability actions update status", async () => {
   const store = new InMemoryInviteStore();
   const flaggedInvite = await store.createInvite(baseInput);

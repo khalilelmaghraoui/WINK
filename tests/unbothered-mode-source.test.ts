@@ -18,7 +18,7 @@ test("final slot confirmation is the yes submit path", () => {
 
 test("raincheck and no remain outside the slot panel path", () => {
   const slotPanelIndex = source.indexOf("function SlotPanel");
-  const raincheckIndex = source.indexOf('label="Maybe another day"');
+  const raincheckIndex = source.indexOf('triggerLabel="Maybe another day"');
   const noIndex = source.indexOf('aria-label="Answer no to this invitation"');
 
   assert.ok(slotPanelIndex > 0);

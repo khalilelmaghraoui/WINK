@@ -23,8 +23,14 @@ export type InvitePhase = "compose" | "sent" | "opened" | "responded" | "closed"
 
 export type InviteResponse = "yes" | "raincheck" | "no";
 
+export type RaincheckOption =
+  | "different_day"
+  | "different_place"
+  | "keep_it_casual";
+
 export interface CounterOffer {
   message?: string;
+  selectedOption?: RaincheckOption;
   proposedDateIso?: string;
   proposedPlace?: string;
 }

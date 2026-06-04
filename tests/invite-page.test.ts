@@ -5,18 +5,27 @@ import {
   getInviteForRecipientPage,
   getInvitePageMetadata,
   getKindReplyIntro,
+  getRaincheckOptionLabel,
+  getRaincheckStateDetails,
   getRecipientPageState,
   getUnbotheredHeader,
   getUnbotheredMainCopy,
   getUnbotheredNoTapHint,
   getUnbotheredNoTapOutcome,
   invitePageGenericPreview,
+  isRaincheckOption,
   isMissingRequiredLawyerSignature,
   isPreviewModeParam,
   kindReplyOptions,
+  normalizeRaincheckNote,
+  normalizeSuggestedDate,
+  raincheckNoteMaxLength,
+  raincheckQuickOptions,
+  buildRaincheckCounterOffer,
   shouldShowCompatibilityReport,
   shouldShowKindReplyAssistant,
   shouldShowLawyerMode,
+  shouldShowRaincheckPanel,
   shouldShowUnbotheredMode,
   shouldSubmitUnbotheredSlotYes,
   unbotheredNoTapHints,
@@ -151,6 +160,83 @@ test("compatibility report appears only for respondable states", () => {
   assert.equal(shouldShowCompatibilityReport("expired"), false);
   assert.equal(shouldShowCompatibilityReport("cancelled"), false);
   assert.equal(shouldShowCompatibilityReport("unavailable"), false);
+});
+
+test("raincheck panel appears only for respondable states", () => {
+  assert.equal(shouldShowRaincheckPanel("respondable"), true);
+  assert.equal(shouldShowRaincheckPanel("accepted"), false);
+  assert.equal(shouldShowRaincheckPanel("raincheck"), false);
+  assert.equal(shouldShowRaincheckPanel("declined"), false);
+  assert.equal(shouldShowRaincheckPanel("flagged"), false);
+  assert.equal(shouldShowRaincheckPanel("expired"), false);
+  assert.equal(shouldShowRaincheckPanel("cancelled"), false);
+  assert.equal(shouldShowRaincheckPanel("unavailable"), false);
+});
+
+test("raincheck quick options and note cap are fixed", () => {
+  assert.deepEqual(raincheckQuickOptions, [
+    { label: "Different day", value: "different_day" },
+    { label: "Different place", value: "different_place" },
+    { label: "Keep it casual", value: "keep_it_casual" }
+  ]);
+  assert.equal(raincheckNoteMaxLength, 160);
+  assert.equal(isRaincheckOption("different_day"), true);
+  assert.equal(isRaincheckOption("different_place"), true);
+  assert.equal(isRaincheckOption("keep_it_casual"), true);
+  assert.equal(isRaincheckOption("something_else"), false);
+});
+
+test("raincheck note and suggested date values are normalized", () => {
+  const longNote = "x".repeat(200);
+
+  assert.equal(normalizeRaincheckNote("  Maybe next week?  "), "Maybe next week?");
+  assert.equal(normalizeRaincheckNote(longNote), "x".repeat(160));
+  assert.equal(normalizeRaincheckNote("   "), null);
+  assert.equal(normalizeSuggestedDate(" 2026-06-20 "), "2026-06-20");
+  assert.equal(normalizeSuggestedDate(" "), null);
+});
+
+test("raincheck counter offer stores option note and suggested date", () => {
+  assert.deepEqual(
+    buildRaincheckCounterOffer({
+      note: "Maybe next week?",
+      selectedOption: "different_day",
+      suggestedDate: "2026-06-20"
+    }),
+    {
+      message: "Maybe next week?",
+      selectedOption: "different_day",
+      proposedDateIso: "2026-06-20"
+    }
+  );
+  assert.equal(
+    buildRaincheckCounterOffer({
+      note: null,
+      selectedOption: null,
+      suggestedDate: null
+    }),
+    null
+  );
+});
+
+test("raincheck state details render selected option note and date", async () => {
+  const store = new CountingInviteStore();
+  const invite = await store.createInvite(inviteInput);
+  const updatedInvite = await store.respond(invite.slug, {
+    response: "raincheck",
+    counterOffer: {
+      message: "Maybe next week?",
+      selectedOption: "different_day",
+      proposedDateIso: "2026-06-20"
+    }
+  });
+
+  assert.equal(getRaincheckOptionLabel("different_day"), "Different day");
+  assert.deepEqual(getRaincheckStateDetails(updatedInvite!), {
+    note: "Maybe next week?",
+    selectedOptionLabel: "Different day",
+    suggestedDate: "2026-06-20"
+  });
 });
 
 test("kind reply assistant appears only for declined state", () => {

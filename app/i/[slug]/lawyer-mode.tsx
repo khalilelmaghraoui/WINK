@@ -1,4 +1,5 @@
 import { respondToInviteAction } from "./actions";
+import { RaincheckPanel } from "./raincheck-panel";
 import type { Invite } from "@/lib/invite-store";
 
 export function LawyerMode({
@@ -117,22 +118,11 @@ export function LawyerMode({
         </form>
 
         <div className="grid gap-3 sm:grid-cols-2">
-          <form action={respondToInviteAction}>
-            <input name="slug" type="hidden" value={invite.slug} />
-            <input
-              name="previewMode"
-              type="hidden"
-              value={previewMode ? "true" : "false"}
-            />
-            <input name="response" type="hidden" value="raincheck" />
-            <button
-              aria-label="Ask for a raincheck"
-              className="min-h-11 w-full rounded-md border border-stone-300 px-4 py-2 text-sm font-medium text-stone-950 focus:outline-none focus:ring-2 focus:ring-stone-950 focus:ring-offset-2"
-              type="submit"
-            >
-              Request continuance
-            </button>
-          </form>
+          <RaincheckPanel
+            previewMode={previewMode}
+            slug={invite.slug}
+            triggerLabel="Request continuance"
+          />
           <form action={respondToInviteAction}>
             <input name="slug" type="hidden" value={invite.slug} />
             <input

@@ -1,6 +1,11 @@
 import type { Metadata } from "next";
 
-import type { Invite, InviteStore } from "./invite-store";
+import type {
+  CounterOffer,
+  Invite,
+  InviteStore,
+  RaincheckOption
+} from "./invite-store";
 import type { InviteStatus } from "./invite-store";
 
 export const invitePageGenericPreview = "You have a surprise waiting.";
@@ -117,6 +122,98 @@ export function shouldShowKindReplyAssistant(
   state: RecipientPageState
 ): boolean {
   return state === "declined";
+}
+
+export function shouldShowRaincheckPanel(state: RecipientPageState): boolean {
+  return state === "respondable";
+}
+
+export const raincheckQuickOptions: Array<{
+  label: string;
+  value: RaincheckOption;
+}> = [
+  { label: "Different day", value: "different_day" },
+  { label: "Different place", value: "different_place" },
+  { label: "Keep it casual", value: "keep_it_casual" }
+];
+
+export const raincheckNoteMaxLength = 160;
+
+export function isRaincheckOption(
+  value: FormDataEntryValue | null
+): value is RaincheckOption {
+  return (
+    value === "different_day" ||
+    value === "different_place" ||
+    value === "keep_it_casual"
+  );
+}
+
+export function getRaincheckOptionLabel(
+  option: RaincheckOption | undefined
+): string | null {
+  return (
+    raincheckQuickOptions.find((quickOption) => quickOption.value === option)
+      ?.label ?? null
+  );
+}
+
+export function normalizeRaincheckNote(
+  value: FormDataEntryValue | null
+): string | null {
+  if (typeof value !== "string") {
+    return null;
+  }
+
+  const trimmed = value.trim();
+
+  return trimmed ? trimmed.slice(0, raincheckNoteMaxLength) : null;
+}
+
+export function normalizeSuggestedDate(
+  value: FormDataEntryValue | null
+): string | null {
+  if (typeof value !== "string") {
+    return null;
+  }
+
+  const trimmed = value.trim();
+
+  return trimmed || null;
+}
+
+export function buildRaincheckCounterOffer({
+  note,
+  selectedOption,
+  suggestedDate
+}: {
+  note: string | null;
+  selectedOption: RaincheckOption | null;
+  suggestedDate: string | null;
+}): CounterOffer | null {
+  if (!note && !selectedOption && !suggestedDate) {
+    return null;
+  }
+
+  return {
+    ...(note ? { message: note } : {}),
+    ...(selectedOption ? { selectedOption } : {}),
+    ...(suggestedDate ? { proposedDateIso: suggestedDate } : {})
+  };
+}
+
+export function getRaincheckStateDetails(invite: Invite): {
+  note: string | null;
+  selectedOptionLabel: string | null;
+  suggestedDate: string | null;
+} {
+  return {
+    note: invite.counterOffer?.message ?? null,
+    selectedOptionLabel: getRaincheckOptionLabel(
+      invite.counterOffer?.selectedOption
+    ),
+    suggestedDate: invite.counterOffer?.proposedDateIso ?? null
+  };
 }
 
 export const kindReplyOptions = [
