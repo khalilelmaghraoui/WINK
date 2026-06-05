@@ -1,13 +1,18 @@
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 
-export interface SupabaseServerConfig {
+export interface SupabaseAnonConfig {
   anonKey: string;
   url: string;
 }
 
-export function getSupabaseServerConfig(
+export interface SupabaseServiceConfig {
+  serviceRoleKey: string;
+  url: string;
+}
+
+export function getSupabaseAnonConfig(
   env: Partial<NodeJS.ProcessEnv> = process.env
-): SupabaseServerConfig | null {
+): SupabaseAnonConfig | null {
   const url = env.NEXT_PUBLIC_SUPABASE_URL?.trim();
   const anonKey = env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.trim();
 
@@ -18,16 +23,46 @@ export function getSupabaseServerConfig(
   return { anonKey, url };
 }
 
-export function createSupabaseServerClient(
+export function getSupabaseServiceConfig(
+  env: Partial<NodeJS.ProcessEnv> = process.env
+): SupabaseServiceConfig | null {
+  const url = env.NEXT_PUBLIC_SUPABASE_URL?.trim();
+  const serviceRoleKey = env.SUPABASE_SERVICE_ROLE_KEY?.trim();
+
+  if (!url || !serviceRoleKey) {
+    return null;
+  }
+
+  return { serviceRoleKey, url };
+}
+
+export function createSupabaseAnonClient(
   env: Partial<NodeJS.ProcessEnv> = process.env
 ): SupabaseClient {
-  const config = getSupabaseServerConfig(env);
+  const config = getSupabaseAnonConfig(env);
 
   if (!config) {
-    throw new Error("Supabase environment variables are not configured.");
+    throw new Error("Supabase anon environment variables are not configured.");
   }
 
   return createClient(config.url, config.anonKey, {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false
+    }
+  });
+}
+
+export function createSupabaseServiceClient(
+  env: Partial<NodeJS.ProcessEnv> = process.env
+): SupabaseClient {
+  const config = getSupabaseServiceConfig(env);
+
+  if (!config) {
+    throw new Error("Supabase service-role environment variables are not configured.");
+  }
+
+  return createClient(config.url, config.serviceRoleKey, {
     auth: {
       autoRefreshToken: false,
       persistSession: false

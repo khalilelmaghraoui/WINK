@@ -16,7 +16,7 @@ import type {
   InviteTone,
   InviteWriteOptions
 } from "../invite-store";
-import { createSupabaseServerClient } from "../supabase/server";
+import { createSupabaseServiceClient } from "../supabase/server";
 
 const responseStatus: Record<InviteResponse, InviteStatus> = {
   yes: "accepted",
@@ -122,7 +122,7 @@ export class SupabaseInviteStore implements InviteStore {
   constructor(options: SupabaseInviteStoreOptions = {}) {
     this.client =
       options.client ??
-      (createSupabaseServerClient(
+      (createSupabaseServiceClient(
         options.env
       ) as unknown as SupabaseInviteClient);
     this.now = options.now ?? (() => new Date().toISOString());
