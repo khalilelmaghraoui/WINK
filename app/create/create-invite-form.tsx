@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
-import { useFormState, useFormStatus } from "react-dom";
+import { useActionState, useEffect, useMemo, useState } from "react";
+import { useFormStatus } from "react-dom";
 
 import {
   createInviteAction,
@@ -27,7 +27,7 @@ const stepFields: CreateInviteField[][] = [
 ];
 
 export function CreateInviteForm() {
-  const [state, formAction] = useFormState(createInviteAction, initialState);
+  const [state, formAction] = useActionState(createInviteAction, initialState);
   const [stepIndex, setStepIndex] = useState(0);
   const [copied, setCopied] = useState(false);
 

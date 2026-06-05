@@ -28,23 +28,25 @@ export const dynamic = "force-dynamic";
 export const metadata: Metadata = getInvitePageMetadata();
 
 interface InvitePageProps {
-  params: {
+  params: Promise<{
     slug: string;
-  };
-  searchParams?: {
+  }>;
+  searchParams?: Promise<{
     previewMode?: string | string[];
     signatureError?: string | string[];
-  };
+  }>;
 }
 
 export default async function InvitePage({
   params,
   searchParams
 }: InvitePageProps) {
-  const previewMode = isPreviewModeParam(searchParams?.previewMode);
+  const resolvedParams = await params;
+  const resolvedSearchParams = await searchParams;
+  const previewMode = isPreviewModeParam(resolvedSearchParams?.previewMode);
   const invite = await getInviteForRecipientPage({
     previewMode,
-    slug: params.slug,
+    slug: resolvedParams.slug,
     store: inviteStore
   });
 
@@ -75,7 +77,9 @@ export default async function InvitePage({
     state: pageState
   });
   const showInviteDetails = shouldShowInviteDetails(pageState);
-  const signatureError = isPreviewModeParam(searchParams?.signatureError);
+  const signatureError = isPreviewModeParam(
+    resolvedSearchParams?.signatureError
+  );
 
   return (
     <main className="mx-auto flex min-h-screen w-full max-w-2xl flex-col px-5 py-8">
