@@ -1,6 +1,15 @@
+# .gitignore — replace the file contents with:
 node_modules
 .next
 .test-dist
 out
 *.tsbuildinfo
 .env*.local
+.env.local
+next-env.d.ts
+**/__pycache__/
+*.pyc
+*.pyo
+.DS_Store
+Thumbs.db
+coverage/
