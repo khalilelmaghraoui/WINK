@@ -287,7 +287,8 @@ function ResponseActions({
           Your answer
         </h2>
         <p className="text-sm text-stone-700">
-          Choose the response that feels right.
+          Choose the response that feels right. Yes, Raincheck, and No are all
+          valid.
         </p>
         {previewMode ? (
           <p className="text-sm text-stone-700">
@@ -380,7 +381,9 @@ function Detail({ label, value }: { label: string; value?: string | null }) {
   return (
     <div className="space-y-1">
       <dt className="font-medium text-stone-600">{label}</dt>
-      <dd className="text-base text-stone-950">{value || "Not provided"}</dd>
+      <dd className="break-words text-base text-stone-950">
+        {value || "Not provided"}
+      </dd>
     </div>
   );
 }

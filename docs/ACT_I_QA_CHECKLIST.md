@@ -17,10 +17,14 @@ keeping refusal easy and privacy intact.
 - Open `/create`.
 - Complete all three steps with `lawyer` mode.
 - Confirm every field has a visible label.
+- Confirm required fields expose required semantics and clear error copy.
 - Confirm validation errors are associated with the relevant fields.
 - Create the invite.
 - Confirm the share screen shows a generated `/i/[slug]` path.
+- Confirm the generated path wraps on mobile and can be selected manually.
 - Copy link if clipboard is available.
+- If clipboard copy is unavailable or blocked, confirm the manual-copy message
+  appears.
 - Open the invite link.
 
 ## Create Unbothered Invite
@@ -40,6 +44,7 @@ keeping refusal easy and privacy intact.
 - Click the Yes action without typing `approved`.
 - Confirm an accessible validation message appears.
 - Confirm Raincheck and No remain visible and usable.
+- Confirm the signature helper states Raincheck and No do not require approval.
 - Type `approved`.
 - Submit Yes.
 - Confirm the same `/i/[slug]` URL renders the accepted state.
@@ -49,6 +54,8 @@ keeping refusal easy and privacy intact.
 
 - Open a fresh Lawyer invite.
 - Open the Raincheck panel.
+- Confirm focus moves to the Raincheck panel heading.
+- Confirm the panel says it does not commit the recipient to anything.
 - Select a quick option.
 - Add an optional note.
 - Add an optional suggested day.
@@ -83,6 +90,7 @@ keeping refusal easy and privacy intact.
 - Open a fresh Unbothered invite.
 - Click `Let fate decide 🎰`.
 - Confirm the slot cycles `No` -> `Maybe` -> `Maybe` -> `YES`.
+- Confirm the slot copy says it cannot answer for the recipient.
 - Confirm Raincheck remains visible and keyboard reachable during the slot.
 - Confirm No remains visible and keyboard reachable during the slot.
 - Confirm the slot does not auto-accept after landing on `YES`.
@@ -154,6 +162,8 @@ keeping refusal easy and privacy intact.
 - Test `/create` and `/i/[slug]` at a mobile viewport width.
 - Confirm tap targets are comfortable, at least 44px high where practical.
 - Confirm text does not overlap or clip.
+- Confirm long invite paths, place names, and addresses wrap instead of
+  overflowing horizontally.
 - Confirm response actions remain easy to reach.
 
 ## Keyboard-Only Navigation

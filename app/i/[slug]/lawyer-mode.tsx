@@ -92,6 +92,9 @@ export function LawyerMode({
             >
               Type approved to accept
             </label>
+            <p className="text-sm text-stone-700">
+              Raincheck and No do not require this approval.
+            </p>
             <input
               aria-describedby={
                 signatureError ? "signatureApproval-error" : undefined

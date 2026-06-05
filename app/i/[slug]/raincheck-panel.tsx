@@ -1,6 +1,6 @@
 "use client";
 
-import { useId, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import type { FormEvent } from "react";
 
 import { respondToInviteAction } from "./actions";
@@ -20,6 +20,7 @@ export function RaincheckPanel({
   triggerLabel: string;
 }) {
   const panelId = useId();
+  const panelHeadingRef = useRef<HTMLHeadingElement>(null);
   const [open, setOpen] = useState(false);
   const [note, setNote] = useState("");
   const [selectedOption, setSelectedOption] =
@@ -34,6 +35,12 @@ export function RaincheckPanel({
     event.preventDefault();
     setPreviewNotice(true);
   }
+
+  useEffect(() => {
+    if (open) {
+      panelHeadingRef.current?.focus();
+    }
+  }, [open]);
 
   if (!open) {
     return (
@@ -62,11 +69,16 @@ export function RaincheckPanel({
         <h3
           className="text-lg font-semibold text-stone-950"
           id={`${panelId}-heading`}
+          ref={panelHeadingRef}
+          tabIndex={-1}
         >
           Bad timing?
         </h3>
         <p className="text-sm text-stone-700">
           No pressure. Want to suggest something that works better?
+        </p>
+        <p className="text-sm text-stone-700">
+          This does not commit you to anything.
         </p>
         {previewMode ? (
           <p className="text-sm text-stone-700">
@@ -75,7 +87,11 @@ export function RaincheckPanel({
         ) : null}
       </div>
 
-      <form action={respondToInviteAction} className="space-y-4" onSubmit={handleSubmit}>
+      <form
+        action={respondToInviteAction}
+        className="space-y-4"
+        onSubmit={handleSubmit}
+      >
         <input name="slug" type="hidden" value={slug} />
         <input
           name="previewMode"

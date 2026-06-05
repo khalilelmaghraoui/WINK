@@ -38,3 +38,31 @@ test("create invite validation rejects unsupported tones", () => {
 
   assert.equal(errors.tone, "Choose a supported tone.");
 });
+
+test("create invite validation explains every required field", () => {
+  const errors = validateCreateInviteFormValues({
+    date: "",
+    dateType: "",
+    message: "",
+    mode: "",
+    placeAddress: "",
+    placeName: "",
+    recipientName: "",
+    senderName: "",
+    time: "",
+    tone: ""
+  });
+
+  assert.deepEqual(errors, {
+    date: "Choose a date.",
+    dateType: "Choose a date type.",
+    message: "Write the invitation message.",
+    mode: "Choose an invitation mode.",
+    placeAddress: "Enter a place address.",
+    placeName: "Enter a place name.",
+    recipientName: "Enter the recipient name.",
+    senderName: "Enter your name.",
+    time: "Choose a time.",
+    tone: "Choose a tone."
+  });
+});

@@ -30,6 +30,7 @@ export function CreateInviteForm() {
   const [state, formAction] = useActionState(createInviteAction, initialState);
   const [stepIndex, setStepIndex] = useState(0);
   const [copied, setCopied] = useState(false);
+  const [copyFallback, setCopyFallback] = useState(false);
 
   const currentStepFields = stepFields[stepIndex];
   const currentStepHasErrors = useMemo(
@@ -58,8 +59,15 @@ export function CreateInviteForm() {
             </h1>
           </div>
 
-          <p className="rounded-md border border-stone-300 bg-stone-50 px-3 py-3 font-mono text-sm text-stone-950">
+          <p className="select-all break-all rounded-md border border-stone-300 bg-stone-50 px-3 py-3 font-mono text-sm text-stone-950">
             {state.invitePath}
+          </p>
+          <p aria-live="polite" className="text-sm text-stone-700">
+            {copied
+              ? "Copied. Paste it wherever you want to send the invite."
+              : copyFallback
+                ? "Clipboard copy is unavailable. Select the path above and copy it manually."
+                : "Copy the path or open it to preview the invite."}
           </p>
 
           <div className="flex flex-col gap-3 sm:flex-row">
@@ -68,11 +76,19 @@ export function CreateInviteForm() {
               className="min-h-11 rounded-md bg-stone-950 px-4 py-2 text-sm font-medium text-white"
               onClick={async () => {
                 if (!navigator.clipboard) {
+                  setCopied(false);
+                  setCopyFallback(true);
                   return;
                 }
 
-                await navigator.clipboard.writeText(state.invitePath ?? "");
-                setCopied(true);
+                try {
+                  await navigator.clipboard.writeText(state.invitePath ?? "");
+                  setCopyFallback(false);
+                  setCopied(true);
+                } catch {
+                  setCopied(false);
+                  setCopyFallback(true);
+                }
               }}
             >
               {copied ? "Copied" : "Copy link"}
@@ -112,12 +128,14 @@ export function CreateInviteForm() {
             id="senderName"
             label="Your name"
             name="senderName"
+            required
           />
           <TextField
             error={state.errors.recipientName}
             id="recipientName"
             label="Recipient name"
             name="recipientName"
+            required
           />
         </section>
 
@@ -127,6 +145,7 @@ export function CreateInviteForm() {
             id="message"
             label="Message"
             name="message"
+            required
           />
           <SelectField
             error={state.errors.tone}
@@ -139,6 +158,7 @@ export function CreateInviteForm() {
               { label: "Romantic", value: "romantic" },
               { label: "Bold", value: "bold" }
             ]}
+            required
           />
           <SelectField
             error={state.errors.mode}
@@ -149,6 +169,7 @@ export function CreateInviteForm() {
               { label: "Lawyer", value: "lawyer" },
               { label: "Unbothered", value: "unbothered" }
             ]}
+            required
           />
         </section>
 
@@ -164,12 +185,14 @@ export function CreateInviteForm() {
               { label: "Surprise", value: "surprise" },
               { label: "Romantic moment", value: "romantic_moment" }
             ]}
+            required
           />
           <TextField
             error={state.errors.date}
             id="date"
             label="Date"
             name="date"
+            required
             type="date"
           />
           <TextField
@@ -177,6 +200,7 @@ export function CreateInviteForm() {
             id="time"
             label="Time"
             name="time"
+            required
             type="time"
           />
           <TextField
@@ -184,12 +208,14 @@ export function CreateInviteForm() {
             id="placeName"
             label="Place name"
             name="placeName"
+            required
           />
           <TextField
             error={state.errors.placeAddress}
             id="placeAddress"
             label="Place address"
             name="placeAddress"
+            required
           />
         </section>
 
@@ -239,6 +265,7 @@ interface FieldProps {
   id: CreateInviteField;
   label: string;
   name: CreateInviteField;
+  required?: boolean;
 }
 
 function TextField({
@@ -246,6 +273,7 @@ function TextField({
   id,
   label,
   name,
+  required = false,
   type = "text"
 }: FieldProps & { type?: "date" | "text" | "time" }) {
   const errorId = `${id}-error`;
@@ -261,6 +289,7 @@ function TextField({
         className="min-h-11 w-full rounded-md border border-stone-300 bg-white px-3 py-2 text-base text-stone-950 outline-none focus:border-stone-950 focus:ring-2 focus:ring-stone-950/20"
         id={id}
         name={name}
+        required={required}
         type={type}
       />
       <ErrorMessage error={error} id={errorId} />
@@ -268,7 +297,13 @@ function TextField({
   );
 }
 
-function TextAreaField({ error, id, label, name }: FieldProps) {
+function TextAreaField({
+  error,
+  id,
+  label,
+  name,
+  required = false
+}: FieldProps) {
   const errorId = `${id}-error`;
 
   return (
@@ -282,6 +317,7 @@ function TextAreaField({ error, id, label, name }: FieldProps) {
         className="min-h-32 w-full rounded-md border border-stone-300 bg-white px-3 py-2 text-base text-stone-950 outline-none focus:border-stone-950 focus:ring-2 focus:ring-stone-950/20"
         id={id}
         name={name}
+        required={required}
         rows={5}
       />
       <ErrorMessage error={error} id={errorId} />
@@ -294,7 +330,8 @@ function SelectField({
   id,
   label,
   name,
-  options
+  options,
+  required = false
 }: FieldProps & { options: Array<{ label: string; value: string }> }) {
   const errorId = `${id}-error`;
 
@@ -310,6 +347,7 @@ function SelectField({
         defaultValue=""
         id={id}
         name={name}
+        required={required}
       >
         <option disabled value="">
           Choose one

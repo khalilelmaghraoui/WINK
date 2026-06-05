@@ -155,6 +155,14 @@ Sprint 2.1.2 - Vercel Preview deployment evidence:
 - This sprint is documentation/evidence only. It does not change product flow,
   UI, routes, persistence behavior, metadata, or invite modes.
 
+Sprint 2.2 - Act I QA polish and consent/mobile hardening:
+
+- Small, targeted polish keeps the existing `/create` and `/i/[slug]` flow
+  intact while improving mobile copy fallback, required-field semantics,
+  Raincheck focus behavior, long-text wrapping, and non-coercive helper copy.
+- No product features, routes, invite modes, authentication, analytics,
+  notifications, payments, AI, or persistence behavior are added.
+
 ## Not In Current MVP Work
 
 Do not add these unless explicitly requested:

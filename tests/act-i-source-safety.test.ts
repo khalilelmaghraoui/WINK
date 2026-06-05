@@ -9,7 +9,16 @@ const sourceText = sourceFiles.map((file) => file.text).join("\n");
 const appFiles = sourceFiles.filter((file) => isUnderDirectory(file, "app"));
 const appText = appFiles.map((file) => file.text).join("\n");
 const recipientPageSource = readFileSync("app/i/[slug]/page.tsx", "utf8");
+const createInviteFormSource = readFileSync(
+  "app/create/create-invite-form.tsx",
+  "utf8"
+);
 const envExampleSource = readFileSync(".env.example", "utf8");
+const lawyerSource = readFileSync("app/i/[slug]/lawyer-mode.tsx", "utf8");
+const raincheckSource = readFileSync(
+  "app/i/[slug]/raincheck-panel.tsx",
+  "utf8"
+);
 const unbotheredSource = readFileSync(
   "app/i/[slug]/unbothered-mode.tsx",
   "utf8"
@@ -94,6 +103,31 @@ test("recipient page gates mode and helper UI through state helpers", () => {
   assert.match(recipientPageSource, /shouldShowInviteDetails/);
 });
 
+test("create share screen supports mobile copy fallback", () => {
+  assert.match(createInviteFormSource, /select-all break-all/);
+  assert.match(createInviteFormSource, /aria-live="polite"/);
+  assert.match(createInviteFormSource, /Clipboard copy is unavailable/);
+  assert.match(createInviteFormSource, /catch/);
+});
+
+test("required create fields expose native required semantics", () => {
+  assert.match(createInviteFormSource, /required={required}/);
+  assert.match(createInviteFormSource, /required\s+type="date"/);
+  assert.match(createInviteFormSource, /required\s+type="time"/);
+});
+
+test("Lawyer signature copy does not gate Raincheck or No", () => {
+  assert.match(lawyerSource, /Raincheck and No do not require this approval\./);
+  assert.match(lawyerSource, /Request continuance/);
+  assert.match(lawyerSource, /Answer no to this invitation/);
+});
+
+test("Raincheck panel opens with focus target and noncommittal copy", () => {
+  assert.match(raincheckSource, /panelHeadingRef/);
+  assert.match(raincheckSource, /tabIndex={-1}/);
+  assert.match(raincheckSource, /This does not commit you to anything\./);
+});
+
 test("Unbothered slot has explicit consent after the rigged result", () => {
   const confirmationIndex = unbotheredSource.indexOf(
     "unbotheredSlotConfirmationLabel"
@@ -105,6 +139,8 @@ test("Unbothered slot has explicit consent after the rigged result", () => {
 
   assert.match(unbotheredSource, /Let fate decide 🎰/);
   assert.match(unbotheredSource, /The totally unbiased machine has spoken: YES/);
+  assert.match(unbotheredSource, /It cannot answer for you\./);
+  assert.match(unbotheredSource, /Raincheck and No stay available below\./);
   assert.ok(confirmationIndex > 0);
   assert.ok(yesInputIndex > confirmationIndex);
 });

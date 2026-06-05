@@ -331,7 +331,8 @@ function SlotPanel({
           ) : null}
         </div>
         <p className="text-sm text-stone-700">
-          This machine is absolutely not impartial.
+          This machine is absolutely not impartial. It cannot answer for you.
+          Raincheck and No stay available below.
         </p>
       </div>
       <div
