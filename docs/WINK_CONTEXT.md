@@ -147,6 +147,14 @@ Sprint 3 - Persistence:
 - Real shareable links.
 - Data persistence tests.
 
+Sprint 2.1.2 - Vercel Preview deployment evidence:
+
+- `docs/VERCEL_PREVIEW_SMOKE_REPORT.md` captures the preview deployment URL,
+  branch, commit, configured env var names, Supabase table checks, smoke
+  results, known issues, and readiness verdict.
+- This sprint is documentation/evidence only. It does not change product flow,
+  UI, routes, persistence behavior, metadata, or invite modes.
+
 ## Not In Current MVP Work
 
 Do not add these unless explicitly requested:
