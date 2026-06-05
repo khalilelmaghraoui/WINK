@@ -38,6 +38,7 @@ test("InviteStore selection falls back to memory without Supabase env", () => {
   assert.equal(shouldUseSupabaseInviteStore({}), false);
   assert.equal(
     shouldUseSupabaseInviteStore({
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: "anon",
       NEXT_PUBLIC_SUPABASE_URL: "https://example.supabase.co"
     }),
     false
@@ -45,10 +46,11 @@ test("InviteStore selection falls back to memory without Supabase env", () => {
   assert.ok(createDefaultInviteStore({}) instanceof InMemoryInviteStore);
 });
 
-test("InviteStore selection uses Supabase only when both env vars exist", () => {
+test("InviteStore selection uses Supabase only when service env vars exist", () => {
   const env = {
     NEXT_PUBLIC_SUPABASE_ANON_KEY: "anon",
-    NEXT_PUBLIC_SUPABASE_URL: "https://example.supabase.co"
+    NEXT_PUBLIC_SUPABASE_URL: "https://example.supabase.co",
+    SUPABASE_SERVICE_ROLE_KEY: "service-role"
   };
 
   assert.equal(shouldUseSupabaseInviteStore(env), true);
@@ -173,7 +175,8 @@ test("Supabase schema documents RLS smoke posture without open count", () => {
   const schema = readFileSync("docs/SUPABASE_SCHEMA.md", "utf8");
 
   assert.match(schema, /alter table public\.invites enable row level security/);
-  assert.match(schema, /Do not treat the smoke policies above as production-safe/);
+  assert.match(schema, /service-role key/);
+  assert.match(schema, /Do not expose the service-role key to the browser/);
   assert.doesNotMatch(schema, /\bopen_count\b/);
 });
 

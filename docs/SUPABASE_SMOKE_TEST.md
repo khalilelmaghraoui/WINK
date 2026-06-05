@@ -9,9 +9,9 @@ this manual pass is the proof that a configured project works end to end.
 1. Create a Supabase project.
 2. Open the SQL editor.
 3. Run the table SQL from `docs/SUPABASE_SCHEMA.md`.
-4. For local smoke only, run the RLS smoke policies from
-   `docs/SUPABASE_SCHEMA.md`.
-5. Confirm the `public.invites` table exists.
+4. Enable RLS using the preview-safe guidance in `docs/SUPABASE_SCHEMA.md`.
+5. Do not add broad anon insert/update/delete policies for Vercel preview.
+6. Confirm the `public.invites` table exists.
 
 Do not use production data for this smoke pass.
 
@@ -22,9 +22,11 @@ Create `.env.local`:
 ```env
 NEXT_PUBLIC_SUPABASE_URL=your-project-url
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
+SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
 ```
 
-Do not commit `.env.local`.
+Do not commit `.env.local`. Do not prefix `SUPABASE_SERVICE_ROLE_KEY` with
+`NEXT_PUBLIC`.
 
 Restart the dev server after editing `.env.local`:
 
@@ -34,9 +36,13 @@ npm run dev
 
 ## 3. Confirm Store Selection
 
-With both env vars present, the app should use `SupabaseInviteStore`.
+With `NEXT_PUBLIC_SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` present, the app
+should use `SupabaseInviteStore`.
 
-With either env var missing, the app should use `InMemoryInviteStore`.
+With either the URL or service-role key missing, the app should use
+`InMemoryInviteStore`.
+
+The anon key is not enough to select Supabase persistence.
 
 Automated coverage:
 
@@ -136,7 +142,8 @@ credentials.
 ## 11. In-Memory Fallback Smoke
 
 1. Stop the dev server.
-2. Temporarily remove one or both Supabase env vars from `.env.local`.
+2. Temporarily remove `NEXT_PUBLIC_SUPABASE_URL` or
+   `SUPABASE_SERVICE_ROLE_KEY` from `.env.local`.
 3. Restart the dev server.
 4. Create an invite.
 5. Confirm no new Supabase row is inserted.
@@ -154,9 +161,29 @@ Confirm:
 - No device, location, hover, cursor path, dwell-time, repeated-open, or
   analytics fields exist.
 - Supabase imports appear only in provider/adapter code.
-- RLS smoke policies are not treated as production-safe.
+- `SUPABASE_SERVICE_ROLE_KEY` appears only in server/provider code and docs.
+- No `NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_KEY` appears anywhere.
+- No `app/create/*` or `app/i/[slug]/*` file imports Supabase.
+- Browser devtools do not expose the service-role key in page source,
+  JavaScript bundles, or network responses.
+- RLS is enabled.
+- There are no broad anon insert/update/delete policies.
+
+## 13. Vercel Preview Checks
+
+1. Add these Vercel environment variables for Preview:
+   - `NEXT_PUBLIC_SUPABASE_URL`
+   - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+   - `SUPABASE_SERVICE_ROLE_KEY`
+2. Confirm `SUPABASE_SERVICE_ROLE_KEY` is not exposed as a public variable.
+3. Deploy a preview.
+4. Repeat create/open/respond/flag smoke checks against the preview URL.
+5. Inspect browser source and built JavaScript for the service-role key.
+6. Confirm Supabase table writes still work while anon write policies remain
+   absent.
 
 ## Expected Result
 
 The app behaves the same as the in-memory Act I flow, but rows persist in
-Supabase across server restarts.
+Supabase across server restarts and writes are mediated by server-only provider
+code.

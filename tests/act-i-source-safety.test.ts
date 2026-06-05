@@ -7,6 +7,7 @@ const sourceRoots = ["app", "src"];
 const sourceFiles = readSourceFiles(sourceRoots);
 const sourceText = sourceFiles.map((file) => file.text).join("\n");
 const recipientPageSource = readFileSync("app/i/[slug]/page.tsx", "utf8");
+const envExampleSource = readFileSync(".env.example", "utf8");
 const unbotheredSource = readFileSync(
   "app/i/[slug]/unbothered-mode.tsx",
   "utf8"
@@ -42,6 +43,21 @@ test("feature UI does not import Supabase or future AI SDKs directly", () => {
   assert.deepEqual(supabaseImportFiles, ["src/lib/supabase/server.ts"]);
   assert.doesNotMatch(appText, /@supabase|PrismaClient|Anthropic|Claude|AIProvider/);
   assert.doesNotMatch(sourceText, /PrismaClient|Anthropic|Claude|AIProvider/);
+});
+
+test("service-role secret is server-only and not public-prefixed", () => {
+  const appText = sourceFiles
+    .filter((file) => file.path.startsWith("app\\"))
+    .map((file) => file.text)
+    .join("\n");
+  const serviceRoleFiles = sourceFiles
+    .filter((file) => /SUPABASE_SERVICE_ROLE_KEY/.test(file.text))
+    .map((file) => file.path.replaceAll("\\", "/"));
+
+  assert.match(envExampleSource, /^SUPABASE_SERVICE_ROLE_KEY=/m);
+  assert.doesNotMatch(envExampleSource, /NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_KEY/);
+  assert.deepEqual(serviceRoleFiles, ["src/lib/supabase/server.ts"]);
+  assert.doesNotMatch(appText, /SUPABASE_SERVICE_ROLE_KEY/);
 });
 
 test("recipient page gates mode and helper UI through state helpers", () => {
