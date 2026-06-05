@@ -1,11 +1,13 @@
 import assert from "node:assert/strict";
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
-import { join } from "node:path";
+import { dirname, join, normalize, resolve } from "node:path";
 import { test } from "node:test";
 
 const sourceRoots = ["app", "src"];
 const sourceFiles = readSourceFiles(sourceRoots);
 const sourceText = sourceFiles.map((file) => file.text).join("\n");
+const appFiles = sourceFiles.filter((file) => isUnderDirectory(file, "app"));
+const appText = appFiles.map((file) => file.text).join("\n");
 const recipientPageSource = readFileSync("app/i/[slug]/page.tsx", "utf8");
 const envExampleSource = readFileSync(".env.example", "utf8");
 const unbotheredSource = readFileSync(
@@ -32,32 +34,55 @@ test("Act I source does not contain forbidden open or tracking fields", () => {
 });
 
 test("feature UI does not import Supabase or future AI SDKs directly", () => {
-  const appText = sourceFiles
-    .filter((file) => file.path.startsWith("app\\"))
-    .map((file) => file.text)
-    .join("\n");
   const supabaseImportFiles = sourceFiles
     .filter((file) => /@supabase/.test(file.text))
-    .map((file) => file.path.replaceAll("\\", "/"));
+    .map((file) => file.normalizedPath);
+  const appSupabaseImportFiles = appFiles
+    .filter((file) => hasDisallowedSupabaseImport(file))
+    .map((file) => file.normalizedPath);
 
   assert.deepEqual(supabaseImportFiles, ["src/lib/supabase/server.ts"]);
+  assert.deepEqual(appSupabaseImportFiles, []);
   assert.doesNotMatch(appText, /@supabase|PrismaClient|Anthropic|Claude|AIProvider/);
   assert.doesNotMatch(sourceText, /PrismaClient|Anthropic|Claude|AIProvider/);
 });
 
+test("app route files do not import Supabase through package alias or relative paths", () => {
+  const guardedAppFiles = appFiles.filter(
+    (file) =>
+      isUnderDirectory(file, "app/create") || isUnderDirectory(file, "app/i/[slug]")
+  );
+  const disallowedImports = guardedAppFiles.flatMap((file) =>
+    getImportSpecifiers(file.text)
+      .filter((specifier) => isDisallowedSupabaseSpecifier(file, specifier))
+      .map((specifier) => `${file.normalizedPath}: ${specifier}`)
+  );
+
+  assert.deepEqual(disallowedImports, []);
+});
+
 test("service-role secret is server-only and not public-prefixed", () => {
-  const appText = sourceFiles
-    .filter((file) => file.path.startsWith("app\\"))
-    .map((file) => file.text)
-    .join("\n");
   const serviceRoleFiles = sourceFiles
     .filter((file) => /SUPABASE_SERVICE_ROLE_KEY/.test(file.text))
-    .map((file) => file.path.replaceAll("\\", "/"));
+    .map((file) => file.normalizedPath);
+  const appServiceRoleFiles = appFiles
+    .filter((file) => /SUPABASE_SERVICE_ROLE_KEY/.test(file.text))
+    .map((file) => file.normalizedPath);
 
   assert.match(envExampleSource, /^SUPABASE_SERVICE_ROLE_KEY=/m);
   assert.doesNotMatch(envExampleSource, /NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_KEY/);
   assert.deepEqual(serviceRoleFiles, ["src/lib/supabase/server.ts"]);
+  assert.deepEqual(appServiceRoleFiles, []);
   assert.doesNotMatch(appText, /SUPABASE_SERVICE_ROLE_KEY/);
+});
+
+test("public service-role env var is absent from source and env examples", () => {
+  const publicServiceRoleFiles = sourceFiles
+    .filter((file) => /NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_KEY/.test(file.text))
+    .map((file) => file.normalizedPath);
+
+  assert.deepEqual(publicServiceRoleFiles, []);
+  assert.doesNotMatch(envExampleSource, /NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_KEY/);
 });
 
 test("recipient page gates mode and helper UI through state helpers", () => {
@@ -116,17 +141,87 @@ function readSourceTree(path: string): SourceFile[] {
   const stat = statSync(path);
 
   if (stat.isFile()) {
-    return isSourceFile(path) ? [{ path, text: readFileSync(path, "utf8") }] : [];
+    return isSourceFile(path)
+      ? [
+          {
+            normalizedPath: normalizeSourcePath(path),
+            path,
+            text: readFileSync(path, "utf8")
+          }
+        ]
+      : [];
   }
 
   return readdirSync(path).flatMap((entry) => readSourceTree(join(path, entry)));
 }
 
 interface SourceFile {
+  normalizedPath: string;
   path: string;
   text: string;
 }
 
 function isSourceFile(path: string): boolean {
   return /\.(ts|tsx)$/.test(path);
+}
+
+function normalizeSourcePath(path: string): string {
+  return path.replaceAll("\\", "/");
+}
+
+function isUnderDirectory(file: SourceFile, directory: string): boolean {
+  const normalizedDirectory = normalizeSourcePath(directory);
+
+  return (
+    file.normalizedPath === normalizedDirectory ||
+    file.normalizedPath.startsWith(`${normalizedDirectory}/`)
+  );
+}
+
+function getImportSpecifiers(source: string): string[] {
+  const fromImports = Array.from(
+    source.matchAll(/import(?:\s+type)?[\s\S]*?\sfrom\s+["']([^"']+)["']/g)
+  ).map((match) => match[1]);
+  const sideEffectImports = Array.from(
+    source.matchAll(/import\s+["']([^"']+)["']/g)
+  ).map((match) => match[1]);
+
+  return [...fromImports, ...sideEffectImports];
+}
+
+function hasDisallowedSupabaseImport(file: SourceFile): boolean {
+  return getImportSpecifiers(file.text).some((specifier) =>
+    isDisallowedSupabaseSpecifier(file, specifier)
+  );
+}
+
+function isDisallowedSupabaseSpecifier(
+  file: SourceFile,
+  specifier: string
+): boolean {
+  if (specifier === "@supabase/supabase-js") {
+    return true;
+  }
+
+  if (
+    specifier.startsWith("@/lib/supabase") ||
+    specifier.startsWith("src/lib/supabase")
+  ) {
+    return true;
+  }
+
+  if (!specifier.startsWith(".")) {
+    return false;
+  }
+
+  const importerDirectory = dirname(resolve(file.normalizedPath));
+  const resolvedSpecifier = normalizeSourcePath(
+    normalize(resolve(importerDirectory, specifier))
+  );
+  const supabaseDirectory = normalizeSourcePath(resolve("src/lib/supabase"));
+
+  return (
+    resolvedSpecifier === supabaseDirectory ||
+    resolvedSpecifier.startsWith(`${supabaseDirectory}/`)
+  );
 }

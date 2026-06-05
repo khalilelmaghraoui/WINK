@@ -8,6 +8,7 @@ import {
 } from "../src/lib/invite-page";
 
 const packageJson = JSON.parse(readFileSync("package.json", "utf8")) as {
+  engines?: Record<string, string>;
   scripts: Record<string, string>;
 };
 const envExample = readFileSync(".env.example", "utf8");
@@ -19,6 +20,10 @@ test("deployment scripts are available for Vercel readiness", () => {
   assert.equal(packageJson.scripts.lint, "next lint");
   assert.equal(packageJson.scripts.typecheck, "tsc --noEmit");
   assert.match(packageJson.scripts.test, /node --test/);
+});
+
+test("deployment runtime targets Node 20 for Supabase preview safety", () => {
+  assert.equal(packageJson.engines?.node, "20.x");
 });
 
 test("local env files are ignored and examples do not expose service role publicly", () => {
