@@ -1,4 +1,3 @@
-# .gitignore — replace the file contents with:
 node_modules
 .next
 .test-dist
