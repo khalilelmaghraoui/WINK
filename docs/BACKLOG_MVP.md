@@ -5,11 +5,12 @@ the MVP sequence without pulling later platform ideas into early slices.
 
 ## Current Status
 
-Act I MVP is implemented through Sprint 2.2.1. Supabase-backed preview
+Act I MVP is implemented through Sprint 2.3. Supabase-backed preview
 persistence works through the `InviteStore` boundary when env vars are
 configured, with in-memory fallback when they are absent. Vercel Preview smoke
-and real-device QA passed. WINK is ready for closed alpha preparation, not a
-public launch or production claim.
+and real-device QA passed. The closed alpha feedback pack is ready, and WINK is
+an Act I alpha candidate for 3-5 trusted testers. This is not a public launch or
+production claim.
 
 Active stack:
 
@@ -211,6 +212,26 @@ Deliverables:
 - Real-device QA checklist and evidence.
 - Post-polish Vercel Preview regression section.
 - Status note in local project context.
+
+## Sprint 2.3 - Closed Alpha Feedback Pack
+
+Status: implemented.
+
+Deliverables:
+
+- Closed alpha test plan for 3-5 trusted testers.
+- Closed alpha feedback template.
+- Context note confirming feedback collection and triage are next.
+
+## Sprint 2.3.1 - Alpha Candidate Release Hygiene
+
+Status: implemented.
+
+Deliverables:
+
+- Act I alpha candidate release notes.
+- Short context/backlog status updates.
+- Sprint 2.4 explicitly deferred until real tester feedback exists.
 
 ## Future, Not Now
 

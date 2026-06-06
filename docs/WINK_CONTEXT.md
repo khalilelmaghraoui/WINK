@@ -215,6 +215,14 @@ Sprint 2.3 - Closed alpha feedback pack:
 - No product behavior changed. The next step after Sprint 2.3 is real feedback
   collection and triage in Sprint 2.4.
 
+Sprint 2.3.1 - Alpha candidate release hygiene:
+
+- `docs/ALPHA_RELEASE_NOTES.md` documents the Act I alpha candidate status,
+  included flows, safety and privacy guarantees, known limitations, and manual
+  release checklist.
+- Sprint 2.4 remains deferred until real closed alpha tester feedback exists.
+- No product behavior changed.
+
 ## Not In Current MVP Work
 
 Do not add these unless explicitly requested:
