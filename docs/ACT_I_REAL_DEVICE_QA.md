@@ -7,9 +7,9 @@ private invite content.
 ## Test Run Metadata
 
 * Test date: `2026-06-05`
-* Preview URL: `REPLACE_WITH_PREVIEW_URL`
+* Preview URL: `https://wink-three.vercel.app/`
 * Branch tested: `qa/sprint-2.2.1-preview-regression`
-* Commit hash: `REPLACE_WITH_COMMIT_SHA`
+* Commit hash: `837f4c292722bc8c492970bc20e3e48ff029c165`
 * Tester: `Khalil`
 * Supabase table checked: `public.invites`
 

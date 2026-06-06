@@ -3,13 +3,30 @@
 This backlog is intentionally compact. It keeps future Codex runs aligned on
 the MVP sequence without pulling later platform ideas into early slices.
 
+## Current Status
+
+Act I MVP is implemented through Sprint 2.2.1. Supabase-backed preview
+persistence works through the `InviteStore` boundary when env vars are
+configured, with in-memory fallback when they are absent. Vercel Preview smoke
+and real-device QA passed. WINK is ready for closed alpha preparation, not a
+public launch or production claim.
+
+Active stack:
+
+- Next.js 15.
+- TypeScript.
+- Tailwind CSS.
+- App Router.
+- Supabase persistence behind `InviteStore`.
+- In-memory storage fallback for local development and tests.
+
 ## Sprint 0 - Foundation
 
 Status: implemented.
 
 Deliverables:
 
-- Next.js 14 web app foundation.
+- Next.js web app foundation, now running on Next.js 15.
 - TypeScript, Tailwind CSS, App Router, ESLint.
 - `npm run lint` and `npm run typecheck`.
 - Invite primitive/domain model.
@@ -31,7 +48,7 @@ Verification:
 
 ## Sprint 0.1 - Documentation Alignment
 
-Status: current sprint.
+Status: implemented.
 
 Deliverables:
 
@@ -49,6 +66,8 @@ Verification:
 - `npm test` passes.
 
 ## Sprint 1 - Core Ask
+
+Status: implemented.
 
 Goal: prove the Act I invite loop.
 
@@ -79,6 +98,8 @@ Verification:
 
 ## Sprint 2 - Ethics And Polish
 
+Status: implemented.
+
 Goal: make the loop kinder, safer, and better on mobile.
 
 Deliverables:
@@ -98,7 +119,9 @@ Verification:
 - Tap targets are at least 44px.
 - Raincheck and No remain clear, respectful, and easy to choose.
 
-## Sprint 3 - Persistence
+## Sprint 2.0 - Supabase Persistence
+
+Status: implemented.
 
 Goal: replace mock persistence without changing feature UI contracts.
 
@@ -117,6 +140,77 @@ Verification:
 - No feature UI imports third-party SDKs directly.
 - Data persists across server restarts.
 - Privacy metadata remains generic.
+
+## Sprint 2.0.2 - Supabase Security Hardening
+
+Status: implemented.
+
+Deliverables:
+
+- Server-only Supabase service-role provider path.
+- In-memory fallback when Supabase env vars are absent.
+- RLS guidance that avoids broad anon insert/update/delete policies for
+  preview.
+- Source-safety tests for service-role exposure and direct Supabase imports.
+
+Verification:
+
+- Browser/UI files do not import Supabase directly.
+- `SUPABASE_SERVICE_ROLE_KEY` is never exposed as `NEXT_PUBLIC`.
+- No `openCount` or analytics/tracking fields exist.
+
+## Sprint 2.1 - Vercel Preview Readiness
+
+Status: implemented.
+
+Deliverables:
+
+- Vercel Preview deployment guide.
+- Required env var documentation.
+- Post-deployment smoke checklist.
+- Deployment-readiness source tests.
+
+## Sprint 2.1.1 - Preview Guardrail Hardening
+
+Status: implemented.
+
+Deliverables:
+
+- Cross-platform source-safety path handling.
+- Stronger Supabase import guardrails.
+- Stronger service-role exposure guardrails.
+- Node 20 runtime declaration.
+
+## Sprint 2.1.2 - Vercel Preview Smoke Evidence
+
+Status: implemented.
+
+Deliverables:
+
+- Vercel Preview smoke report.
+- Supabase project/table evidence without secrets.
+- Metadata and service-role exposure evidence.
+
+## Sprint 2.2 - Act I QA Polish
+
+Status: implemented.
+
+Deliverables:
+
+- Consent and mobile hardening.
+- Accessibility and copy polish.
+- Additional Act I safety/source tests.
+- Updated Act I QA checklist.
+
+## Sprint 2.2.1 - Post-Polish Real-Device QA Evidence
+
+Status: implemented.
+
+Deliverables:
+
+- Real-device QA checklist and evidence.
+- Post-polish Vercel Preview regression section.
+- Status note in local project context.
 
 ## Future, Not Now
 

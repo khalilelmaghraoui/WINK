@@ -6,12 +6,12 @@ invite content into this file.
 
 ## Deployment Evidence
 
-* Preview deployment URL: `REPLACE_WITH_PREVIEW_URL`
+* Preview deployment URL: `https://wink-three.vercel.app/`
 * Deployment date: `2026-06-05`
 * Branch deployed: `qa/sprint-2.2.1-preview-regression`
-* Commit hash: `REPLACE_WITH_COMMIT_SHA`
+* Commit hash: `837f4c292722bc8c492970bc20e3e48ff029c165`
 * Vercel project/environment: `Preview`
-* Supabase project checked: `REPLACE_WITH_SUPABASE_PROJECT_IDENTIFIER`
+* Supabase project checked: `ingfrhrmtyypztztztga`
 * Supabase table checked: `public.invites`
 
 ## Vercel Environment Variables
@@ -103,9 +103,9 @@ Preview. Do not paste secrets or private invite content.
 
 ### Regression Evidence
 
-* Preview deployment URL: `REPLACE_WITH_PREVIEW_URL`
+* Preview deployment URL: `https://wink-three.vercel.app/`
 * Branch deployed: `qa/sprint-2.2.1-preview-regression`
-* Commit hash: `REPLACE_WITH_COMMIT_SHA`
+* Commit hash: `837f4c292722bc8c492970bc20e3e48ff029c165`
 * Regression date: `2026-06-05`
 * Tester: `Khalil`
 

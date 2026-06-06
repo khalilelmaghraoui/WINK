@@ -27,41 +27,44 @@ expanding.
 
 ## Current Scope
 
-Sprint 0 foundation is implemented:
+Act I MVP is implemented through Sprint 2.2.1:
 
-- Next.js 14 app foundation.
+- Next.js 15 app foundation.
 - TypeScript.
 - Tailwind CSS.
 - App Router.
 - ESLint.
 - Invite primitive/domain model.
-- In-memory `InviteStore`.
+- `InviteStore` persistence boundary.
+- In-memory storage fallback for local development and tests.
+- Server-mediated Supabase persistence when required env vars are configured.
 - Slug generator.
-- Route skeletons.
+- `/create` creator flow.
+- `/i/[slug]` living invite URL.
+- Lawyer and Unbothered modes only.
+- Compatibility Report.
+- Yes, Raincheck, No, and unknown-sender response paths.
+- Kind Reply Assistant on declined state.
 - Privacy metadata baseline.
-- Tests for core Sprint 0 behavior.
+- Act I QA, Vercel Preview smoke, and real-device QA evidence.
 
-Sprint 0.1 is documentation alignment only:
-
-- Root `AGENTS.md`.
-- Non-empty `docs/BACKLOG_MVP.md`.
-- Local `docs/WINK_CONTEXT.md`.
-- No product features.
+Current readiness: Act I MVP is ready for closed alpha preparation. It is not a
+public launch or production-readiness claim.
 
 ## Stack
 
 Use:
 
-- Next.js 14.
+- Next.js 15.
 - TypeScript.
 - Tailwind CSS.
 - App Router.
-- Mock storage first.
-- Supabase later only when explicitly requested.
+- Supabase persistence behind the existing `InviteStore` interface.
+- In-memory storage fallback when Supabase env vars are absent.
 
-Do not add a backend, database, authentication, Prisma, payments,
-notifications, native mobile app, dashboard, or admin panel unless explicitly
-requested.
+Do not add additional backend services, databases, authentication, Prisma,
+payments, notifications, native mobile app, dashboard, or admin panel unless
+explicitly requested.
 
 ## Architecture Rules
 
@@ -71,8 +74,10 @@ Feature modules should depend on InviteCore and provider interfaces. No feature
 code should import third-party SDKs directly. Provider interfaces protect
 against vendor lock-in and keep future Supabase or AI integrations replaceable.
 
-Keep storage behind an `InviteStore` interface so mock storage can later be
-replaced by Supabase.
+Keep storage behind the `InviteStore` interface. Supabase is implemented as a
+server-mediated provider path; browser/UI files must not import Supabase
+directly. `SUPABASE_SERVICE_ROLE_KEY` is server-only and must never be exposed
+as `NEXT_PUBLIC`.
 
 Prefer simple, readable code. Do not create clever abstractions too early. Do
 not install new dependencies without explaining why they are needed.
@@ -191,13 +196,49 @@ Sprint 2 - Ethics and Polish:
 - Mobile polish.
 - No dark patterns.
 
-Sprint 3 - Persistence:
+Sprint 2.0 - Supabase Persistence:
 
 - Supabase adapter behind the existing `InviteStore` interface.
 - No direct Supabase imports in feature UI.
 - Environment variables.
 - Real shareable links.
 - Data persistence tests.
+
+Sprint 2.0.2 - Supabase Security Hardening:
+
+- Server-only Supabase service-role path.
+- In-memory fallback when Supabase env vars are absent.
+- No broad anon insert/update/delete policies for preview.
+- Source guardrails for service-role exposure and UI imports.
+
+Sprint 2.1 - Vercel Preview Readiness:
+
+- Vercel Preview deployment documentation.
+- Supabase environment variable checklist.
+- Post-deployment smoke checklist.
+- Deployment-readiness source tests.
+
+Sprint 2.1.1 - Preview Guardrail Hardening:
+
+- Cross-platform source-safety tests.
+- Stronger Supabase import and service-role exposure guardrails.
+- Node 20 runtime declaration.
+
+Sprint 2.1.2 - Vercel Preview Smoke Evidence:
+
+- Preview deployment evidence report.
+- Supabase smoke results.
+- Generic metadata and service-role exposure checks.
+
+Sprint 2.2 - Act I QA Polish:
+
+- Consent, mobile, accessibility, and small flow-polish hardening.
+- No new product features or routes.
+
+Sprint 2.2.1 - Post-Polish Real-Device QA:
+
+- Real-device QA evidence.
+- Post-polish Vercel Preview regression checklist.
 
 Future, not now:
 
@@ -235,13 +276,12 @@ Especially do not add:
 - native mobile app
 - Expo
 - Prisma
-- Supabase
-- database schema
+- new databases or direct Supabase imports from app/UI files
 - admin panel
 - AI-generated messages
-- Compatibility Report before Sprint 1
-- Kind Reply Assistant before Sprint 2
-- slot machine
+- new Compatibility Report behavior outside the existing Act I implementation
+- new Kind Reply Assistant behavior outside the existing declined-state helper
+- new slot-machine mechanics outside the existing consent-safe Unbothered flow
 - signature canvas
 - excuse generator
 - camera

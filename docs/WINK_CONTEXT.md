@@ -53,12 +53,12 @@ Future modes, not now:
 
 The MVP is web-first:
 
-- Next.js 14.
+- Next.js 15.
 - TypeScript.
 - Tailwind CSS.
 - App Router.
-- Mock storage first.
-- Supabase later only when explicitly requested.
+- Supabase persistence behind the existing `InviteStore` interface.
+- In-memory storage fallback when Supabase env vars are absent.
 
 Everything revolves around the Invite primitive. Feature modules should depend
 on InviteCore and provider interfaces. No feature code should import
@@ -82,7 +82,11 @@ The Invite primitive owns the core domain state:
 - cancellation and expiration state
 
 The `InviteStore` interface is the boundary for persistence. The current
-adapter is in-memory. Sprint 3 may add Supabase behind the same interface.
+production-preview adapter is Supabase through server-mediated provider code
+when env vars are configured. Local development and tests fall back to the
+in-memory adapter when Supabase env vars are absent. Browser/UI files must not
+import Supabase directly, and `SUPABASE_SERVICE_ROLE_KEY` must never be exposed
+as `NEXT_PUBLIC`.
 
 ## Privacy Baseline
 
@@ -139,13 +143,32 @@ Sprint 2 - Ethics and Polish:
 - Mobile polish.
 - No dark patterns.
 
-Sprint 3 - Persistence:
+Sprint 2.0 - Supabase Persistence:
 
 - Supabase adapter behind the existing `InviteStore` interface.
 - No direct Supabase imports in feature UI.
 - Environment variables.
 - Real shareable links.
 - Data persistence tests.
+
+Sprint 2.0.2 - Supabase Security Hardening:
+
+- Supabase writes use server-only provider code with the service-role key.
+- The app falls back to in-memory storage when Supabase env vars are absent.
+- Browser/UI files do not import Supabase directly.
+- Preview guidance avoids broad anon insert/update/delete policies.
+
+Sprint 2.1 - Vercel Preview Readiness:
+
+- Vercel Preview deployment docs and smoke checklist.
+- Source-safety tests for service-role exposure, direct Supabase imports,
+  metadata privacy, and tracking/open-count guardrails.
+
+Sprint 2.1.1 - Preview Guardrail Hardening:
+
+- Cross-platform source-safety path handling.
+- Stronger Supabase import and service-role exposure guardrails.
+- Node 20 runtime declared for Vercel-style environments.
 
 Sprint 2.1.2 - Vercel Preview deployment evidence:
 
@@ -173,11 +196,31 @@ Sprint 2.2.1 - Post-polish preview regression and real-device QA evidence:
   checklist, known issues, and readiness verdict.
 - This checkpoint is QA evidence only and does not change product behavior.
 
+Sprint 2.2.2 - Evidence cleanup and repo consistency:
+
+- Documentation now reflects the current Next.js 15 stack, implemented
+  Supabase persistence, Vercel Preview smoke pass, and real-device QA pass.
+- Current status: Act I MVP is implemented, Supabase-backed preview
+  persistence works, Vercel Preview smoke passed, real-device QA passed, and
+  WINK is ready for closed alpha preparation.
+- This is not a public launch or production-readiness claim.
+
+Sprint 2.3 - Closed alpha feedback pack:
+
+- `docs/CLOSED_ALPHA_TEST_PLAN.md` defines the 3-5 tester closed alpha scope,
+  privacy rules, success criteria, stop conditions, and post-test triage flow.
+- `docs/CLOSED_ALPHA_FEEDBACK_TEMPLATE.md` gives testers a structured way to
+  separate sender feedback, recipient feedback, bugs, trust concerns, and
+  deferred feature requests.
+- No product behavior changed. The next step after Sprint 2.3 is real feedback
+  collection and triage in Sprint 2.4.
+
 ## Not In Current MVP Work
 
 Do not add these unless explicitly requested:
 
-- Supabase before Sprint 3.
+- Direct Supabase imports from app/UI files.
+- Broad anon insert/update/delete policies for preview.
 - Prisma.
 - Authentication.
 - Dashboard.
