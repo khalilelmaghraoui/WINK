@@ -163,6 +163,16 @@ Sprint 2.2 - Act I QA polish and consent/mobile hardening:
 - No product features, routes, invite modes, authentication, analytics,
   notifications, payments, AI, or persistence behavior are added.
 
+Sprint 2.2.1 - Post-polish preview regression and real-device QA evidence:
+
+- `docs/ACT_I_REAL_DEVICE_QA.md` captures manual checks for iPhone, Android,
+  desktop Chrome, `/create`, `/i/[slug]`, response paths, metadata, service-role
+  exposure, and no-overflow/tap-target behavior.
+- `docs/VERCEL_PREVIEW_SMOKE_REPORT.md` includes a Sprint 2.2 post-polish
+  regression section for preview URL, branch, commit, devices, pass/fail
+  checklist, known issues, and readiness verdict.
+- This checkpoint is QA evidence only and does not change product behavior.
+
 ## Not In Current MVP Work
 
 Do not add these unless explicitly requested:
