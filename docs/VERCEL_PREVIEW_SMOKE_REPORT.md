@@ -4,6 +4,18 @@ Use this report to capture the real Vercel Preview deployment evidence for
 WINK. Do not paste secrets, service-role key values, anon key values, or private
 invite content into this file.
 
+## Environment Clarification
+
+This file records the earlier Vercel Preview QA phase. It should not be
+rewritten as Production evidence.
+
+The URL `https://wink-three.vercel.app/` now represents the Production alpha
+deployment. Production Supabase environment variables were configured and
+verified after the Preview QA phase. The authoritative final operational
+evidence is now recorded in `docs/PRODUCTION_ALPHA_SMOKE_REPORT.md`.
+
+Do not infer that the earlier Preview test used Production variables.
+
 ## Deployment Evidence
 
 * Preview deployment URL: `https://wink-three.vercel.app/`

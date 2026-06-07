@@ -4,12 +4,15 @@
 
 - Act I MVP implemented.
 - Supabase-backed preview persistence working.
+- Production Supabase environment configured.
+- Production invite persistence verified.
 - Vercel Preview smoke passed.
+- Final Production alpha smoke passed.
 - Real-device QA passed.
 - Closed alpha test plan ready.
 - Ready for 3-5 trusted testers when testing starts.
 - Not public launch.
-- Not production.
+- Not a production-readiness claim.
 
 ## Included Flows
 
@@ -57,6 +60,7 @@ feedback exists.
 - Confirm branch merged.
 - Confirm Vercel preview URL works.
 - Confirm Supabase env vars configured.
+- Confirm Production alpha smoke report is filled.
 - Confirm smoke docs are filled.
 - Confirm real-device QA docs are filled.
 - Confirm closed alpha docs exist.

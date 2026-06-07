@@ -223,6 +223,17 @@ Sprint 2.3.1 - Alpha candidate release hygiene:
 - Sprint 2.4 remains deferred until real closed alpha tester feedback exists.
 - No product behavior changed.
 
+Sprint 2.3.2 - Production smoke closure:
+
+- A final alpha smoke found the Production deployment needed Supabase
+  environment variables configured separately from the earlier Preview phase.
+- Vercel Production env vars were corrected and Production invite persistence
+  was manually verified.
+- `docs/PRODUCTION_ALPHA_SMOKE_REPORT.md` records the Production evidence while
+  redacting the live bearer invite slug and private invite content.
+- No product code or behavior changed.
+- Sprint 2.4 remains deferred until real closed alpha tester feedback exists.
+
 ## Not In Current MVP Work
 
 Do not add these unless explicitly requested:
