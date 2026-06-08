@@ -259,6 +259,20 @@ Sprint 2.6 - Minimal alpha entry page:
   public entry page added. User validation is not completed.
 - WINK remains an alpha, not a public-production claim.
 
+Sprint 2.6.1 - Home page Production smoke and Alpha 0.2 evidence:
+
+- `docs/HOME_PAGE_PRODUCTION_SMOKE_REPORT.md` records Production homepage,
+  responsive, typography, accessibility, metadata, privacy, and fresh invite
+  create/open regression evidence.
+- The Production homepage rendered the Sprint 2.6 content, and `origin/main`
+  points to `894ea42485c548a6cc19596b4f24137299614759`.
+- Exact Vercel Production deployment commit confirmation remains pending
+  because the public deployment did not expose a commit SHA and CLI inspection
+  timed out.
+- Verdict is `ready with caveats`; do not create `alpha-act-i-0.2` until the
+  Production deployment commit is confirmed in Vercel.
+- No product code or behavior changed.
+
 ## Not In Current MVP Work
 
 Do not add these unless explicitly requested:

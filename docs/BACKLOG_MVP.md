@@ -11,8 +11,10 @@ vars are configured, with in-memory fallback when they are absent. Vercel
 Preview smoke and real-device QA passed, and final Production alpha smoke
 passed after Production Supabase env vars were corrected. The closed alpha
 feedback pack is ready, and WINK now has a minimal public entry page explaining
-the existing Act I flow. User validation is not completed. This is not a public
-launch or production-readiness claim.
+the existing Act I flow. Sprint 2.6.1 homepage Production smoke is documented
+with a `ready with caveats` verdict because exact Vercel deployment commit
+confirmation remains pending. User validation is not completed. This is not a
+public launch or production-readiness claim.
 
 Active stack:
 
@@ -285,6 +287,27 @@ Constraints:
 - No closed-alpha user-validation claim is made.
 - The homepage explains only already-implemented Act I functionality.
 - Act II and future features remain out of scope.
+
+## Sprint 2.6.1 - Home Page Production Smoke
+
+Status: documented, ready with caveats.
+
+Deliverables:
+
+- Production homepage smoke report.
+- Responsive checks for `320px`, `375px`, `768px`, `1024px`, and wide desktop.
+- Root metadata verification.
+- `/i/[slug]` generic metadata and `noindex,nofollow` verification.
+- Fresh Production invite create/open regression evidence with live slug
+  redacted.
+- Alpha 0.2 release note update.
+
+Caveat:
+
+- Public Production content matches Sprint 2.6 and `origin/main` points to the
+  expected full commit.
+- Exact Vercel Production deployment commit confirmation remains pending.
+- Do not tag `alpha-act-i-0.2` until that commit is confirmed in Vercel.
 
 ## Future, Not Now
 
