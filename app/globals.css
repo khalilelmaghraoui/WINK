@@ -1,3 +1,31 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+  html {
+    background: #F8F3EA;
+  }
+
+  body {
+    min-height: 100vh;
+    background: #F8F3EA;
+    color: #181512;
+  }
+
+  ::selection {
+    background: #C9A24E;
+    color: #181512;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}

@@ -234,6 +234,31 @@ Sprint 2.3.2 - Production smoke closure:
 - No product code or behavior changed.
 - Sprint 2.4 remains deferred until real closed alpha tester feedback exists.
 
+Sprint 2.4 - Closed alpha feedback triage:
+
+- Skipped by product decision.
+- No closed-alpha tester feedback had been collected, so there was nothing real
+  to triage.
+- This is not a validation claim.
+
+Sprint 2.5 - Feedback-driven fixes:
+
+- Skipped because Sprint 2.4 did not produce real tester feedback.
+- No feedback-driven product fixes were implemented.
+- This keeps WINK aligned with the Act I-first strategy instead of inventing
+  internal polish without user evidence.
+
+Sprint 2.6 - Minimal alpha entry page:
+
+- Adds a compact root `/` entry page that explains only the already-implemented
+  Act I loop and links directly to `/create`.
+- The page demonstrates Lawyer and Unbothered with a static fictional preview.
+- Production invite behavior, `/create`, `/i/[slug]`, Supabase persistence,
+  invite metadata, and response behavior are unchanged.
+- Current status is technically verified, Production persistence verified, and
+  public entry page added. User validation is not completed.
+- WINK remains an alpha, not a public-production claim.
+
 ## Not In Current MVP Work
 
 Do not add these unless explicitly requested:

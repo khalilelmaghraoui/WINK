@@ -5,13 +5,14 @@ the MVP sequence without pulling later platform ideas into early slices.
 
 ## Current Status
 
-Act I MVP is implemented through Sprint 2.3.2. Supabase-backed preview and
+Act I MVP is implemented through Sprint 2.6. Supabase-backed preview and
 Production alpha persistence works through the `InviteStore` boundary when env
 vars are configured, with in-memory fallback when they are absent. Vercel
 Preview smoke and real-device QA passed, and final Production alpha smoke
 passed after Production Supabase env vars were corrected. The closed alpha
-feedback pack is ready, and WINK is an Act I alpha candidate for 3-5 trusted
-testers. This is not a public launch or production-readiness claim.
+feedback pack is ready, and WINK now has a minimal public entry page explaining
+the existing Act I flow. User validation is not completed. This is not a public
+launch or production-readiness claim.
 
 Active stack:
 
@@ -247,6 +248,43 @@ Deliverables:
 - Production invite persistence manually verified with the bearer invite slug
   redacted from repo evidence.
 - Sprint 2.4 remains deferred until real tester feedback exists.
+
+## Sprint 2.4 - Closed Alpha Feedback Triage
+
+Status: skipped by product decision.
+
+Reason:
+
+- No real closed-alpha tester feedback had been collected.
+- The project should not fake a triage sprint without human responses.
+
+## Sprint 2.5 - Feedback-Driven Fixes
+
+Status: skipped.
+
+Reason:
+
+- No Sprint 2.4 feedback triage existed.
+- No tester-backed fixes were available to implement.
+
+## Sprint 2.6 - Minimal Alpha Entry Page
+
+Status: implemented.
+
+Deliverables:
+
+- Minimal root `/` entry page.
+- Static fictional invitation preview.
+- Existing mode previews for Lawyer and Unbothered only.
+- Direct CTA to `/create`.
+- Homepage source tests.
+
+Constraints:
+
+- No product behavior changed.
+- No closed-alpha user-validation claim is made.
+- The homepage explains only already-implemented Act I functionality.
+- Act II and future features remain out of scope.
 
 ## Future, Not Now
 
