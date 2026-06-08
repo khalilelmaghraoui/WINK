@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 
 import { flagUnknownSenderAction, respondToInviteAction } from "./actions";
+import { AcceptedReveal } from "./accepted-reveal";
 import { CompatibilityReport } from "./compatibility-report";
 import { KindReplyAssistant } from "./kind-reply-assistant";
 import { LawyerMode } from "./lawyer-mode";
@@ -22,6 +23,7 @@ import {
 import { inviteStore } from "@/lib/invite-store";
 import type { Invite } from "@/lib/invite-store";
 import { getModePresentation } from "@/lib/mode-engine";
+import { getAcceptedRevealViewModel } from "@/lib/reveal-engine";
 
 export const dynamic = "force-dynamic";
 
@@ -68,6 +70,8 @@ export default async function InvitePage({
 
   const pageState = getRecipientPageState(invite.status);
   const presentation = getModePresentation(invite);
+  const acceptedReveal =
+    pageState === "accepted" ? getAcceptedRevealViewModel(invite) : null;
   const showLawyerMode = shouldShowLawyerMode({
     mode: invite.mode,
     state: pageState
@@ -103,7 +107,11 @@ export default async function InvitePage({
           <RaincheckState invite={invite} />
         ) : null}
 
-        {pageState !== "respondable" && pageState !== "raincheck" ? (
+        {acceptedReveal ? <AcceptedReveal reveal={acceptedReveal} /> : null}
+
+        {pageState !== "respondable" &&
+        pageState !== "raincheck" &&
+        pageState !== "accepted" ? (
           <StateMessage pageState={pageState} />
         ) : null}
 
@@ -155,7 +163,10 @@ export default async function InvitePage({
           />
         ) : null}
 
-        {showInviteDetails && !showLawyerMode && !showUnbotheredMode ? (
+        {showInviteDetails &&
+        pageState !== "accepted" &&
+        !showLawyerMode &&
+        !showUnbotheredMode ? (
           <section
             aria-labelledby="invite-message-heading"
             className="space-y-3 rounded-lg border border-stone-300 bg-white p-5"
@@ -172,7 +183,7 @@ export default async function InvitePage({
           </section>
         ) : null}
 
-        {showInviteDetails ? (
+        {showInviteDetails && pageState !== "accepted" ? (
           <section
             aria-labelledby="invite-details-heading"
             className="space-y-4 rounded-lg border border-stone-300 bg-white p-5"

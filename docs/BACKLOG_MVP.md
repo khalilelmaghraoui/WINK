@@ -13,8 +13,9 @@ passed after Production Supabase env vars were corrected. The closed alpha
 feedback pack is ready, and WINK now has a minimal public entry page explaining
 the existing Act I flow. Sprint 2.6.1 homepage Production smoke is documented
 with a `ready with caveats` verdict because exact Vercel deployment commit
-confirmation remains pending. User validation is not completed. This is not a
-public launch or production-readiness claim.
+confirmation remains pending. Sprint 3.0 begins a narrow Act II accepted reveal
+foundation using existing invite data only. User validation is not completed.
+This is not a public launch or production-readiness claim.
 
 Active stack:
 
@@ -308,6 +309,31 @@ Caveat:
   expected full commit.
 - Exact Vercel Production deployment commit confirmation remains pending.
 - Do not tag `alpha-act-i-0.2` until that commit is confirmed in Vercel.
+
+## Sprint 3.0 - Act II Accepted Reveal Foundation
+
+Status: implemented.
+
+Deliverables:
+
+- Pure read-only RevealEngine for accepted invite presentation.
+- Accepted `/i/[slug]` state renders a private confirmation artifact using
+  existing Invite data.
+- Focused tests for complete and missing accepted invite data.
+- Source guardrails ensuring accepted reveal UI does not import Supabase,
+  storage, server actions, or response submission behavior.
+
+Constraints:
+
+- No schema or persistence changes.
+- No new stored fields.
+- No acceptance logic moved into RevealEngine.
+- No changes to `/create`, response submission, Raincheck, No, unknown sender,
+  preview mode, Lawyer mode, Unbothered mode, Kind Reply Assistant,
+  Compatibility Report, homepage, or invite metadata.
+- Calendar export, maps, music, countdowns, reveal drip, notifications, camera,
+  scrapbook, partners, and dashboard behavior remain deferred.
+- User validation remains incomplete.
 
 ## Future, Not Now
 

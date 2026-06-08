@@ -273,6 +273,23 @@ Sprint 2.6.1 - Home page Production smoke and Alpha 0.2 evidence:
   Production deployment commit is confirmed in Vercel.
 - No product code or behavior changed.
 
+Sprint 3.0 - Act II accepted reveal foundation:
+
+- Begins a narrowly scoped Act II foundation without claiming user validation.
+- Adds a pure read-only RevealEngine that receives an `Invite` and returns an
+  accepted reveal view model from existing invite data.
+- The accepted `/i/[slug]` state now renders a more useful private confirmation
+  artifact with message, date type, date/time when present, place details when
+  present, and dress hint or existing notes when present.
+- Acceptance state remains owned by the existing recipient page state logic;
+  RevealEngine does not decide status, write data, call `InviteStore`, import
+  Supabase, or mutate the invite.
+- No schema, persistence, response behavior, metadata behavior, homepage,
+  Lawyer mode, Unbothered mode, Raincheck, No, Kind Reply Assistant, or
+  Compatibility Report behavior changed.
+- Calendar export, maps, music, countdowns, reveal drip, notifications, camera,
+  scrapbook, partners, sender controls, and dashboard features remain deferred.
+
 ## Not In Current MVP Work
 
 Do not add these unless explicitly requested:
