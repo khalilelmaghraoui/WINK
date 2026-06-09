@@ -45,7 +45,7 @@ test("accepted reveal view model formats complete invite data", () => {
     heading: "It's a yes.",
     summary: "The plan is here whenever you need it.",
     dateTypeLabel: "Romantic Moment",
-    startsAtLabel: "2026-06-12 at 19:00",
+    startsAtLabel: "Friday, June 12 · 7:00 PM",
     placeName: "The Corner Cafe",
     placeAddress: "123 Fictional Street",
     dressHint: "Something comfortable",
@@ -64,6 +64,87 @@ test("accepted reveal omits missing date details without throwing", () => {
   assert.equal(reveal.startsAtLabel, null);
   assert.equal(reveal.hasDateDetails, false);
   assert.equal(reveal.dateTypeLabel, "Romantic Moment");
+});
+
+test("accepted reveal formats complete local date and time humanly", () => {
+  const reveal = getAcceptedRevealViewModel({
+    ...completeInvite,
+    dateDetails: {
+      startsAt: "2026-06-19T19:30"
+    }
+  });
+
+  assert.equal(reveal.startsAtLabel, "Friday, June 19 · 7:30 PM");
+});
+
+test("accepted reveal formats noon and midnight correctly", () => {
+  const noonReveal = getAcceptedRevealViewModel({
+    ...completeInvite,
+    dateDetails: {
+      startsAt: "2026-06-19T12:00"
+    }
+  });
+  const midnightReveal = getAcceptedRevealViewModel({
+    ...completeInvite,
+    dateDetails: {
+      startsAt: "2026-06-19T00:00"
+    }
+  });
+
+  assert.equal(noonReveal.startsAtLabel, "Friday, June 19 · 12:00 PM");
+  assert.equal(midnightReveal.startsAtLabel, "Friday, June 19 · 12:00 AM");
+});
+
+test("accepted reveal preserves leading-zero local times", () => {
+  const reveal = getAcceptedRevealViewModel({
+    ...completeInvite,
+    dateDetails: {
+      startsAt: "2026-06-19T09:05"
+    }
+  });
+
+  assert.equal(reveal.startsAtLabel, "Friday, June 19 · 9:05 AM");
+});
+
+test("accepted reveal formats date-only values without inventing time", () => {
+  const reveal = getAcceptedRevealViewModel({
+    ...completeInvite,
+    dateDetails: {
+      startsAt: "2026-06-19"
+    }
+  });
+
+  assert.equal(reveal.startsAtLabel, "Friday, June 19");
+});
+
+test("accepted reveal returns a safe fallback for malformed date values", () => {
+  const reveal = getAcceptedRevealViewModel({
+    ...completeInvite,
+    dateDetails: {
+      startsAt: "not a date"
+    }
+  });
+
+  assert.equal(reveal.startsAtLabel, "not a date");
+  assert.equal(reveal.hasDateDetails, true);
+});
+
+test("accepted reveal date output is deterministic and has no timezone shift", () => {
+  const input = {
+    ...completeInvite,
+    dateDetails: {
+      startsAt: "2026-06-19T00:30"
+    }
+  };
+
+  assert.equal(
+    getAcceptedRevealViewModel(input).startsAtLabel,
+    "Friday, June 19 · 12:30 AM"
+  );
+  assert.equal(
+    getAcceptedRevealViewModel(input).startsAtLabel,
+    getAcceptedRevealViewModel(input).startsAtLabel
+  );
 });
 
 test("accepted reveal omits missing place details without placeholders", () => {
@@ -89,6 +170,52 @@ test("accepted reveal omits optional notes and dress hint when absent", () => {
   });
 
   assert.equal(reveal.dressHint, null);
+});
+
+test("accepted reveal uses place details notes as the note when present", () => {
+  const reveal = getAcceptedRevealViewModel({
+    ...completeInvite,
+    placeDetails: {
+      name: "The Corner Cafe",
+      notes: "Smart casual"
+    }
+  });
+
+  assert.equal(reveal.dressHint, "Smart casual");
+});
+
+test("accepted reveal never uses date details notes as dress guidance", () => {
+  const reveal = getAcceptedRevealViewModel({
+    ...completeInvite,
+    dateDetails: {
+      startsAt: "2026-06-19T19:30",
+      notes: "romantic_moment"
+    },
+    placeDetails: {
+      name: "The Corner Cafe"
+    }
+  });
+
+  assert.equal(reveal.dressHint, null);
+});
+
+test("accepted reveal does not render date-type values as dress guidance", () => {
+  for (const dateTypeValue of [
+    "date",
+    "apology",
+    "surprise",
+    "romantic_moment"
+  ]) {
+    const reveal = getAcceptedRevealViewModel({
+      ...completeInvite,
+      dateDetails: {
+        notes: dateTypeValue
+      },
+      placeDetails: {}
+    });
+
+    assert.equal(reveal.dressHint, null);
+  }
 });
 
 test("accepted reveal prefers explicit dress hint when present", () => {
@@ -132,4 +259,8 @@ test("RevealEngine has no storage or Supabase dependency", () => {
   assert.doesNotMatch(source, /@supabase|Supabase/);
   assert.doesNotMatch(source, /inviteStore|InviteStore|InMemoryInviteStore/);
   assert.doesNotMatch(source, /process\.env|getenv|fetch\(/);
+  assert.doesNotMatch(source, /from\s+["']react["']/);
+  assert.doesNotMatch(source, /from\s+["'][^"']*accepted-reveal/);
+  assert.doesNotMatch(source, /\.tsx/);
+  assert.doesNotMatch(source, /dateDetails\.notes/);
 });

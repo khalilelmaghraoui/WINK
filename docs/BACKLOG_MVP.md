@@ -319,6 +319,10 @@ Deliverables:
 - Pure read-only RevealEngine for accepted invite presentation.
 - Accepted `/i/[slug]` state renders a private confirmation artifact using
   existing Invite data.
+- Pre-preview amendment fixes accepted reveal semantics and hierarchy:
+  `dateDetails.notes` is not used as dress guidance, date/time renders in a
+  human-readable local wall-clock format, and the accepted reveal owns the page
+  heading after acceptance.
 - Focused tests for complete and missing accepted invite data.
 - Source guardrails ensuring accepted reveal UI does not import Supabase,
   storage, server actions, or response submission behavior.
@@ -334,6 +338,7 @@ Constraints:
 - Calendar export, maps, music, countdowns, reveal drip, notifications, camera,
   scrapbook, partners, and dashboard behavior remain deferred.
 - User validation remains incomplete.
+- Sprint 3.0.1 Preview regression is not complete yet.
 
 ## Future, Not Now
 

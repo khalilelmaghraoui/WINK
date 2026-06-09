@@ -278,9 +278,17 @@ Sprint 3.0 - Act II accepted reveal foundation:
 - Begins a narrowly scoped Act II foundation without claiming user validation.
 - Adds a pure read-only RevealEngine that receives an `Invite` and returns an
   accepted reveal view model from existing invite data.
-- The accepted `/i/[slug]` state now renders a more useful private confirmation
-  artifact with message, date type, date/time when present, place details when
-  present, and dress hint or existing notes when present.
+- The accepted `/i/[slug]` state now renders a more useful private
+  confirmation artifact with message, date type, human-readable date/time when
+  present, place details when present, and valid place notes when present.
+- A pre-preview amendment corrected reveal data semantics so
+  `dateDetails.notes` is never treated as dress guidance; only existing
+  `placeDetails.notes` or a real existing dress-hint field may appear as the
+  accepted-state note.
+- Accepted date/time formatting parses local `YYYY-MM-DDTHH:mm` components
+  directly and does not shift through UTC.
+- The accepted reveal owns its page heading hierarchy after acceptance, so
+  pre-response Lawyer or Unbothered headlines are hidden in the accepted state.
 - Acceptance state remains owned by the existing recipient page state logic;
   RevealEngine does not decide status, write data, call `InviteStore`, import
   Supabase, or mutate the invite.
@@ -289,6 +297,8 @@ Sprint 3.0 - Act II accepted reveal foundation:
   Compatibility Report behavior changed.
 - Calendar export, maps, music, countdowns, reveal drip, notifications, camera,
   scrapbook, partners, sender controls, and dashboard features remain deferred.
+- User validation remains incomplete, and Sprint 3.0.1 Preview regression has
+  not started.
 
 ## Not In Current MVP Work
 

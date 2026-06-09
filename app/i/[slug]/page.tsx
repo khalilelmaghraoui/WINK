@@ -88,20 +88,24 @@ export default async function InvitePage({
   return (
     <main className="mx-auto flex min-h-screen w-full max-w-2xl flex-col px-5 py-8">
       <article className="space-y-6">
-        <header className="space-y-3">
-          <p className="text-sm font-medium uppercase text-stone-600">
-            WINK invite
-          </p>
-          <h1 className="text-2xl font-semibold text-stone-950">
-            {presentation.headline}
-          </h1>
-          <p className="text-base text-stone-700">{presentation.subtitle}</p>
-          {previewMode ? (
-            <p className="rounded-md border border-stone-300 bg-stone-50 px-3 py-2 text-sm text-stone-700">
-              Preview mode is on. No opens or actions will be saved.
+        {pageState !== "accepted" ? (
+          <header className="space-y-3">
+            <p className="text-sm font-medium uppercase text-stone-600">
+              WINK invite
             </p>
-          ) : null}
-        </header>
+            <h1 className="text-2xl font-semibold text-stone-950">
+              {presentation.headline}
+            </h1>
+            <p className="text-base text-stone-700">
+              {presentation.subtitle}
+            </p>
+            {previewMode ? (
+              <p className="rounded-md border border-stone-300 bg-stone-50 px-3 py-2 text-sm text-stone-700">
+                Preview mode is on. No opens or actions will be saved.
+              </p>
+            ) : null}
+          </header>
+        ) : null}
 
         {pageState === "raincheck" ? (
           <RaincheckState invite={invite} />
