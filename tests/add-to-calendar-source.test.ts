@@ -11,12 +11,20 @@ const acceptedRevealSource = readFileSync(
   "app/i/[slug]/accepted-reveal.tsx",
   "utf8"
 );
+const acceptedPlanActionsSource = readFileSync(
+  "app/i/[slug]/accepted-plan-actions.tsx",
+  "utf8"
+);
 const revealEngineSource = readFileSync("src/lib/reveal-engine.ts", "utf8");
 const calendarSource = readFileSync("src/lib/calendar-event.ts", "utf8");
 
 test("calendar action is wired only through AcceptedReveal", () => {
-  assert.match(acceptedRevealSource, /<AddToCalendar calendar={reveal\.calendar} \/>/);
-  assert.match(acceptedRevealSource, /reveal\.calendar \?/);
+  assert.match(acceptedRevealSource, /<AcceptedPlanActions/);
+  assert.match(
+    acceptedPlanActionsSource,
+    /<AddToCalendar calendar={calendar} \/>/
+  );
+  assert.match(acceptedPlanActionsSource, /calendar \?/);
   assert.doesNotMatch(readFileSync("app/i/[slug]/lawyer-mode.tsx", "utf8"), /AddToCalendar/);
   assert.doesNotMatch(readFileSync("app/i/[slug]/unbothered-mode.tsx", "utf8"), /AddToCalendar/);
   assert.doesNotMatch(readFileSync("app/i/[slug]/raincheck-state.tsx", "utf8"), /AddToCalendar/);
@@ -44,7 +52,7 @@ test("calendar action receives only calendar-safe reveal props", () => {
 });
 
 test("calendar action and utility do not import providers or perform network writes", () => {
-  for (const source of [addToCalendarSource, calendarSource]) {
+  for (const source of [addToCalendarSource, calendarSource, acceptedPlanActionsSource]) {
     assert.doesNotMatch(source, /@supabase|Supabase/);
     assert.doesNotMatch(source, /InviteStore|inviteStore/);
     assert.doesNotMatch(source, /respondToInviteAction|flagUnknownSenderAction|recordNoTapAction/);
@@ -61,6 +69,8 @@ test("calendar action uses browser download primitives without provider popups",
   assert.match(addToCalendarSource, /text\/calendar;charset=utf-8/);
   assert.match(addToCalendarSource, /URL\.createObjectURL/);
   assert.match(addToCalendarSource, /wink-invitation\.ics/);
+  assert.match(addToCalendarSource, /role="status"/);
+  assert.match(addToCalendarSource, /aria-live="polite"/);
   assert.doesNotMatch(addToCalendarSource, /window\.open|iframe|clipboard/);
 });
 

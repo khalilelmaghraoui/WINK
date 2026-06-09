@@ -347,6 +347,21 @@ Sprint 3.2 - Accepted invite Open in maps:
   controls, and dashboard features remain deferred.
 - User validation remains incomplete.
 
+Sprint 3.3 - Accepted experience consolidation:
+
+- Consolidates the accepted reveal into one calmer private-plan artifact after
+  the calendar and maps utility slices.
+- No new Act II capability is added.
+- Calendar and maps actions are grouped under one `Plan actions` hierarchy.
+- Place details now render naturally as primary place text and secondary
+  address text instead of database-like `Name` and `Address` labels.
+- The accepted card uses internal dividers and spacing rather than nested
+  place/action cards.
+- Calendar status feedback remains accessible through a polite status region.
+- No provider, schema, persistence, `InviteStore`, Supabase, metadata, or
+  response behavior changed.
+- User validation remains incomplete.
+
 ## Not In Current MVP Work
 
 Do not add these unless explicitly requested:
@@ -360,7 +375,12 @@ Do not add these unless explicitly requested:
 - Payments.
 - Native mobile app.
 - Expo.
-- Maps.
+- Embedded maps.
+- Geolocation.
+- Automatic directions.
+- Origin detection.
+- Distance or travel-time calculation.
+- Map SDK integrations.
 - Music.
 - AI generation.
 - Partners.

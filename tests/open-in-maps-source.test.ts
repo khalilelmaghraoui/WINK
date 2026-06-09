@@ -8,6 +8,10 @@ const acceptedRevealSource = readFileSync(
   "app/i/[slug]/accepted-reveal.tsx",
   "utf8"
 );
+const acceptedPlanActionsSource = readFileSync(
+  "app/i/[slug]/accepted-plan-actions.tsx",
+  "utf8"
+);
 const recipientPageSource = readFileSync("app/i/[slug]/page.tsx", "utf8");
 const providerSource = readFileSync(
   "src/lib/providers/google-maps-location-provider.ts",
@@ -17,9 +21,13 @@ const providerSource = readFileSync(
 test("OpenInMaps is rendered only through AcceptedReveal", () => {
   assert.match(
     acceptedRevealSource,
+    /<AcceptedPlanActions[\s\S]*locationLink={locationLink}/
+  );
+  assert.match(
+    acceptedPlanActionsSource,
     /<OpenInMaps locationLink={locationLink} \/>/
   );
-  assert.match(acceptedRevealSource, /locationLink \?/);
+  assert.match(acceptedPlanActionsSource, /locationLink \?/);
 
   for (const filePath of [
     "app/i/[slug]/lawyer-mode.tsx",
@@ -50,11 +58,12 @@ test("OpenInMaps uses safe external-link attributes", () => {
   assert.match(openInMapsSource, /rel="noopener noreferrer"/);
   assert.match(openInMapsSource, /referrerPolicy="no-referrer"/);
   assert.match(openInMapsSource, /Open in \{locationLink\.providerLabel\}/);
-  assert.match(openInMapsSource, /aria-label={locationLink\.accessibleLabel}/);
+  assert.match(openInMapsSource, /opens in a new tab/);
+  assert.match(openInMapsSource, /aria-hidden="true"/);
 });
 
 test("OpenInMaps has no trackers, SDKs, geolocation, or network calls", () => {
-  for (const source of [openInMapsSource, acceptedRevealSource]) {
+  for (const source of [openInMapsSource, acceptedRevealSource, acceptedPlanActionsSource]) {
     assert.doesNotMatch(source, /onClick|sendBeacon|trackEvent|analytics|mixpanel|amplitude/i);
     assert.doesNotMatch(source, /fetch\(/);
     assert.doesNotMatch(source, /geolocation|getCurrentPosition|watchPosition/);

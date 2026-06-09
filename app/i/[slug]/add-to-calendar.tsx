@@ -48,19 +48,23 @@ export function AddToCalendar({
   }
 
   return (
-    <div className="space-y-2 rounded-md border border-wink-border bg-wink-background p-4">
+    <div className="space-y-2">
       <button
-        className="min-h-11 w-full cursor-pointer rounded-md border border-wink-border bg-wink-surface px-4 py-2 text-sm font-semibold text-wink-text transition-colors duration-200 hover:border-wink-focus hover:bg-wink-surface-muted focus:outline-none focus:ring-2 focus:ring-wink-focus focus:ring-offset-2 focus:ring-offset-wink-background sm:w-auto"
+        className="min-h-11 w-full cursor-pointer rounded-md border border-wink-border bg-wink-surface px-4 py-2 text-sm font-semibold text-wink-text transition-colors duration-200 hover:border-wink-focus hover:bg-wink-surface-muted focus:outline-none focus:ring-2 focus:ring-wink-focus focus:ring-offset-2 focus:ring-offset-wink-background"
         onClick={handleDownload}
         type="button"
       >
         Add to calendar
       </button>
       <p className="text-sm leading-6 text-wink-text-secondary">
-        Downloads a private .ics calendar file using the time shown above.
+        Downloads a private .ics file with the plan shown above.
       </p>
       {status ? (
-        <p aria-live="polite" className="text-sm text-wink-text-secondary">
+        <p
+          aria-live="polite"
+          className="min-h-5 text-sm text-wink-text-secondary"
+          role="status"
+        >
           {status}
         </p>
       ) : null}

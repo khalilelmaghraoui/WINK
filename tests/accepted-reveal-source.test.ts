@@ -81,14 +81,29 @@ test("recipient page keeps non-accepted states separate", () => {
 
 test("AcceptedReveal owns accepted heading hierarchy", () => {
   assert.match(acceptedRevealSource, /Accepted/);
-  assert.match(acceptedRevealSource, /<h1[\s\S]*accepted-reveal-heading/);
-  assert.doesNotMatch(acceptedRevealSource, /<h1[\s\S]*Accepted/);
+  const h1Block = getRequiredMatch(
+    acceptedRevealSource,
+    /<h1[\s\S]*?<\/h1>/
+  );
+
+  assert.match(h1Block, /accepted-reveal-heading/);
+  assert.match(h1Block, /reveal\.heading/);
+  assert.doesNotMatch(h1Block, /Accepted/);
   assert.match(acceptedRevealSource, /Invitation message/);
   assert.match(acceptedRevealSource, /When/);
   assert.match(acceptedRevealSource, /Place/);
   assert.match(acceptedRevealSource, /Note/);
+  assert.match(acceptedRevealSource, /AcceptedPlanActions/);
   assert.match(
     acceptedRevealSource,
-    /Revisit this private link whenever you need the plan\./
+    /Keep this private link\. It stays your plan\./
   );
 });
+
+function getRequiredMatch(source: string, pattern: RegExp): string {
+  const match = pattern.exec(source);
+
+  assert.ok(match);
+
+  return match[0];
+}
