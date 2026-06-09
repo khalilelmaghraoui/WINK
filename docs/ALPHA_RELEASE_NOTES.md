@@ -32,6 +32,28 @@
 - Create `alpha-act-i-0.2` only after the Vercel Production deployment commit
   is confirmed.
 
+## Act II Alpha Candidate
+
+- Sprint 3.0 added the accepted reveal foundation on the same `/i/[slug]`
+  living invite URL.
+- Sprint 3.0 follow-up work centralized human-readable invite date/time
+  presentation across Lawyer Evidence, the Details card, and AcceptedReveal.
+- Sprint 3.1 added a privacy-minimized `.ics` calendar download after
+  acceptance.
+- Sprint 3.2 added a provider-isolated Google Maps web search link after
+  acceptance.
+- Sprint 3.3 consolidated the accepted experience into one plan-actions
+  hierarchy.
+- Sprint 3.3.1 Production closure is documented in
+  `docs/ACT_II_ACCEPTED_EXPERIENCE_PRODUCTION_REPORT.md` with a
+  `ready with caveats` verdict.
+- No user-validation claim is made.
+- Full Act II is not complete.
+- Deferred features remain deferred: embedded maps, geolocation, automatic
+  directions, travel-time calculation, maps SDK integrations, music,
+  countdowns, reveal drip, notifications, camera, scrapbook, partners, sender
+  controls, auth, dashboard, analytics, new modes, and payments.
+
 ## Included Flows
 
 - `/create`.
@@ -65,7 +87,8 @@
 - No notifications.
 - No account-based product home, dashboard, or authenticated landing flow.
 - No Act II reveal drip.
-- No maps, music, camera, scrapbook, or partners.
+- No embedded maps, geolocation, automatic directions, travel-time
+  calculation, maps SDK integrations, music, camera, scrapbook, or partners.
 - Closed alpha feedback has not been collected yet.
 
 ## Next Deferred Sprint

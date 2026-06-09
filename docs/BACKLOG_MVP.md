@@ -14,8 +14,10 @@ feedback pack is ready, and WINK now has a minimal public entry page explaining
 the existing Act I flow. Sprint 2.6.1 homepage Production smoke is documented
 with a `ready with caveats` verdict because exact Vercel deployment commit
 confirmation remains pending. Sprint 3.0 begins a narrow Act II accepted reveal
-foundation using existing invite data only. User validation is not completed.
-This is not a public launch or production-readiness claim.
+foundation using existing invite data only. Sprint 3.3.1 documents the first
+accepted-experience Production closure with a `ready with caveats` verdict.
+User validation is not completed. This is not a public launch or
+production-readiness claim.
 
 Active stack:
 
@@ -438,6 +440,38 @@ Constraints:
   distance/travel-time calculation, calendar provider, notification, analytics,
   tracking, auth, dashboard, payment, AI, music, countdown, reveal drip, camera,
   scrapbook, partner, sender-control, or new-mode behavior was added.
+- User validation remains incomplete.
+
+## Sprint 3.3.1 - Act II Accepted Experience Production Closure
+
+Status: documented, ready with caveats.
+
+Deliverables:
+
+- Production evidence report for accepted reveal, human-readable plan details,
+  Add to calendar, Open in Google Maps, and consolidated Plan actions.
+- Production pending-state create/open smoke with bearer slug redacted.
+- Production accepted-state rendering checks for calendar/maps action presence
+  and omission cases.
+- Responsive screenshots at `320px`, `375px`, `768px`, `1024px`, and wide
+  desktop.
+- Privacy and architecture checks for service-role exposure, `openCount`,
+  analytics, geolocation, map SDKs, calendar SDKs, and generic invite metadata.
+
+Caveats:
+
+- Vercel Production deployment commit still needs independent dashboard
+  confirmation before tagging.
+- A real clicked Production browser calendar download/import check remains to
+  be completed before an Act II alpha tag.
+- A narrow-phone spot-check should confirm the `320px` maps helper text remains
+  comfortable.
+
+Constraints:
+
+- No product code, tests, package files, schema, persistence, `InviteStore`,
+  Supabase adapter, metadata, route, or response behavior changed.
+- Full Act II is not complete.
 - User validation remains incomplete.
 
 ## Future, Not Now

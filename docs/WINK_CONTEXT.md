@@ -362,6 +362,22 @@ Sprint 3.3 - Accepted experience consolidation:
   response behavior changed.
 - User validation remains incomplete.
 
+Sprint 3.3.1 - Act II accepted experience Production closure:
+
+- `docs/ACT_II_ACCEPTED_EXPERIENCE_PRODUCTION_REPORT.md` records Production
+  evidence for the accepted reveal, shared human-readable plan details, Add to
+  calendar, Open in Google Maps, and the consolidated plan-actions hierarchy.
+- Verdict is `ready with caveats`.
+- Production accepted-state rendering, privacy checks, and automated
+  verification passed.
+- Vercel Production deployment commit confirmation remains pending because the
+  public deployment did not expose a commit SHA.
+- A real clicked Production browser calendar download/import check remains a
+  manual follow-up before creating an Act II alpha tag.
+- Full Act II is not complete, and user validation remains incomplete.
+- No product code, schema, persistence, `InviteStore`, Supabase, metadata, or
+  response behavior changed.
+
 ## Not In Current MVP Work
 
 Do not add these unless explicitly requested:
