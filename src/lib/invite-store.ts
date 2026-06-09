@@ -2,6 +2,11 @@ import { randomUUID } from "node:crypto";
 
 import { generateSlug } from "./generate-slug";
 import {
+  getEffectiveInvite,
+  isInviteExpired,
+  shouldPersistInviteExpiry
+} from "./invite-lifecycle";
+import {
   readInvitePersistenceEnvironment,
   resolveInvitePersistenceMode
 } from "./storage/invite-store-config";
@@ -195,11 +200,21 @@ export class InMemoryInviteStore implements InviteStore {
       return null;
     }
 
-    if (opts.previewMode || invite.openedAt) {
+    if (opts.previewMode) {
       return cloneInvite(invite);
     }
 
     const nowIso = this.now();
+    const now = new Date(nowIso);
+
+    if (isInviteExpired(invite, now)) {
+      return getEffectiveInvite(invite, now);
+    }
+
+    if (invite.openedAt) {
+      return cloneInvite(invite);
+    }
+
     const nextInvite: Invite = {
       ...invite,
       status: invite.status === "pending" ? "opened" : invite.status,
@@ -223,7 +238,14 @@ export class InMemoryInviteStore implements InviteStore {
       return null;
     }
 
-    const nextInvite = this.applyResponse(invite, payload);
+    const nowIso = this.now();
+    const now = new Date(nowIso);
+
+    if (isInviteExpired(invite, now)) {
+      return getEffectiveInvite(invite, now);
+    }
+
+    const nextInvite = this.applyResponse(invite, payload, nowIso);
 
     if (!payload.previewMode) {
       this.invitesBySlug.set(slug, nextInvite);
@@ -242,8 +264,14 @@ export class InMemoryInviteStore implements InviteStore {
       return null;
     }
 
-    const nextNoTapCount = capNoTapCount(invite.noTapCount + 1);
     const nowIso = this.now();
+    const now = new Date(nowIso);
+
+    if (isInviteExpired(invite, now)) {
+      return getEffectiveInvite(invite, now);
+    }
+
+    const nextNoTapCount = capNoTapCount(invite.noTapCount + 1);
     const nextInvite: Invite = {
       ...invite,
       noTapCount: nextNoTapCount,
@@ -268,6 +296,12 @@ export class InMemoryInviteStore implements InviteStore {
     }
 
     const nowIso = this.now();
+    const now = new Date(nowIso);
+
+    if (isInviteExpired(invite, now)) {
+      return getEffectiveInvite(invite, now);
+    }
+
     const nextInvite: Invite = {
       ...invite,
       status: "flagged",
@@ -316,7 +350,7 @@ export class InMemoryInviteStore implements InviteStore {
     const expiredInvites: Invite[] = [];
 
     for (const invite of Array.from(this.invitesBySlug.values())) {
-      if (!shouldExpire(invite, nowIso)) {
+      if (!shouldPersistInviteExpiry(invite, nowIso)) {
         continue;
       }
 
@@ -350,10 +384,9 @@ export class InMemoryInviteStore implements InviteStore {
 
   private applyResponse(
     invite: Invite,
-    payload: InviteResponsePayload
+    payload: InviteResponsePayload,
+    nowIso: string
   ): Invite {
-    const nowIso = this.now();
-
     return {
       ...invite,
       status: responseStatus[payload.response],
@@ -364,16 +397,6 @@ export class InMemoryInviteStore implements InviteStore {
       updatedAt: nowIso
     };
   }
-}
-
-function shouldExpire(invite: Invite, nowIso: string): boolean {
-  return (
-    invite.expiresAt !== null &&
-    invite.expiredAt === null &&
-    invite.canceledAt === null &&
-    invite.response === null &&
-    invite.expiresAt <= nowIso
-  );
 }
 
 function cloneInvite(invite: Invite): Invite {

@@ -1,6 +1,11 @@
 import { randomUUID } from "node:crypto";
 
 import { generateSlug } from "../generate-slug";
+import {
+  getEffectiveInvite,
+  isInviteExpired,
+  shouldPersistInviteExpiry
+} from "../invite-lifecycle";
 import type {
   CounterOffer,
   CreateInviteInput,
@@ -183,11 +188,21 @@ export class SupabaseInviteStore implements InviteStore {
   ): Promise<Invite | null> {
     const invite = await this.getInviteBySlug(slug);
 
-    if (!invite || opts.previewMode || invite.openedAt) {
+    if (!invite || opts.previewMode) {
       return invite;
     }
 
     const nowIso = this.now();
+    const now = new Date(nowIso);
+
+    if (isInviteExpired(invite, now)) {
+      return getEffectiveInvite(invite, now);
+    }
+
+    if (invite.openedAt) {
+      return invite;
+    }
+
     const { data, error } = await this.table()
       .update({
         opened_at: nowIso,
@@ -219,7 +234,14 @@ export class SupabaseInviteStore implements InviteStore {
       return null;
     }
 
-    const nextInvite = applyResponse(invite, payload, this.now());
+    const nowIso = this.now();
+    const now = new Date(nowIso);
+
+    if (isInviteExpired(invite, now)) {
+      return getEffectiveInvite(invite, now);
+    }
+
+    const nextInvite = applyResponse(invite, payload, nowIso);
 
     if (payload.previewMode) {
       return cloneInvite(nextInvite);
@@ -250,6 +272,11 @@ export class SupabaseInviteStore implements InviteStore {
     }
 
     const nowIso = this.now();
+    const now = new Date(nowIso);
+
+    if (isInviteExpired(invite, now)) {
+      return getEffectiveInvite(invite, now);
+    }
 
     return this.updateInvite(slug, {
       no_tap_count: capNoTapCount(invite.noTapCount + 1),
@@ -272,6 +299,11 @@ export class SupabaseInviteStore implements InviteStore {
     }
 
     const nowIso = this.now();
+    const now = new Date(nowIso);
+
+    if (isInviteExpired(invite, now)) {
+      return getEffectiveInvite(invite, now);
+    }
 
     return this.updateInvite(slug, {
       phase: "closed",
@@ -324,7 +356,7 @@ export class SupabaseInviteStore implements InviteStore {
     for (const row of expiringRows) {
       const invite = inviteFromSupabaseRow(row);
 
-      if (!shouldExpire(invite, nowIso)) {
+      if (!shouldPersistInviteExpiry(invite, nowIso)) {
         continue;
       }
 
@@ -468,16 +500,6 @@ function applyResponse(
     respondedAt: nowIso,
     updatedAt: nowIso
   };
-}
-
-function shouldExpire(invite: Invite, nowIso: string): boolean {
-  return (
-    invite.expiresAt !== null &&
-    invite.expiredAt === null &&
-    invite.canceledAt === null &&
-    invite.response === null &&
-    invite.expiresAt <= nowIso
-  );
 }
 
 function cloneInvite(invite: Invite): Invite {

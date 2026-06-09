@@ -183,6 +183,49 @@ test("recipient page loader marks opened only for non-preview loads", async () =
   assert.equal(store.markOpenedCalls, 1);
 });
 
+test("recipient page loader derives expired state without marking opened", async () => {
+  const store = new CountingInviteStore();
+  const invite = await store.createInvite({
+    ...inviteInput,
+    expiresAt: "2026-06-10T12:00:00.000Z"
+  });
+
+  const expiredInvite = await getInviteForRecipientPage({
+    now: new Date("2026-06-10T12:00:00.000Z"),
+    previewMode: false,
+    slug: invite.slug,
+    store
+  });
+  const persistedInvite = await store.getInviteBySlug(invite.slug);
+
+  assert.equal(expiredInvite?.status, "expired");
+  assert.equal(expiredInvite?.openedAt, null);
+  assert.equal(persistedInvite?.status, "pending");
+  assert.equal(persistedInvite?.openedAt, null);
+  assert.equal(store.markOpenedCalls, 0);
+});
+
+test("accepted invite remains accepted after its expiry timestamp", async () => {
+  const store = new CountingInviteStore();
+  const invite = await store.createInvite({
+    ...inviteInput,
+    expiresAt: "2026-06-10T12:00:00.000Z"
+  });
+
+  await store.respond(invite.slug, { response: "yes" });
+
+  const acceptedInvite = await getInviteForRecipientPage({
+    now: new Date("2026-06-10T12:01:00.000Z"),
+    previewMode: false,
+    slug: invite.slug,
+    store
+  });
+
+  assert.equal(acceptedInvite?.status, "accepted");
+  assert.equal(acceptedInvite?.response, "yes");
+  assert.equal(getRecipientPageState(acceptedInvite?.status ?? "draft"), "accepted");
+});
+
 test("isPreviewModeParam only treats explicit true as preview mode", () => {
   assert.equal(isPreviewModeParam("true"), true);
   assert.equal(isPreviewModeParam(["false", "true"]), true);

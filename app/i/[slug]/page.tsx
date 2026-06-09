@@ -294,8 +294,9 @@ function StateMessage({
       body: "You marked that you do not know this person. No notification is sent to the sender."
     },
     expired: {
-      heading: "This invitation has expired.",
-      body: "It is no longer available."
+      eyebrow: "Invitation expired",
+      heading: "This invitation is no longer open for responses.",
+      body: "The sender can create a new invitation if the plan is still on."
     },
     cancelled: {
       heading: "This invitation was cancelled.",
@@ -312,6 +313,11 @@ function StateMessage({
       aria-labelledby="invite-state-heading"
       className="space-y-2 rounded-lg border border-stone-300 bg-white p-5"
     >
+      {"eyebrow" in stateCopy ? (
+        <p className="text-sm font-medium text-stone-600">
+          {stateCopy.eyebrow}
+        </p>
+      ) : null}
       <h2
         className="text-xl font-semibold text-stone-950"
         id="invite-state-heading"

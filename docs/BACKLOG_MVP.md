@@ -17,8 +17,10 @@ confirmation remains pending. Sprint 3.0 begins a narrow Act II accepted reveal
 foundation using existing invite data only. Sprint 3.3.1 documents the first
 accepted-experience Production closure with a `ready with caveats` verdict.
 Sprint 3.4 hardens deployed persistence configuration so Preview and Production
-fail closed instead of silently using temporary memory storage. User validation
-is not completed. This is not a public launch or production-readiness claim.
+fail closed instead of silently using temporary memory storage. Sprint 3.5
+enforces existing invite expiry semantics at read/write boundaries without a
+scheduler or schema change. User validation is not completed. This is not a
+public launch or production-readiness claim.
 
 Active stack:
 
@@ -504,6 +506,32 @@ Constraints:
 - In-memory storage remains local/test only.
 - User validation remains incomplete.
 
+## Sprint 3.5 - Invite Expiry Enforcement
+
+Status: implemented.
+
+Deliverables:
+
+- Pure lifecycle helper for effective invite expiry.
+- Pending/opened invites with `now >= expiresAt` render the expired state.
+- Yes, Raincheck, No, unknown-sender, and no-tap mutations are blocked after
+  effective expiry.
+- Recipient loading derives expiry before marking an invite opened.
+- Accepted, raincheck, declined, flagged, and cancelled states remain terminal
+  and are not retroactively replaced by expiry.
+- Expiry policy documentation.
+
+Constraints:
+
+- No scheduler, cron job, queue, notification, automatic deletion, dashboard,
+  authentication, schema migration, route, provider, or product-flow expansion
+  was added.
+- Effective expiry remains correct even if the existing explicit
+  `expireInvites` persistence method is never called.
+- Missing or malformed expiry values do not crash and do not silently expire an
+  invite.
+- User validation remains incomplete.
+
 ## Future, Not Now
 
 Do not implement these during MVP foundation or Core Ask unless explicitly
@@ -527,7 +555,6 @@ requested:
 - Origin detection.
 - Distance or travel-time calculation.
 - Map SDK integrations.
-- Invite expiry.
 - Rate limiting.
 - Sender verification.
 - Extra modes beyond `lawyer` and `unbothered`.
