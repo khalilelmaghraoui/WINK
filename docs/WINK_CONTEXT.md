@@ -287,6 +287,9 @@ Sprint 3.0 - Act II accepted reveal foundation:
   accepted-state note.
 - Accepted date/time formatting parses local `YYYY-MM-DDTHH:mm` components
   directly and does not shift through UTC.
+- A follow-up Sprint 3.0 amendment moved invite date/time presentation into one
+  shared pure formatter used by Lawyer Evidence, the recipient Details card,
+  and AcceptedReveal. Stored values and persistence behavior are unchanged.
 - The accepted reveal owns its page heading hierarchy after acceptance, so
   pre-response Lawyer or Unbothered headlines are hidden in the accepted state.
 - Acceptance state remains owned by the existing recipient page state logic;

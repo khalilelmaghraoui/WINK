@@ -323,6 +323,9 @@ Deliverables:
   `dateDetails.notes` is not used as dress guidance, date/time renders in a
   human-readable local wall-clock format, and the accepted reveal owns the page
   heading after acceptance.
+- Follow-up amendment centralizes invite date/time presentation in one shared
+  pure formatter so Lawyer Evidence, the recipient Details card, and
+  AcceptedReveal use the same local wall-clock display.
 - Focused tests for complete and missing accepted invite data.
 - Source guardrails ensuring accepted reveal UI does not import Supabase,
   storage, server actions, or response submission behavior.
@@ -331,6 +334,7 @@ Constraints:
 
 - No schema or persistence changes.
 - No new stored fields.
+- No stored date/time value changes.
 - No acceptance logic moved into RevealEngine.
 - No changes to `/create`, response submission, Raincheck, No, unknown sender,
   preview mode, Lawyer mode, Unbothered mode, Kind Reply Assistant,

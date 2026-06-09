@@ -20,6 +20,7 @@ import {
   shouldShowRaincheckPanel,
   shouldShowUnbotheredMode
 } from "@/lib/invite-page";
+import { formatInviteDateTime } from "@/lib/invite-date-time";
 import { inviteStore } from "@/lib/invite-store";
 import type { Invite } from "@/lib/invite-store";
 import { getModePresentation } from "@/lib/mode-engine";
@@ -204,7 +205,10 @@ export default async function InvitePage({
               <Detail label="Mode" value={formatToken(invite.mode)} />
               <Detail label="Tone" value={formatToken(invite.tone)} />
               <Detail label="Date type" value={formatToken(invite.dateType)} />
-              <Detail label="Date and time" value={formatStartsAt(invite)} />
+              <Detail
+                label="Date and time"
+                value={formatInviteDateTime(invite.dateDetails.startsAt)}
+              />
               <Detail label="Place" value={invite.placeDetails.name} />
               <Detail label="Address" value={invite.placeDetails.address} />
               <Detail label="Dress hint" value={getDressHint(invite)} />
@@ -408,16 +412,6 @@ function formatToken(value: string): string {
     .split("_")
     .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
     .join(" ");
-}
-
-function formatStartsAt(invite: Invite): string | null {
-  if (!invite.dateDetails.startsAt) {
-    return null;
-  }
-
-  const [date, time] = invite.dateDetails.startsAt.split("T");
-
-  return [date, time].filter(Boolean).join(" at ");
 }
 
 function getDressHint(invite: Invite): string | null {

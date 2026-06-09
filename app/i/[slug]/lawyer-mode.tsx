@@ -1,5 +1,6 @@
 import { respondToInviteAction } from "./actions";
 import { RaincheckPanel } from "./raincheck-panel";
+import { formatInviteDateTime } from "@/lib/invite-date-time";
 import type { Invite } from "@/lib/invite-store";
 
 export function LawyerMode({
@@ -58,7 +59,11 @@ export function LawyerMode({
       <div className="space-y-2">
         <h3 className="text-base font-semibold text-stone-950">Evidence</h3>
         <ul className="space-y-2 text-base text-stone-800">
-          <li>Date and time: {formatStartsAt(invite) || "Not provided"}</li>
+          <li>
+            Date and time:{" "}
+            {formatInviteDateTime(invite.dateDetails.startsAt) ||
+              "Not provided"}
+          </li>
           <li>Place: {invite.placeDetails.name || "Not provided"}</li>
           <li>Address: {invite.placeDetails.address || "Not provided"}</li>
         </ul>
@@ -146,14 +151,4 @@ export function LawyerMode({
       </div>
     </section>
   );
-}
-
-function formatStartsAt(invite: Invite): string | null {
-  if (!invite.dateDetails.startsAt) {
-    return null;
-  }
-
-  const [date, time] = invite.dateDetails.startsAt.split("T");
-
-  return [date, time].filter(Boolean).join(" at ");
 }

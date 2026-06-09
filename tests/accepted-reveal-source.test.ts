@@ -31,6 +31,19 @@ test("recipient page wires AcceptedReveal only to accepted state", () => {
   );
 });
 
+test("recipient page uses the shared invite date-time formatter", () => {
+  assert.match(
+    recipientPageSource,
+    /import \{ formatInviteDateTime \} from "@\/lib\/invite-date-time"/
+  );
+  assert.match(
+    recipientPageSource,
+    /formatInviteDateTime\(invite\.dateDetails\.startsAt\)/
+  );
+  assert.doesNotMatch(recipientPageSource, /function formatStartsAt/);
+  assert.doesNotMatch(recipientPageSource, /\.split\("T"\)/);
+});
+
 test("accepted state hides pre-response mode framing and response mechanics", () => {
   assert.match(recipientPageSource, /pageState !== "accepted" \? \(/);
   assert.match(recipientPageSource, /shouldShowCompatibilityReport\(pageState\)/);
