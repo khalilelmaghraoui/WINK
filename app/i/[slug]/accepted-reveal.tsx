@@ -1,9 +1,13 @@
 import { AddToCalendar } from "./add-to-calendar";
+import { OpenInMaps } from "./open-in-maps";
 import type { AcceptedRevealViewModel } from "@/lib/reveal-engine";
+import type { LocationLink } from "@/lib/providers/location-provider";
 
 export function AcceptedReveal({
+  locationLink,
   reveal
 }: {
+  locationLink: LocationLink | null;
   reveal: AcceptedRevealViewModel;
 }) {
   return (
@@ -65,6 +69,7 @@ export function AcceptedReveal({
             <RevealDetail label="Name" value={reveal.placeName} />
             <RevealDetail label="Address" value={reveal.placeAddress} />
           </dl>
+          {locationLink ? <OpenInMaps locationLink={locationLink} /> : null}
         </section>
       ) : null}
 

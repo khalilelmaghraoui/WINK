@@ -327,6 +327,26 @@ Sprint 3.1 - Accepted invite Add to calendar:
   scrapbook, partners, sender controls, and dashboard features remain deferred.
 - User validation remains incomplete.
 
+Sprint 3.2 - Accepted invite Open in maps:
+
+- Adds an accepted-state external maps link using only existing place name and
+  address data.
+- Location behavior is isolated behind a provider-neutral `LocationProvider`
+  boundary.
+- The current v1 provider builds a Google Maps web search URL with no SDK, no
+  API key, and no provider API call.
+- No external request occurs before the recipient explicitly opens the link.
+- The link uses `referrerPolicy="no-referrer"` and explains that the place is
+  shared with Google only after click.
+- The outbound query excludes invite slug, invite URL, sender name, recipient
+  name, private invitation message, internal IDs, and tracking parameters.
+- No schema, persistence, `InviteStore`, Supabase, response behavior, metadata
+  behavior, or calendar behavior changed.
+- Embedded maps, automatic directions, geolocation, travel time, music,
+  countdowns, reveal drip, notifications, camera, scrapbook, partners, sender
+  controls, and dashboard features remain deferred.
+- User validation remains incomplete.
+
 ## Not In Current MVP Work
 
 Do not add these unless explicitly requested:

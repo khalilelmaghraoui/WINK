@@ -30,7 +30,7 @@ test("calendar action receives only calendar-safe reveal props", () => {
   );
   const calendarReturn = getRequiredMatch(
     revealEngineSource,
-    /return \{\n    dateTypeLabel,[\s\S]*?placeAddress\n  \};/
+    /return \{\s+dateTypeLabel,[\s\S]*?startsAt: cleanedStartsAt[\s\S]*?\};/
   );
 
   assert.match(revealEngineSource, /calendar: AcceptedRevealCalendarData \| null/);

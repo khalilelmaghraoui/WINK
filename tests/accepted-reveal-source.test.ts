@@ -22,7 +22,10 @@ test("recipient page wires AcceptedReveal only to accepted state", () => {
     recipientPageSource,
     /pageState === "accepted" \? getAcceptedRevealViewModel\(invite\) : null/
   );
-  assert.match(recipientPageSource, /<AcceptedReveal reveal={acceptedReveal} \/>/);
+  assert.match(
+    recipientPageSource,
+    /<AcceptedReveal locationLink={locationLink} reveal={acceptedReveal} \/>/
+  );
   assert.match(recipientPageSource, /pageState !== "accepted"/);
   assert.match(recipientPageSource, /pageState !== "accepted" \? \(/);
   assert.match(
@@ -56,6 +59,15 @@ test("accepted state hides pre-response mode framing and response mechanics", ()
   assert.doesNotMatch(acceptedRevealSource, /CompatibilityReport|LawyerMode|UnbotheredMode/);
   assert.doesNotMatch(acceptedRevealSource, /RaincheckPanel|ResponseActions|KindReplyAssistant/);
   assert.doesNotMatch(acceptedRevealSource, /I do not know this person/);
+});
+
+test("AcceptedReveal receives only a provider-neutral location link", () => {
+  assert.match(acceptedRevealSource, /locationLink: LocationLink \| null/);
+  assert.match(
+    recipientPageSource,
+    /pageState === "accepted"\s+\? getInviteLocationLink/
+  );
+  assert.doesNotMatch(acceptedRevealSource, /GoogleMapsLocationProvider|maps\/search|google\.com/);
 });
 
 test("recipient page keeps non-accepted states separate", () => {

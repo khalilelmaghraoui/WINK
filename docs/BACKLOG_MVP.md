@@ -380,6 +380,38 @@ Constraints:
 - No end time, duration, alarm, reminder, timezone, or `TZID` is invented.
 - User validation remains incomplete.
 
+## Sprint 3.2 - Accepted Invite Open In Maps
+
+Status: implemented.
+
+Deliverables:
+
+- Provider-neutral `LocationProvider` interface for accepted-state location
+  links.
+- Google Maps web search provider that uses no SDK, no API key, no geolocation,
+  and no automatic provider request.
+- Accepted reveal renders a quiet external `Open in Google Maps` action only
+  when a place name or address exists.
+- Source-safety and provider tests for query construction, encoding,
+  no-referrer behavior, privacy exclusions, and provider boundaries.
+
+Constraints:
+
+- No schema, persistence, `InviteStore`, Supabase, response behavior, metadata,
+  `/create`, Lawyer, Unbothered, Raincheck, No, Kind Reply Assistant,
+  Compatibility Report, homepage, or calendar behavior changed.
+- No map SDK, map embed, API key, geolocation, automatic directions, origin
+  detection, distance calculation, travel-time calculation, analytics, or click
+  tracking was added.
+- No invite slug, invite URL, sender name, recipient name, private message,
+  internal ID, or tracking parameter is included in the outbound maps query.
+- Place information is shared with Google only after the recipient explicitly
+  clicks the link.
+- Embedded maps, full directions, music, countdowns, reveal drip,
+  notifications, camera, scrapbook, partners, sender controls, and dashboard
+  features remain deferred.
+- User validation remains incomplete.
+
 ## Future, Not Now
 
 Do not implement these during MVP foundation or Core Ask unless explicitly

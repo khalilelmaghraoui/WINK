@@ -21,9 +21,11 @@ import {
   shouldShowUnbotheredMode
 } from "@/lib/invite-page";
 import { formatInviteDateTime } from "@/lib/invite-date-time";
+import { getInviteLocationLink } from "@/lib/invite-location";
 import { inviteStore } from "@/lib/invite-store";
 import type { Invite } from "@/lib/invite-store";
 import { getModePresentation } from "@/lib/mode-engine";
+import { createGoogleMapsLocationProvider } from "@/lib/providers/google-maps-location-provider";
 import { getAcceptedRevealViewModel } from "@/lib/reveal-engine";
 
 export const dynamic = "force-dynamic";
@@ -73,6 +75,13 @@ export default async function InvitePage({
   const presentation = getModePresentation(invite);
   const acceptedReveal =
     pageState === "accepted" ? getAcceptedRevealViewModel(invite) : null;
+  const locationLink =
+    pageState === "accepted"
+      ? getInviteLocationLink(
+          invite.placeDetails,
+          createGoogleMapsLocationProvider()
+        )
+      : null;
   const showLawyerMode = shouldShowLawyerMode({
     mode: invite.mode,
     state: pageState
@@ -112,7 +121,9 @@ export default async function InvitePage({
           <RaincheckState invite={invite} />
         ) : null}
 
-        {acceptedReveal ? <AcceptedReveal reveal={acceptedReveal} /> : null}
+        {acceptedReveal ? (
+          <AcceptedReveal locationLink={locationLink} reveal={acceptedReveal} />
+        ) : null}
 
         {pageState !== "respondable" &&
         pageState !== "raincheck" &&
