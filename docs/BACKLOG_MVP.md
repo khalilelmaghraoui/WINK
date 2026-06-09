@@ -412,6 +412,34 @@ Constraints:
   features remain deferred.
 - User validation remains incomplete.
 
+## Sprint 3.3 - Accepted Experience Consolidation
+
+Status: implemented.
+
+Deliverables:
+
+- Accepted reveal hierarchy consolidated into one private-plan artifact.
+- Place details render as natural place/address text instead of database-like
+  field labels.
+- Calendar and maps actions are grouped under one compact `Plan actions`
+  section.
+- Calendar status feedback uses accessible polite status semantics.
+- Source-safety tests cover action grouping, missing-action cases, presentation
+  boundaries, external-link attributes, and natural place rendering.
+
+Constraints:
+
+- No new product capability was added.
+- Calendar generation and Google Maps URL generation remain unchanged.
+- No provider, schema, persistence, `InviteStore`, Supabase, response behavior,
+  metadata, `/create`, Lawyer, Unbothered, Raincheck, No, Kind Reply Assistant,
+  Compatibility Report, homepage, or route behavior changed.
+- No map embed, geolocation, automatic directions, origin detection,
+  distance/travel-time calculation, calendar provider, notification, analytics,
+  tracking, auth, dashboard, payment, AI, music, countdown, reveal drip, camera,
+  scrapbook, partner, sender-control, or new-mode behavior was added.
+- User validation remains incomplete.
+
 ## Future, Not Now
 
 Do not implement these during MVP foundation or Core Ask unless explicitly
@@ -429,5 +457,10 @@ requested:
 - Partner offers.
 - AI-generated messages.
 - Music integrations.
-- Map integrations.
+- Embedded maps.
+- Geolocation.
+- Automatic directions.
+- Origin detection.
+- Distance or travel-time calculation.
+- Map SDK integrations.
 - Extra modes beyond `lawyer` and `unbothered`.

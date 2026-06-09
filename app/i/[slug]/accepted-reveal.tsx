@@ -1,5 +1,4 @@
-import { AddToCalendar } from "./add-to-calendar";
-import { OpenInMaps } from "./open-in-maps";
+import { AcceptedPlanActions } from "./accepted-plan-actions";
 import type { AcceptedRevealViewModel } from "@/lib/reveal-engine";
 import type { LocationLink } from "@/lib/providers/location-provider";
 
@@ -39,7 +38,10 @@ export function AcceptedReveal({
         </p>
       </div>
 
-      <section aria-labelledby="accepted-reveal-when" className="space-y-3">
+      <section
+        aria-labelledby="accepted-reveal-when"
+        className="border-t border-wink-border pt-5"
+      >
         <h2
           className="text-sm font-semibold uppercase text-wink-text-secondary"
           id="accepted-reveal-when"
@@ -57,7 +59,7 @@ export function AcceptedReveal({
       {reveal.hasPlaceDetails ? (
         <section
           aria-labelledby="accepted-reveal-place"
-          className="space-y-3 rounded-md border border-wink-border bg-wink-background p-4"
+          className="space-y-3 border-t border-wink-border pt-5"
         >
           <h2
             className="text-sm font-semibold uppercase text-wink-text-secondary"
@@ -65,18 +67,17 @@ export function AcceptedReveal({
           >
             Place
           </h2>
-          <dl className="grid gap-4 text-sm">
-            <RevealDetail label="Name" value={reveal.placeName} />
-            <RevealDetail label="Address" value={reveal.placeAddress} />
-          </dl>
-          {locationLink ? <OpenInMaps locationLink={locationLink} /> : null}
+          <PlaceDetails
+            address={reveal.placeAddress}
+            name={reveal.placeName}
+          />
         </section>
       ) : null}
 
       {reveal.dressHint ? (
         <section
           aria-labelledby="accepted-reveal-note"
-          className="space-y-1 rounded-md border border-wink-border bg-wink-background p-4"
+          className="space-y-1 border-t border-wink-border pt-5"
         >
           <h2
             className="text-sm font-semibold uppercase text-wink-text-secondary"
@@ -90,12 +91,38 @@ export function AcceptedReveal({
         </section>
       ) : null}
 
-      {reveal.calendar ? <AddToCalendar calendar={reveal.calendar} /> : null}
+      <AcceptedPlanActions
+        calendar={reveal.calendar}
+        locationLink={locationLink}
+      />
 
       <p className="border-t border-wink-border pt-4 text-sm leading-6 text-wink-text-secondary">
-        Revisit this private link whenever you need the plan.
+        Keep this private link. It stays your plan.
       </p>
     </section>
+  );
+}
+
+function PlaceDetails({
+  address,
+  name
+}: {
+  address: string | null;
+  name: string | null;
+}) {
+  return (
+    <div className="space-y-1">
+      {name ? (
+        <p className="break-words text-base font-semibold leading-7 text-wink-text">
+          {name}
+        </p>
+      ) : null}
+      {address ? (
+        <p className="break-words text-base leading-7 text-wink-text-secondary">
+          {address}
+        </p>
+      ) : null}
+    </div>
   );
 }
 
