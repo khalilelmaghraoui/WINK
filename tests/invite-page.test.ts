@@ -3,6 +3,7 @@ import { test } from "node:test";
 
 import {
   getInviteForRecipientPage,
+  getInvitePageLoadResult,
   getInvitePageMetadata,
   getKindReplyIntro,
   getRaincheckOptionLabel,
@@ -36,6 +37,8 @@ import {
 } from "../src/lib/invite-page";
 import { InMemoryInviteStore } from "../src/lib/invite-store";
 import type { InviteWriteOptions } from "../src/lib/invite-store";
+import type { InviteStore } from "../src/lib/invite-store";
+import { InvitePersistenceConfigurationError } from "../src/lib/storage/invite-store-config";
 
 class CountingInviteStore extends InMemoryInviteStore {
   markOpenedCalls = 0;
@@ -45,6 +48,64 @@ class CountingInviteStore extends InMemoryInviteStore {
 
     return super.markOpened(slug, opts);
   }
+}
+
+class UnconfiguredInviteStore implements InviteStore {
+  createInvite = async () => {
+    throw new InvitePersistenceConfigurationError([
+      "NEXT_PUBLIC_SUPABASE_URL",
+      "SUPABASE_SERVICE_ROLE_KEY"
+    ]);
+  };
+
+  getInviteBySlug = async () => {
+    throw new InvitePersistenceConfigurationError([
+      "NEXT_PUBLIC_SUPABASE_URL",
+      "SUPABASE_SERVICE_ROLE_KEY"
+    ]);
+  };
+
+  markOpened = async () => {
+    throw new InvitePersistenceConfigurationError([
+      "NEXT_PUBLIC_SUPABASE_URL",
+      "SUPABASE_SERVICE_ROLE_KEY"
+    ]);
+  };
+
+  recordNoTap = async () => {
+    throw new InvitePersistenceConfigurationError([
+      "NEXT_PUBLIC_SUPABASE_URL",
+      "SUPABASE_SERVICE_ROLE_KEY"
+    ]);
+  };
+
+  respond = async () => {
+    throw new InvitePersistenceConfigurationError([
+      "NEXT_PUBLIC_SUPABASE_URL",
+      "SUPABASE_SERVICE_ROLE_KEY"
+    ]);
+  };
+
+  flagUnknownSender = async () => {
+    throw new InvitePersistenceConfigurationError([
+      "NEXT_PUBLIC_SUPABASE_URL",
+      "SUPABASE_SERVICE_ROLE_KEY"
+    ]);
+  };
+
+  cancelInvite = async () => {
+    throw new InvitePersistenceConfigurationError([
+      "NEXT_PUBLIC_SUPABASE_URL",
+      "SUPABASE_SERVICE_ROLE_KEY"
+    ]);
+  };
+
+  expireInvites = async () => {
+    throw new InvitePersistenceConfigurationError([
+      "NEXT_PUBLIC_SUPABASE_URL",
+      "SUPABASE_SERVICE_ROLE_KEY"
+    ]);
+  };
 }
 
 const inviteInput = {
@@ -73,6 +134,28 @@ test("recipient page loader returns null for missing slug", async () => {
 
   assert.equal(invite, null);
   assert.equal(store.markOpenedCalls, 0);
+});
+
+test("recipient page load result distinguishes missing invite from storage unavailable", async () => {
+  const missingResult = await getInvitePageLoadResult({
+    previewMode: false,
+    slug: "missing",
+    store: new CountingInviteStore()
+  });
+  const unavailableResult = await getInvitePageLoadResult({
+    previewMode: false,
+    slug: "any-slug",
+    store: new UnconfiguredInviteStore()
+  });
+
+  assert.deepEqual(missingResult, {
+    invite: null,
+    state: "not_found"
+  });
+  assert.deepEqual(unavailableResult, {
+    invite: null,
+    state: "temporarily_unavailable"
+  });
 });
 
 test("recipient page loader marks opened only for non-preview loads", async () => {

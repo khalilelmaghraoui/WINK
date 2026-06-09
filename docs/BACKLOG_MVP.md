@@ -16,8 +16,9 @@ with a `ready with caveats` verdict because exact Vercel deployment commit
 confirmation remains pending. Sprint 3.0 begins a narrow Act II accepted reveal
 foundation using existing invite data only. Sprint 3.3.1 documents the first
 accepted-experience Production closure with a `ready with caveats` verdict.
-User validation is not completed. This is not a public launch or
-production-readiness claim.
+Sprint 3.4 hardens deployed persistence configuration so Preview and Production
+fail closed instead of silently using temporary memory storage. User validation
+is not completed. This is not a public launch or production-readiness claim.
 
 Active stack:
 
@@ -474,6 +475,35 @@ Constraints:
 - Full Act II is not complete.
 - User validation remains incomplete.
 
+## Sprint 3.4 - Production Persistence Fail-Closed
+
+Status: implemented.
+
+Deliverables:
+
+- Pure persistence-mode resolver for local/test memory fallback versus
+  deployed Supabase requirement.
+- Typed persistence-configuration error with a stable non-secret code.
+- Lazy server-side `InviteStore` resolution so local builds do not require
+  production credentials.
+- `/create` returns a safe temporary-service message instead of a disappearing
+  memory-backed share link when deployed persistence is missing.
+- `/i/[slug]` distinguishes storage-unavailable from a genuine invite-not-found
+  slug.
+- Source and behavior tests for deployed fail-closed behavior, service-role
+  secrecy, UI import boundaries, and build safety.
+- `docs/PRODUCTION_PERSISTENCE_SAFETY.md` documents required deployed
+  variables and safe verification.
+
+Constraints:
+
+- No product capability was added.
+- No schema, route, provider, invite-field, metadata, response behavior,
+  calendar, maps, homepage, Lawyer, Unbothered, Raincheck, No, Kind Reply
+  Assistant, or accepted reveal behavior changed.
+- In-memory storage remains local/test only.
+- User validation remains incomplete.
+
 ## Future, Not Now
 
 Do not implement these during MVP foundation or Core Ask unless explicitly
@@ -497,4 +527,7 @@ requested:
 - Origin detection.
 - Distance or travel-time calculation.
 - Map SDK integrations.
+- Invite expiry.
+- Rate limiting.
+- Sender verification.
 - Extra modes beyond `lawyer` and `unbothered`.

@@ -80,7 +80,10 @@ test("service-role secret is server-only and not public-prefixed", () => {
 
   assert.match(envExampleSource, /^SUPABASE_SERVICE_ROLE_KEY=/m);
   assert.doesNotMatch(envExampleSource, /NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_KEY/);
-  assert.deepEqual(serviceRoleFiles, ["src/lib/supabase/server.ts"]);
+  assert.deepEqual(serviceRoleFiles, [
+    "src/lib/storage/invite-store-config.ts",
+    "src/lib/supabase/server.ts"
+  ]);
   assert.deepEqual(appServiceRoleFiles, []);
   assert.doesNotMatch(appText, /SUPABASE_SERVICE_ROLE_KEY/);
 });

@@ -17,8 +17,9 @@ SUPABASE_SERVICE_ROLE_KEY=
 
 Do not commit `.env.local` or real secrets. `SUPABASE_SERVICE_ROLE_KEY` is
 server-only and must never be prefixed with `NEXT_PUBLIC`. If the Supabase URL
-or service-role key is missing, the app falls back to the in-memory store for
-local development and tests.
+or service-role key is missing, the app falls back to the in-memory store only
+for local development and tests. Vercel Preview and Production fail closed when
+these values are missing or incomplete.
 
 ## Local Development Modes
 
@@ -28,6 +29,9 @@ local development and tests.
   `SupabaseInviteStore` is selected automatically.
 - `NEXT_PUBLIC_SUPABASE_ANON_KEY` may remain configured for future safe public
   reads, but invite persistence does not require anon table writes.
+- Deployed Preview and Production must have `NEXT_PUBLIC_SUPABASE_URL` and
+  `SUPABASE_SERVICE_ROLE_KEY`; otherwise invite creation and loading show safe
+  temporary-service messages instead of creating disappearing memory links.
 
 Normal unit tests do not require a real Supabase project.
 

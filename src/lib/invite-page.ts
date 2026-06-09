@@ -7,6 +7,7 @@ import type {
   RaincheckOption
 } from "./invite-store";
 import type { InviteStatus } from "./invite-store";
+import { isInvitePersistenceConfigurationError } from "./storage/invite-store-config";
 
 export const invitePageGenericPreview = "You have a surprise waiting.";
 
@@ -57,6 +58,59 @@ export async function getInviteForRecipientPage({
   }
 
   return store.markOpened(slug, { previewMode: false });
+}
+
+export type InvitePageLoadResult =
+  | {
+      invite: Invite;
+      state: "loaded";
+    }
+  | {
+      invite: null;
+      state: "not_found";
+    }
+  | {
+      invite: null;
+      state: "temporarily_unavailable";
+    };
+
+export async function getInvitePageLoadResult({
+  previewMode,
+  slug,
+  store
+}: {
+  previewMode: boolean;
+  slug: string;
+  store: InviteStore;
+}): Promise<InvitePageLoadResult> {
+  try {
+    const invite = await getInviteForRecipientPage({
+      previewMode,
+      slug,
+      store
+    });
+
+    if (!invite) {
+      return {
+        invite: null,
+        state: "not_found"
+      };
+    }
+
+    return {
+      invite,
+      state: "loaded"
+    };
+  } catch (error) {
+    if (isInvitePersistenceConfigurationError(error)) {
+      return {
+        invite: null,
+        state: "temporarily_unavailable"
+      };
+    }
+
+    throw error;
+  }
 }
 
 export type RecipientPageState =

@@ -1,8 +1,11 @@
 import { randomUUID } from "node:crypto";
 
 import { generateSlug } from "./generate-slug";
+import {
+  readInvitePersistenceEnvironment,
+  resolveInvitePersistenceMode
+} from "./storage/invite-store-config";
 import { SupabaseInviteStore } from "./storage/invite-store-supabase";
-import { getSupabaseServiceConfig } from "./supabase/server";
 
 export type InviteTone = "cute" | "funny" | "romantic" | "bold";
 
@@ -401,20 +404,60 @@ const globalInviteStore = globalThis as typeof globalThis & {
 export function shouldUseSupabaseInviteStore(
   env: Partial<NodeJS.ProcessEnv> = process.env
 ): boolean {
-  return getSupabaseServiceConfig(env) !== null;
+  return (
+    resolveInvitePersistenceMode(readInvitePersistenceEnvironment(env)) ===
+    "supabase"
+  );
 }
 
 export function createDefaultInviteStore(
   env: Partial<NodeJS.ProcessEnv> = process.env
 ): InviteStore {
-  if (shouldUseSupabaseInviteStore(env)) {
+  if (
+    resolveInvitePersistenceMode(readInvitePersistenceEnvironment(env)) ===
+    "supabase"
+  ) {
     return new SupabaseInviteStore({ env });
   }
 
   return new InMemoryInviteStore();
 }
 
-export const inviteStore: InviteStore =
-  globalInviteStore.__winkInviteStore ?? createDefaultInviteStore();
+export const inviteStore: InviteStore = createLazyInviteStore();
 
-globalInviteStore.__winkInviteStore = inviteStore;
+function getGlobalInviteStore(): InviteStore {
+  if (!globalInviteStore.__winkInviteStore) {
+    globalInviteStore.__winkInviteStore = createDefaultInviteStore();
+  }
+
+  return globalInviteStore.__winkInviteStore;
+}
+
+function createLazyInviteStore(): InviteStore {
+  return {
+    createInvite(input) {
+      return getGlobalInviteStore().createInvite(input);
+    },
+    getInviteBySlug(slug, opts) {
+      return getGlobalInviteStore().getInviteBySlug(slug, opts);
+    },
+    markOpened(slug, opts) {
+      return getGlobalInviteStore().markOpened(slug, opts);
+    },
+    recordNoTap(slug, opts) {
+      return getGlobalInviteStore().recordNoTap(slug, opts);
+    },
+    respond(slug, payload) {
+      return getGlobalInviteStore().respond(slug, payload);
+    },
+    flagUnknownSender(slug, opts) {
+      return getGlobalInviteStore().flagUnknownSender(slug, opts);
+    },
+    cancelInvite(slug, opts) {
+      return getGlobalInviteStore().cancelInvite(slug, opts);
+    },
+    expireInvites(nowIso, opts) {
+      return getGlobalInviteStore().expireInvites(nowIso, opts);
+    }
+  };
+}
