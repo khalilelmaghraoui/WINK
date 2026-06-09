@@ -167,6 +167,79 @@ test("raincheck response stores option note and suggested date", async () => {
   });
 });
 
+test("expired invites block response transitions without mutating stored data", async () => {
+  const responses: InviteResponse[] = ["yes", "raincheck", "no"];
+
+  for (const response of responses) {
+    const store = new InMemoryInviteStore({
+      now: () => "2026-06-10T12:00:00.000Z"
+    });
+    const invite = await store.createInvite({
+      ...baseInput,
+      expiresAt: "2026-06-10T12:00:00.000Z"
+    });
+    const result = await store.respond(invite.slug, {
+      response,
+      counterOffer:
+        response === "raincheck"
+          ? {
+              message: "Maybe Saturday?"
+            }
+          : null
+    });
+    const persistedInvite = await store.getInviteBySlug(invite.slug);
+
+    assert.equal(result?.status, "expired");
+    assert.equal(result?.response, null);
+    assert.equal(result?.respondedAt, null);
+    assert.equal(persistedInvite?.status, "pending");
+    assert.equal(persistedInvite?.response, null);
+    assert.equal(persistedInvite?.counterOffer, null);
+    assert.equal(persistedInvite?.respondedAt, null);
+  }
+});
+
+test("expired invites block unknown-sender and no-tap mutations", async () => {
+  const store = new InMemoryInviteStore({
+    now: () => "2026-06-10T12:00:00.000Z"
+  });
+  const invite = await store.createInvite({
+    ...baseInput,
+    expiresAt: "2026-06-10T12:00:00.000Z"
+  });
+
+  const tapResult = await store.recordNoTap(invite.slug);
+  const flagResult = await store.flagUnknownSender(invite.slug);
+  const persistedInvite = await store.getInviteBySlug(invite.slug);
+
+  assert.equal(tapResult?.status, "expired");
+  assert.equal(flagResult?.status, "expired");
+  assert.equal(persistedInvite?.status, "pending");
+  assert.equal(persistedInvite?.noTapCount, 0);
+  assert.equal(persistedInvite?.unknownSenderFlaggedAt, null);
+});
+
+test("persisted expired status blocks later response mutation", async () => {
+  const store = new InMemoryInviteStore({
+    now: () => "2026-06-10T12:01:00.000Z"
+  });
+  const invite = await store.createInvite({
+    ...baseInput,
+    expiresAt: "2026-06-10T12:00:00.000Z"
+  });
+
+  await store.expireInvites("2026-06-10T12:01:00.000Z");
+
+  const result = await store.respond(invite.slug, { response: "yes" });
+  const persistedInvite = await store.getInviteBySlug(invite.slug);
+
+  assert.equal(result?.status, "expired");
+  assert.equal(result?.response, null);
+  assert.equal(persistedInvite?.status, "expired");
+  assert.equal(persistedInvite?.response, null);
+  assert.equal(persistedInvite?.respondedAt, null);
+});
+
 test("safety and availability actions update status", async () => {
   const store = new InMemoryInviteStore();
   const flaggedInvite = await store.createInvite(baseInput);

@@ -396,6 +396,23 @@ Sprint 3.4 - Production persistence fail-closed and configuration safety:
   calendar, or maps behavior changed.
 - User validation remains incomplete.
 
+Sprint 3.5 - Invite expiry enforcement:
+
+- Enforces existing invite expiry semantics lazily at recipient page loading
+  and server-side mutation boundaries.
+- Pending/opened invites with `now >= expiresAt` render an expired state and
+  cannot accept Yes, Raincheck, No, unknown-sender, or no-tap writes.
+- Accepted, raincheck, declined, flagged, and cancelled states remain terminal
+  and are not retroactively replaced by expiry.
+- Missing or malformed expiry values do not crash the app and do not silently
+  expire the invite.
+- Expiry is effective/derived for correctness; the existing `expireInvites`
+  method may persist an expired transition when explicitly called, but no cron,
+  scheduler, notification, automatic deletion, or background worker exists.
+- No schema, product-flow, provider, `InviteStore` contract, metadata,
+  calendar, maps, or route expansion occurred.
+- User validation remains incomplete.
+
 ## Not In Current MVP Work
 
 Do not add these unless explicitly requested:
@@ -421,6 +438,5 @@ Do not add these unless explicitly requested:
 - Camera.
 - Scrapbook.
 - Reveal drip.
-- Invite expiry.
 - Rate limiting.
 - Sender verification.

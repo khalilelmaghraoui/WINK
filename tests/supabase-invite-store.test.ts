@@ -201,6 +201,40 @@ test("Supabase adapter preserves noTapCount cap and response transitions", async
   });
 });
 
+test("Supabase adapter blocks expired response and safety mutations", async () => {
+  const store = new SupabaseInviteStore({
+    client: new FakeSupabaseInviteClient(),
+    now: () => "2026-06-10T12:00:00.000Z",
+    slugGenerator: () => "ABCDEFGH"
+  });
+  const invite = await store.createInvite({
+    ...baseInput,
+    expiresAt: "2026-06-10T12:00:00.000Z"
+  });
+
+  const responseResult = await store.respond(invite.slug, {
+    counterOffer: {
+      message: "Maybe later?"
+    },
+    response: "raincheck"
+  });
+  const tapResult = await store.recordNoTap(invite.slug);
+  const flagResult = await store.flagUnknownSender(invite.slug);
+  const persistedInvite = await store.getInviteBySlug(invite.slug);
+
+  assert.equal(responseResult?.status, "expired");
+  assert.equal(responseResult?.response, null);
+  assert.equal(responseResult?.counterOffer, null);
+  assert.equal(tapResult?.status, "expired");
+  assert.equal(flagResult?.status, "expired");
+  assert.equal(persistedInvite?.status, "pending");
+  assert.equal(persistedInvite?.response, null);
+  assert.equal(persistedInvite?.counterOffer, null);
+  assert.equal(persistedInvite?.respondedAt, null);
+  assert.equal(persistedInvite?.noTapCount, 0);
+  assert.equal(persistedInvite?.unknownSenderFlaggedAt, null);
+});
+
 test("Supabase schema documents RLS smoke posture without open count", () => {
   const schema = readFileSync("docs/SUPABASE_SCHEMA.md", "utf8");
 

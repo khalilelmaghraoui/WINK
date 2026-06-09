@@ -7,6 +7,7 @@ import type {
   RaincheckOption
 } from "./invite-store";
 import type { InviteStatus } from "./invite-store";
+import { getEffectiveInvite } from "./invite-lifecycle";
 import { isInvitePersistenceConfigurationError } from "./storage/invite-store-config";
 
 export const invitePageGenericPreview = "You have a surprise waiting.";
@@ -39,10 +40,12 @@ export function isPreviewModeParam(
 }
 
 export async function getInviteForRecipientPage({
+  now = new Date(),
   previewMode,
   slug,
   store
 }: {
+  now?: Date;
   previewMode: boolean;
   slug: string;
   store: InviteStore;
@@ -53,8 +56,14 @@ export async function getInviteForRecipientPage({
     return null;
   }
 
+  const effectiveInvite = getEffectiveInvite(invite, now);
+
+  if (effectiveInvite.status === "expired") {
+    return effectiveInvite;
+  }
+
   if (previewMode) {
-    return invite;
+    return effectiveInvite;
   }
 
   return store.markOpened(slug, { previewMode: false });
@@ -75,16 +84,19 @@ export type InvitePageLoadResult =
     };
 
 export async function getInvitePageLoadResult({
+  now = new Date(),
   previewMode,
   slug,
   store
 }: {
+  now?: Date;
   previewMode: boolean;
   slug: string;
   store: InviteStore;
 }): Promise<InvitePageLoadResult> {
   try {
     const invite = await getInviteForRecipientPage({
+      now,
       previewMode,
       slug,
       store

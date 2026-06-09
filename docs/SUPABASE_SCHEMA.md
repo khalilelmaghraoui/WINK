@@ -187,6 +187,11 @@ Do not make broad anon write policies part of public preview or production.
   suggested day without changing the existing `InviteStore` contract.
 - `openedAt` remains write-once in the adapter. The app reads first, then
   updates only rows whose `opened_at` is still null.
+- `expires_at` / `expired_at` support lazy invite expiry enforcement. Pending
+  or opened invites are treated as expired when `now >= expires_at`; accepted,
+  raincheck, declined, flagged, and cancelled states are not retroactively
+  replaced. No Supabase scheduled job or schema migration is required for this
+  enforcement.
 
 ## Privacy And Safety
 
