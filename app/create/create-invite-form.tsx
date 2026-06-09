@@ -120,6 +120,11 @@ export function CreateInviteForm() {
               Fix the highlighted fields before continuing.
             </p>
           ) : null}
+          {state.serviceError ? (
+            <p className="text-sm text-red-700" role="status">
+              {state.serviceError}
+            </p>
+          ) : null}
         </header>
 
         <section hidden={stepIndex !== 0} className="space-y-4">

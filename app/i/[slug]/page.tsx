@@ -9,7 +9,7 @@ import { RaincheckPanel } from "./raincheck-panel";
 import { RaincheckState } from "./raincheck-state";
 import { UnbotheredMode } from "./unbothered-mode";
 import {
-  getInviteForRecipientPage,
+  getInvitePageLoadResult,
   getInvitePageMetadata,
   getRecipientPageState,
   isPreviewModeParam,
@@ -49,27 +49,21 @@ export default async function InvitePage({
   const resolvedParams = await params;
   const resolvedSearchParams = await searchParams;
   const previewMode = isPreviewModeParam(resolvedSearchParams?.previewMode);
-  const invite = await getInviteForRecipientPage({
+  const loadResult = await getInvitePageLoadResult({
     previewMode,
     slug: resolvedParams.slug,
     store: inviteStore
   });
 
-  if (!invite) {
-    return (
-      <main className="mx-auto flex min-h-screen w-full max-w-2xl flex-col justify-center px-5 py-10">
-        <section className="space-y-3 rounded-lg border border-stone-300 bg-white p-5">
-          <p className="text-sm font-medium text-stone-600">Invite not found</p>
-          <h1 className="text-2xl font-semibold text-stone-950">
-            This invitation is not available.
-          </h1>
-          <p className="text-base text-stone-700">
-            Check the link and try again.
-          </p>
-        </section>
-      </main>
-    );
+  if (loadResult.state === "temporarily_unavailable") {
+    return <TemporaryUnavailableState />;
   }
+
+  if (loadResult.state === "not_found") {
+    return <InviteNotFoundState />;
+  }
+
+  const invite = loadResult.invite;
 
   const pageState = getRecipientPageState(invite.status);
   const presentation = getModePresentation(invite);
@@ -237,6 +231,40 @@ export default async function InvitePage({
           />
         ) : null}
       </article>
+    </main>
+  );
+}
+
+function InviteNotFoundState() {
+  return (
+    <main className="mx-auto flex min-h-screen w-full max-w-2xl flex-col justify-center px-5 py-10">
+      <section className="space-y-3 rounded-lg border border-stone-300 bg-white p-5">
+        <p className="text-sm font-medium text-stone-600">Invite not found</p>
+        <h1 className="text-2xl font-semibold text-stone-950">
+          This invitation is not available.
+        </h1>
+        <p className="text-base text-stone-700">
+          Check the link and try again.
+        </p>
+      </section>
+    </main>
+  );
+}
+
+function TemporaryUnavailableState() {
+  return (
+    <main className="mx-auto flex min-h-screen w-full max-w-2xl flex-col justify-center px-5 py-10">
+      <section className="space-y-3 rounded-lg border border-stone-300 bg-white p-5">
+        <p className="text-sm font-medium text-stone-600">
+          Temporarily unavailable
+        </p>
+        <h1 className="text-2xl font-semibold text-stone-950">
+          This invitation could not be loaded right now.
+        </h1>
+        <p className="text-base text-stone-700">
+          Please try again in a moment.
+        </p>
+      </section>
     </main>
   );
 }

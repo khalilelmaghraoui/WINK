@@ -9,14 +9,20 @@ import {
 import type {
   CreateInviteInput,
   DateType,
+  Invite,
   InviteMode,
   InviteTone
 } from "@/lib/invite-store";
+import { isInvitePersistenceConfigurationError } from "@/lib/storage/invite-store-config";
 
 export interface CreateInviteActionState {
   invitePath?: string;
   errors: Partial<Record<CreateInviteField, string>>;
+  serviceError?: string;
 }
+
+const createInviteServiceUnavailableMessage =
+  "Invitation service is temporarily unavailable. Please try again later.";
 
 export async function createInviteAction(
   _previousState: CreateInviteActionState,
@@ -46,7 +52,20 @@ export async function createInviteAction(
     }
   };
 
-  const invite = await inviteStore.createInvite(input);
+  let invite: Invite;
+
+  try {
+    invite = await inviteStore.createInvite(input);
+  } catch (error) {
+    if (isInvitePersistenceConfigurationError(error)) {
+      return {
+        errors: {},
+        serviceError: createInviteServiceUnavailableMessage
+      };
+    }
+
+    throw error;
+  }
 
   return {
     invitePath: `/i/${invite.slug}`,

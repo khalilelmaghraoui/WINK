@@ -63,6 +63,12 @@ NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_KEY=
 source, JavaScript bundles, client-exposed environment variables, logs, or
 network responses.
 
+Sprint 3.4 fail-closed rule: Vercel Preview and Production must not fall back
+to in-memory storage. If either `NEXT_PUBLIC_SUPABASE_URL` or
+`SUPABASE_SERVICE_ROLE_KEY` is missing or blank, `/create` must not return a
+share link and `/i/[slug]` must show a temporary-service message rather than
+misclassifying the problem as invite-not-found.
+
 ## Supabase Preparation
 
 1. Run the SQL from `docs/SUPABASE_SCHEMA.md`.
@@ -86,6 +92,22 @@ Run this against the Vercel preview URL.
    - `phase` is `sent`.
    - `opened_at` is null.
    - `no_tap_count` is `0`.
+
+### Missing Configuration Fail-Closed Check
+
+Use a disposable Vercel deployment or environment override only:
+
+1. Remove or blank either `NEXT_PUBLIC_SUPABASE_URL` or
+   `SUPABASE_SERVICE_ROLE_KEY`.
+2. Redeploy.
+3. Submit `/create`.
+4. Confirm no share link is returned.
+5. Confirm the safe message appears:
+   `Invitation service is temporarily unavailable. Please try again later.`
+6. Open any `/i/[slug]` path.
+7. Confirm the temporary unavailable state appears:
+   `This invitation could not be loaded right now.`
+8. Restore the variables and redeploy before normal smoke testing.
 
 ### Open
 
@@ -148,7 +170,7 @@ Run this against the Vercel preview URL.
 
 ## In-Memory Fallback Check
 
-For local development only:
+For local development and tests only:
 
 1. Remove `NEXT_PUBLIC_SUPABASE_URL` or `SUPABASE_SERVICE_ROLE_KEY` from
    `.env.local`.
@@ -156,6 +178,8 @@ For local development only:
 3. Create an invite.
 4. Confirm no Supabase row is inserted.
 5. Confirm the invite works only within the current local server process.
+
+Do not use in-memory fallback in Vercel Preview or Production.
 
 ## Known Preview Tradeoff
 

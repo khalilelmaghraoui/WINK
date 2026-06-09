@@ -378,6 +378,24 @@ Sprint 3.3.1 - Act II accepted experience Production closure:
 - No product code, schema, persistence, `InviteStore`, Supabase, metadata, or
   response behavior changed.
 
+Sprint 3.4 - Production persistence fail-closed and configuration safety:
+
+- Deployed Preview and Production runtimes now require
+  `NEXT_PUBLIC_SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` for invite
+  persistence.
+- In-memory fallback remains available for local development and automated
+  tests only.
+- Missing deployed persistence configuration no longer creates disappearing
+  invite links from `/create`.
+- Missing deployed persistence configuration renders a safe temporary-service
+  state that is distinct from a genuinely unknown invite slug.
+- Persistence selection remains behind the `InviteStore` boundary and is
+  resolved lazily on server use so local builds do not require production
+  credentials.
+- No schema, provider, product-flow, invite-field, metadata, response behavior,
+  calendar, or maps behavior changed.
+- User validation remains incomplete.
+
 ## Not In Current MVP Work
 
 Do not add these unless explicitly requested:
@@ -403,3 +421,6 @@ Do not add these unless explicitly requested:
 - Camera.
 - Scrapbook.
 - Reveal drip.
+- Invite expiry.
+- Rate limiting.
+- Sender verification.

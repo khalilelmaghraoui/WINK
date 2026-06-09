@@ -7,6 +7,7 @@ import {
   InMemoryInviteStore,
   shouldUseSupabaseInviteStore
 } from "../src/lib/invite-store";
+import { InvitePersistenceConfigurationError } from "../src/lib/storage/invite-store-config";
 import type { CreateInviteInput } from "../src/lib/invite-store";
 import {
   inviteFromSupabaseRow,
@@ -44,6 +45,35 @@ test("InviteStore selection falls back to memory without Supabase env", () => {
     false
   );
   assert.ok(createDefaultInviteStore({}) instanceof InMemoryInviteStore);
+});
+
+test("deployed InviteStore selection fails closed without Supabase env", () => {
+  const deployedEnv = {
+    NODE_ENV: "production",
+    VERCEL: "1",
+    VERCEL_ENV: "preview"
+  } as const;
+
+  assert.throws(
+    () => createDefaultInviteStore(deployedEnv),
+    InvitePersistenceConfigurationError
+  );
+  assert.throws(
+    () =>
+      createDefaultInviteStore({
+        ...deployedEnv,
+        NEXT_PUBLIC_SUPABASE_URL: "https://example.supabase.co"
+      }),
+    InvitePersistenceConfigurationError
+  );
+  assert.throws(
+    () =>
+      createDefaultInviteStore({
+        ...deployedEnv,
+        SUPABASE_SERVICE_ROLE_KEY: "service-role"
+      }),
+    InvitePersistenceConfigurationError
+  );
 });
 
 test("InviteStore selection uses Supabase only when service env vars exist", () => {

@@ -39,8 +39,11 @@ npm run dev
 With `NEXT_PUBLIC_SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` present, the app
 should use `SupabaseInviteStore`.
 
-With either the URL or service-role key missing, the app should use
-`InMemoryInviteStore`.
+With either the URL or service-role key missing:
+
+- local development and automated tests may use `InMemoryInviteStore`.
+- Vercel Preview and Production must fail closed with a safe temporary-service
+  message.
 
 The anon key is not enough to select Supabase persistence.
 
@@ -141,7 +144,7 @@ credentials.
 
 ## 11. In-Memory Fallback Smoke
 
-1. Stop the dev server.
+1. Stop the local dev server.
 2. Temporarily remove `NEXT_PUBLIC_SUPABASE_URL` or
    `SUPABASE_SERVICE_ROLE_KEY` from `.env.local`.
 3. Restart the dev server.
@@ -149,6 +152,9 @@ credentials.
 5. Confirm no new Supabase row is inserted.
 6. Confirm the invite works only within the current local server process.
 7. Restore `.env.local` when done.
+
+This fallback is local-only. Do not use it to verify Vercel Preview or
+Production.
 
 ## 12. Security Checks
 
@@ -173,13 +179,16 @@ Confirm:
 
 1. Add these Vercel environment variables for Preview:
    - `NEXT_PUBLIC_SUPABASE_URL`
-   - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
    - `SUPABASE_SERVICE_ROLE_KEY`
-2. Confirm `SUPABASE_SERVICE_ROLE_KEY` is not exposed as a public variable.
-3. Deploy a preview.
-4. Repeat create/open/respond/flag smoke checks against the preview URL.
-5. Inspect browser source and built JavaScript for the service-role key.
-6. Confirm Supabase table writes still work while anon write policies remain
+2. Optional for current server persistence:
+   - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+3. Confirm `SUPABASE_SERVICE_ROLE_KEY` is not exposed as a public variable.
+4. Deploy a preview.
+5. Repeat create/open/respond/flag smoke checks against the preview URL.
+6. Confirm a missing or incomplete Preview configuration does not create a
+   share link and instead shows the safe temporary-service message.
+7. Inspect browser source and built JavaScript for the service-role key.
+8. Confirm Supabase table writes still work while anon write policies remain
    absent.
 
 ## Expected Result
