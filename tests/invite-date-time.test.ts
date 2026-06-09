@@ -2,7 +2,10 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { test } from "node:test";
 
-import { formatInviteDateTime } from "../src/lib/invite-date-time";
+import {
+  formatInviteDateTime,
+  parseInviteLocalDateTime
+} from "../src/lib/invite-date-time";
 
 const expectedSeparator = "\u00b7";
 
@@ -86,6 +89,28 @@ test("formatInviteDateTime output is deterministic", () => {
     formatInviteDateTime("2026-06-17T19:30"),
     formatInviteDateTime("2026-06-17T19:30")
   );
+});
+
+test("parseInviteLocalDateTime exposes validated local parts for calendar use", () => {
+  assert.deepEqual(parseInviteLocalDateTime("2026-06-17T03:19"), {
+    day: 17,
+    hasTime: true,
+    hour: 3,
+    minute: 19,
+    month: 6,
+    year: 2026
+  });
+  assert.deepEqual(parseInviteLocalDateTime("2026-06-17"), {
+    day: 17,
+    hasTime: false,
+    hour: null,
+    minute: null,
+    month: 6,
+    year: 2026
+  });
+  assert.equal(parseInviteLocalDateTime("2026-02-30"), null);
+  assert.equal(parseInviteLocalDateTime("not a date"), null);
+  assert.equal(parseInviteLocalDateTime(undefined), null);
 });
 
 test("invite date-time formatter is pure and presentation-only", () => {

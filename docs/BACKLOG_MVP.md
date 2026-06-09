@@ -344,6 +344,42 @@ Constraints:
 - User validation remains incomplete.
 - Sprint 3.0.1 Preview regression is not complete yet.
 
+## Sprint 3.0.1 - Accepted Reveal Preview Regression
+
+Status: skipped by product decision.
+
+Notes:
+
+- This checkpoint was not run and should not be described as passed.
+- User validation remains incomplete.
+
+## Sprint 3.1 - Accepted Invite Add To Calendar
+
+Status: implemented.
+
+Deliverables:
+
+- Provider-independent `.ics` calendar download action rendered only in the
+  accepted reveal.
+- Pure calendar utility that serializes valid RFC 5545-style calendar output.
+- Shared invite local date/time parser reused for calendar safety.
+- Floating local timed events for stored wall-clock date/time values.
+- All-day events for date-only values.
+- Source-safety and ICS serialization tests.
+
+Constraints:
+
+- No calendar provider SDKs, Google Calendar URLs, Apple Calendar APIs,
+  Microsoft Graph, OAuth, maps, directions, notifications, reminders, alarms,
+  analytics, or network requests.
+- No schema, persistence, stored field, InviteStore, Supabase, response flow,
+  metadata, `/create`, Lawyer, Unbothered, Raincheck, No, Kind Reply Assistant,
+  Compatibility Report, or homepage changes.
+- No sender name, recipient name, invite slug, invite URL, internal IDs, or
+  private invitation message are exported to the `.ics`.
+- No end time, duration, alarm, reminder, timezone, or `TZID` is invented.
+- User validation remains incomplete.
+
 ## Future, Not Now
 
 Do not implement these during MVP foundation or Core Ask unless explicitly

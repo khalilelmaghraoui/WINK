@@ -51,7 +51,13 @@ test("accepted reveal view model formats complete invite data", () => {
     dressHint: "Something comfortable",
     message: "I have a small case to make for coffee this Friday.",
     hasDateDetails: true,
-    hasPlaceDetails: true
+    hasPlaceDetails: true,
+    calendar: {
+      dateTypeLabel: "Romantic Moment",
+      startsAt: "2026-06-12T19:00",
+      placeName: "The Corner Cafe",
+      placeAddress: "123 Fictional Street"
+    }
   });
 });
 
@@ -64,6 +70,7 @@ test("accepted reveal omits missing date details without throwing", () => {
   assert.equal(reveal.startsAtLabel, null);
   assert.equal(reveal.hasDateDetails, false);
   assert.equal(reveal.dateTypeLabel, "Romantic Moment");
+  assert.equal(reveal.calendar, null);
 });
 
 test("accepted reveal formats complete local date and time humanly", () => {
@@ -127,6 +134,7 @@ test("accepted reveal returns a safe fallback for malformed date values", () => 
 
   assert.equal(reveal.startsAtLabel, "not a date");
   assert.equal(reveal.hasDateDetails, true);
+  assert.equal(reveal.calendar, null);
 });
 
 test("accepted reveal date output is deterministic and has no timezone shift", () => {
@@ -156,6 +164,12 @@ test("accepted reveal omits missing place details without placeholders", () => {
   assert.equal(reveal.placeName, null);
   assert.equal(reveal.placeAddress, null);
   assert.equal(reveal.hasPlaceDetails, false);
+  assert.deepEqual(reveal.calendar, {
+    dateTypeLabel: "Romantic Moment",
+    startsAt: "2026-06-12T19:00",
+    placeName: null,
+    placeAddress: null
+  });
 });
 
 test("accepted reveal omits optional notes and dress hint when absent", () => {
@@ -253,6 +267,23 @@ test("accepted reveal output is deterministic", () => {
   );
 });
 
+test("accepted reveal exposes only calendar-safe values for calendar download", () => {
+  const reveal = getAcceptedRevealViewModel(completeInvite);
+
+  assert.deepEqual(reveal.calendar, {
+    dateTypeLabel: "Romantic Moment",
+    startsAt: "2026-06-12T19:00",
+    placeName: "The Corner Cafe",
+    placeAddress: "123 Fictional Street"
+  });
+  assert.notDeepEqual(reveal.calendar, {
+    slug: completeInvite.slug,
+    senderName: completeInvite.senderName,
+    recipientName: completeInvite.recipientName,
+    message: completeInvite.message
+  });
+});
+
 test("RevealEngine has no storage or Supabase dependency", () => {
   const source = readFileSync("src/lib/reveal-engine.ts", "utf8");
 
@@ -263,4 +294,5 @@ test("RevealEngine has no storage or Supabase dependency", () => {
   assert.doesNotMatch(source, /from\s+["'][^"']*accepted-reveal/);
   assert.doesNotMatch(source, /\.tsx/);
   assert.doesNotMatch(source, /dateDetails\.notes/);
+  assert.doesNotMatch(source, /serializeCalendarEventToIcs|BEGIN:VCALENDAR/);
 });

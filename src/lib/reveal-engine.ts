@@ -1,5 +1,15 @@
 import type { Invite } from "./invite-store";
-import { formatInviteDateTime } from "./invite-date-time";
+import {
+  formatInviteDateTime,
+  parseInviteLocalDateTime
+} from "./invite-date-time";
+
+export interface AcceptedRevealCalendarData {
+  dateTypeLabel: string;
+  startsAt: string;
+  placeName: string | null;
+  placeAddress: string | null;
+}
 
 export interface AcceptedRevealViewModel {
   heading: string;
@@ -12,12 +22,14 @@ export interface AcceptedRevealViewModel {
   message: string;
   hasDateDetails: boolean;
   hasPlaceDetails: boolean;
+  calendar: AcceptedRevealCalendarData | null;
 }
 
 export function getAcceptedRevealViewModel(
   invite: Invite
 ): AcceptedRevealViewModel {
   const startsAtLabel = formatInviteDateTime(invite.dateDetails.startsAt);
+  const dateTypeLabel = formatToken(invite.dateType);
   const placeName = cleanOptionalText(invite.placeDetails.name);
   const placeAddress = cleanOptionalText(invite.placeDetails.address);
   const dressHint = getDressHint(invite);
@@ -25,14 +37,45 @@ export function getAcceptedRevealViewModel(
   return {
     heading: "It's a yes.",
     summary: "The plan is here whenever you need it.",
-    dateTypeLabel: formatToken(invite.dateType),
+    dateTypeLabel,
     startsAtLabel,
     placeName,
     placeAddress,
     dressHint,
     message: invite.message,
     hasDateDetails: startsAtLabel !== null,
-    hasPlaceDetails: placeName !== null || placeAddress !== null
+    hasPlaceDetails: placeName !== null || placeAddress !== null,
+    calendar: getCalendarData({
+      dateTypeLabel,
+      placeAddress,
+      placeName,
+      startsAt: invite.dateDetails.startsAt
+    })
+  };
+}
+
+function getCalendarData({
+  dateTypeLabel,
+  placeAddress,
+  placeName,
+  startsAt
+}: {
+  dateTypeLabel: string;
+  placeAddress: string | null;
+  placeName: string | null;
+  startsAt: string | undefined;
+}): AcceptedRevealCalendarData | null {
+  const cleanedStartsAt = cleanOptionalText(startsAt);
+
+  if (!cleanedStartsAt || !parseInviteLocalDateTime(cleanedStartsAt)) {
+    return null;
+  }
+
+  return {
+    dateTypeLabel,
+    startsAt: cleanedStartsAt,
+    placeName,
+    placeAddress
   };
 }
 
