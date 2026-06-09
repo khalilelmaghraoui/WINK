@@ -5,14 +5,13 @@ const dateFormatter = new Intl.DateTimeFormat("en-US", {
   weekday: "long"
 });
 
-interface ParsedInviteDateTime {
+export interface InviteLocalDateTimeParts {
   year: number;
   month: number;
   day: number;
-  time: {
-    hour: number;
-    minute: number;
-  } | null;
+  hour: number | null;
+  minute: number | null;
+  hasTime: boolean;
 }
 
 export function formatInviteDateTime(
@@ -24,7 +23,7 @@ export function formatInviteDateTime(
     return null;
   }
 
-  const parsed = parseInviteDateTime(cleaned);
+  const parsed = parseInviteLocalDateTime(cleaned);
 
   if (!parsed) {
     return formatMalformedFallback(cleaned);
@@ -32,14 +31,22 @@ export function formatInviteDateTime(
 
   const dateLabel = formatDateLabel(parsed);
 
-  if (!parsed.time) {
+  if (!parsed.hasTime || parsed.hour === null || parsed.minute === null) {
     return dateLabel;
   }
 
-  return `${dateLabel} \u00b7 ${formatTimeLabel(parsed.time.hour, parsed.time.minute)}`;
+  return `${dateLabel} \u00b7 ${formatTimeLabel(parsed.hour, parsed.minute)}`;
 }
 
-function parseInviteDateTime(value: string): ParsedInviteDateTime | null {
+export function parseInviteLocalDateTime(
+  rawValue: string | null | undefined
+): InviteLocalDateTimeParts | null {
+  const value = rawValue?.trim();
+
+  if (!value) {
+    return null;
+  }
+
   const match = /^(\d{4})-(\d{2})-(\d{2})(?:T(\d{2}):(\d{2}))?$/.exec(
     value
   );
@@ -51,8 +58,8 @@ function parseInviteDateTime(value: string): ParsedInviteDateTime | null {
   const year = Number(match[1]);
   const month = Number(match[2]);
   const day = Number(match[3]);
-  const hour = match[4] ? Number(match[4]) : null;
-  const minute = match[5] ? Number(match[5]) : null;
+  const hour = match[4] === undefined ? null : Number(match[4]);
+  const minute = match[5] === undefined ? null : Number(match[5]);
 
   if (!isValidCalendarDate(year, month, day)) {
     return null;
@@ -63,7 +70,9 @@ function parseInviteDateTime(value: string): ParsedInviteDateTime | null {
       year,
       month,
       day,
-      time: null
+      hour: null,
+      minute: null,
+      hasTime: false
     };
   }
 
@@ -75,10 +84,9 @@ function parseInviteDateTime(value: string): ParsedInviteDateTime | null {
     year,
     month,
     day,
-    time: {
-      hour,
-      minute
-    }
+    hour,
+    minute,
+    hasTime: true
   };
 }
 
@@ -100,7 +108,7 @@ function formatDateLabel({
   day,
   month,
   year
-}: Pick<ParsedInviteDateTime, "day" | "month" | "year">): string {
+}: Pick<InviteLocalDateTimeParts, "day" | "month" | "year">): string {
   const date = new Date(Date.UTC(year, month - 1, day));
 
   return dateFormatter.format(date);

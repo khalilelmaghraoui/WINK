@@ -303,6 +303,30 @@ Sprint 3.0 - Act II accepted reveal foundation:
 - User validation remains incomplete, and Sprint 3.0.1 Preview regression has
   not started.
 
+Sprint 3.0.1 - Accepted reveal Preview regression:
+
+- Skipped by product decision.
+- This is not a passed QA checkpoint and does not claim user validation.
+
+Sprint 3.1 - Accepted invite Add to calendar:
+
+- Adds a provider-independent `.ics` calendar download action only after an
+  invite is accepted.
+- Calendar generation is pure, does not call `InviteStore`, does not import
+  Supabase, and does not use provider SDKs or network requests.
+- The calendar file uses floating local time because Invite stores
+  wall-clock date/time without a timezone field.
+- No end time, duration, alarm, reminder, or timezone is invented.
+- Calendar contents are minimized to a WINK title, existing place details when
+  available, and a generic private-invitation description.
+- Sender name, recipient name, invite slug, invite URL, internal IDs, and the
+  private invitation message are not exported.
+- No schema, persistence, response behavior, metadata behavior, InviteStore,
+  Supabase adapter, or environment behavior changed.
+- Maps, directions, music, countdowns, reveal drip, notifications, camera,
+  scrapbook, partners, sender controls, and dashboard features remain deferred.
+- User validation remains incomplete.
+
 ## Not In Current MVP Work
 
 Do not add these unless explicitly requested:

@@ -1,3 +1,4 @@
+import { AddToCalendar } from "./add-to-calendar";
 import type { AcceptedRevealViewModel } from "@/lib/reveal-engine";
 
 export function AcceptedReveal({
@@ -83,6 +84,8 @@ export function AcceptedReveal({
           </p>
         </section>
       ) : null}
+
+      {reveal.calendar ? <AddToCalendar calendar={reveal.calendar} /> : null}
 
       <p className="border-t border-wink-border pt-4 text-sm leading-6 text-wink-text-secondary">
         Revisit this private link whenever you need the plan.
