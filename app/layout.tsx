@@ -15,9 +15,9 @@ const bodyFont = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "WINK - Make the ask memorable",
+  title: "WINK - Make the ask unforgettable",
   description:
-    "Create a playful private invitation link for a date, apology, surprise, or romantic moment."
+    "Create a playful private invite link, share it privately, and keep your own private status link."
 };
 
 export default function RootLayout({

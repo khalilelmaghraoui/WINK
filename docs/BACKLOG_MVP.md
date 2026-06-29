@@ -21,8 +21,10 @@ fail closed instead of silently using temporary memory storage. Sprint 3.5
 enforces existing invite expiry semantics at read/write boundaries without a
 scheduler or schema change. Sprint 3.6 adds a private sender status link and a
 one-time declined reply stored behind `InviteStore` without external messaging
-or notifications. User validation is not completed. This is not a public launch
-or production-readiness claim.
+or notifications. Sprint 3.7 polishes the public home page so it explains the
+complete current alpha loop, including recipient and private sender links. User
+validation is not completed. This is not a public launch or
+production-readiness claim.
 
 Active stack:
 
@@ -599,6 +601,32 @@ Constraints:
 - Documentation-only closure.
 - No app, source, test, schema, route, product-flow, persistence, metadata, or
   behavior changes.
+
+## Sprint 3.7 - Public Home Page Alpha Polish
+
+Status: implemented.
+
+Deliverables:
+
+- Public home page explains WINK as a playful private invitation link, not a
+  dating app.
+- Hero and loop copy now cover creating an invite, sharing the recipient link,
+  keeping the private sender link, recipient Yes/Raincheck/No response, and
+  sender status/optional declined message review.
+- Static sample invite preview remains fictional and non-functional.
+- Consent copy makes clear that No stays easy.
+- Home page source tests cover the updated explanation and privacy/source
+  guardrails.
+
+Constraints:
+
+- No product capability was added.
+- No route, schema, persistence, `InviteStore`, Supabase, `/create`,
+  `/i/[slug]`, `/s/[token]`, recipient-message, accepted reveal, calendar,
+  maps, expiry, analytics, tracking, notification, dashboard, auth, countdown,
+  reveal drip, music, camera, scrapbook, partner, rate limiting, or sender
+  control behavior changed.
+- User validation remains incomplete.
 
 ## Future, Not Now
 

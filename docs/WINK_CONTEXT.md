@@ -463,6 +463,21 @@ Sprint 3.6.1 - Private sender link evidence and docs closure:
 - Documentation-only closure. No app, source, test, schema, route, persistence,
   metadata, or product behavior changed.
 
+Sprint 3.7 - Public home page alpha polish:
+
+- Polishes the public `/` page so first-time visitors understand the complete
+  current WINK alpha loop: create an invite, share the recipient link, keep the
+  private sender link, recipient answers Yes/Raincheck/No, and sender checks
+  the private link for status and an optional declined message.
+- Keeps the static invitation preview fictional and non-functional.
+- Adds consent-oriented public copy that No stays easy.
+- No product capability, route, schema, persistence, `InviteStore`, Supabase,
+  recipient-message, `/create`, `/i/[slug]`, `/s/[token]`, analytics,
+  tracking, notification, dashboard, auth, countdown, reveal drip, music,
+  camera, scrapbook, partner, rate limiting, or sender-control behavior
+  changed.
+- User validation remains incomplete.
+
 ## Not In Current MVP Work
 
 Do not add these unless explicitly requested:
