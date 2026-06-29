@@ -431,11 +431,11 @@ Sprint 3.6 - Private sender link and real decline reply v1:
 - Legacy invites without sender access keep manual-copy Kind Reply ideas.
 - Closure verification confirmed that the Production/Main Supabase migration
   columns are present and aligned with the code. Local lint, typecheck, test,
-  and build checks pass for commit
-  `6341919881ba84ccd5e8b666206d52ffdba2afad`.
-- The branch Vercel Preview deployment completed successfully, but the Preview
-  URL was protected by Vercel authentication during closure verification, so
-  live Preview smoke remains pending.
+  and build checks pass.
+- Live Vercel Preview smoke passed: private sender link, recipient declined
+  message, one-time message persistence, sender-page message display, invalid
+  sender-token privacy, and metadata/noindex checks all passed.
+- Final Sprint 3.6 verdict: ready to merge.
 - No external messaging, email, SMS, push notification, webhook, analytics,
   read receipt, open count, auth, dashboard, sender controls, new invite modes,
   or route expansion beyond `/s/[token]` was added.

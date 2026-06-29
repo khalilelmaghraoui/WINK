@@ -127,7 +127,9 @@ recipient-message length check. Do not add a raw sender token column.
 
 For Sprint 3.6 closure, the Production/Main Supabase database was manually
 verified to include `sender_token_hash`, `recipient_message`, and
-`recipient_message_sent_at` on `public.invites`.
+`recipient_message_sent_at` on `public.invites`. Live Preview smoke confirmed
+that the private sender link and one-time declined recipient message work with
+those fields, and the Sprint 3.6 final verdict is ready to merge.
 
 ## Row Level Security Review
 

@@ -206,3 +206,15 @@ WINK still uses invite slugs as bearer links. Anyone with a valid `/i/[slug]`
 URL can open and respond to that invite. The service-role path protects the
 database from direct broad anon writes, but it does not add authentication or
 recipient identity.
+
+## Sprint 3.6 Preview Closure
+
+Live Vercel Preview smoke passed for Sprint 3.6:
+
+- Private sender link: passed
+- Recipient decline message: passed
+- Message persisted once: passed
+- Sender page displayed message: passed
+- Invalid sender token revealed nothing: passed
+- Metadata/noindex check: passed
+- Final verdict: ready to merge

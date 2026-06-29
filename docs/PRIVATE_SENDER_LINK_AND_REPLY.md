@@ -102,11 +102,19 @@ The Sprint 3.6 code and migration are aligned: the app stores only the sender
 token hash, never a plaintext sender token or stored `/s/...` URL. Automated
 lint, typecheck, test, and build checks pass locally.
 
-The Vercel Preview deployment for commit
-`6341919881ba84ccd5e8b666206d52ffdba2afad` completed successfully, but the
-Preview URL was protected by Vercel authentication during closure verification.
-Live Preview smoke remains pending until an authenticated or protection-bypass
-Preview session is available.
+The Vercel Preview deployment was smoke tested successfully after Vercel
+Preview access was available.
+
+Final Sprint 3.6 verification:
+
+- Live Vercel Preview smoke: passed
+- Private sender link: passed
+- Recipient decline message: passed
+- Message persisted once: passed
+- Sender page displayed message: passed
+- Invalid sender token revealed nothing: passed
+- Metadata/noindex check: passed
+- Final verdict: ready to merge
 
 ## Privacy And Safety
 

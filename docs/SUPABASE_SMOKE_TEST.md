@@ -225,3 +225,15 @@ Confirm:
 The app behaves the same as the in-memory Act I flow, but rows persist in
 Supabase across server restarts and writes are mediated by server-only provider
 code.
+
+## Sprint 3.6 Preview Closure
+
+Live Vercel Preview smoke for Sprint 3.6 passed:
+
+- Private sender link: passed
+- Recipient decline message: passed
+- Message persisted once: passed
+- Sender page displayed message: passed
+- Invalid sender token revealed nothing: passed
+- Metadata/noindex check: passed
+- Final verdict: ready to merge
