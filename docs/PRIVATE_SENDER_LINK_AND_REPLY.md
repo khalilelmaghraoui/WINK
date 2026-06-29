@@ -89,6 +89,25 @@ It also adds:
 
 No raw sender token column is added.
 
+## Closure Verification
+
+As of June 29, 2026, the Supabase Production/Main database migration has been
+manually applied and verified to expose the expected `public.invites` columns:
+
+- `sender_token_hash`
+- `recipient_message`
+- `recipient_message_sent_at`
+
+The Sprint 3.6 code and migration are aligned: the app stores only the sender
+token hash, never a plaintext sender token or stored `/s/...` URL. Automated
+lint, typecheck, test, and build checks pass locally.
+
+The Vercel Preview deployment for commit
+`6341919881ba84ccd5e8b666206d52ffdba2afad` completed successfully, but the
+Preview URL was protected by Vercel authentication during closure verification.
+Live Preview smoke remains pending until an authenticated or protection-bypass
+Preview session is available.
+
 ## Privacy And Safety
 
 The private sender link is a convenience for the sender, not an account system.

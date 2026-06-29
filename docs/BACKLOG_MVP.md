@@ -536,7 +536,7 @@ Constraints:
 
 ## Sprint 3.6 - Private Sender Link And Declined Reply
 
-Status: implemented.
+Status: implemented; Preview smoke pending behind Vercel protection.
 
 Deliverables:
 
@@ -556,6 +556,14 @@ Deliverables:
 - Source and behavior tests cover sender-token generation, hashing, status
   privacy, one-time recipient message storage, migration safety, route
   inventory, and no-notification/no-tracking boundaries.
+- The Supabase Production/Main migration was manually applied and verified for
+  `sender_token_hash`, `recipient_message`, and
+  `recipient_message_sent_at`.
+- Local lint, typecheck, test, and build checks pass for commit
+  `6341919881ba84ccd5e8b666206d52ffdba2afad`.
+- The branch Vercel Preview deployment completed successfully, but the Preview
+  URL was protected by Vercel authentication during closure verification, so
+  live Preview smoke remains pending.
 
 Constraints:
 

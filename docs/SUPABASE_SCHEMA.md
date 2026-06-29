@@ -125,6 +125,10 @@ It adds `sender_token_hash`, `recipient_message`,
 `recipient_message_sent_at`, the unique sender-token hash index, and the
 recipient-message length check. Do not add a raw sender token column.
 
+For Sprint 3.6 closure, the Production/Main Supabase database was manually
+verified to include `sender_token_hash`, `recipient_message`, and
+`recipient_message_sent_at` on `public.invites`.
+
 ## Row Level Security Review
 
 Sprint 2.0.2 finding: preview-safe persistence should not rely on broad anon
