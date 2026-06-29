@@ -90,14 +90,25 @@ in-memory adapter when Supabase env vars are absent. Browser/UI files must not
 import Supabase directly, and `SUPABASE_SERVICE_ROLE_KEY` must never be exposed
 as `NEXT_PUBLIC`.
 
+## Current Routes
+
+- `/` - compact public entry page for the existing Act I flow.
+- `/create` - sender creates an invitation and receives private links.
+- `/i/[slug]` - recipient views and responds to an invitation.
+- `/s/[token]` - sender views a private status page for a created invite.
+
 ## Privacy Baseline
 
 Non-negotiable rules:
 
 - `/i/[slug]` must be `noindex,nofollow`.
+- `/s/[token]` must be `noindex,nofollow`.
 - Open Graph/social preview must be generic.
 - Do not expose sender name, recipient name, message, place, date, time, or
   address in metadata.
+- Do not expose `sender_token_hash`, `recipient_message`,
+  `recipient_message_sent_at`, the raw sender token, invite slug, or sender
+  status details in metadata.
 - Generic preview text: "You have a surprise waiting."
 - `openedAt` is set once only.
 - Never implement `openCount`.
@@ -441,6 +452,16 @@ Sprint 3.6 - Private sender link and real decline reply v1:
   or route expansion beyond `/s/[token]` was added.
 - `/i/[slug]` and `/s/[token]` metadata remain generic and `noindex,nofollow`.
 - User validation remains incomplete.
+
+Sprint 3.6.1 - Private sender link evidence and docs closure:
+
+- Adds `docs/PRIVATE_SENDER_LINK_SMOKE_TEST.md` for manual `/s/[token]` smoke
+  evidence.
+- Documents migration application, two-link success screen, privacy-safe sender
+  status view, one-time recipient message delivery, metadata privacy,
+  `noindex,nofollow`, and legacy declined manual-copy fallback.
+- Documentation-only closure. No app, source, test, schema, route, persistence,
+  metadata, or product behavior changed.
 
 ## Not In Current MVP Work
 

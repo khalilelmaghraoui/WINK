@@ -580,6 +580,26 @@ Constraints:
 - `/s/[token]` is also `noindex,nofollow` with generic metadata.
 - User validation remains incomplete.
 
+## Sprint 3.6.1 - Private Sender Link Evidence And Docs Closure
+
+Status: implemented.
+
+Deliverables:
+
+- Private sender link manual smoke checklist in
+  `docs/PRIVATE_SENDER_LINK_SMOKE_TEST.md`.
+- Evidence records migration application, two-link success screen, private
+  sender status rendering, one-time recipient message delivery, metadata
+  privacy, `noindex,nofollow`, and legacy declined fallback behavior.
+- Sprint 3.6 remains implemented: private sender status link, one-time
+  recipient reply, and `sender_token_hash` schema support are documented.
+
+Constraints:
+
+- Documentation-only closure.
+- No app, source, test, schema, route, product-flow, persistence, metadata, or
+  behavior changes.
+
 ## Future, Not Now
 
 Do not implement these during MVP foundation or Core Ask unless explicitly
