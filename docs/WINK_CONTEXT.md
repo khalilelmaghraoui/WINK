@@ -70,6 +70,7 @@ and make later persistence or AI integrations replaceable.
 The Invite primitive owns the core domain state:
 
 - invite identity and slug
+- private sender access token hash for new invites
 - mode and tone
 - date type
 - status and phase
@@ -80,6 +81,7 @@ The Invite primitive owns the core domain state:
 - write-once `openedAt`
 - safety flags
 - cancellation and expiration state
+- optional one-time declined recipient message
 
 The `InviteStore` interface is the boundary for persistence. The current
 production-preview adapter is Supabase through server-mediated provider code
@@ -413,6 +415,26 @@ Sprint 3.5 - Invite expiry enforcement:
   calendar, maps, or route expansion occurred.
 - User validation remains incomplete.
 
+Sprint 3.6 - Private sender link and real decline reply v1:
+
+- Adds a private `/s/[token]` sender status page for new invites.
+- Invite creation now returns two links: the recipient `/i/[slug]` link and a
+  private sender `/s/[token]` link.
+- The raw sender access token is generated once and shown only in the creator
+  success state; Supabase and in-memory persistence store only
+  `sender_token_hash`.
+- Sender status shows pending/opened, accepted, raincheck, declined, expired,
+  and cancelled summaries without exposing unknown-sender flag details or exact
+  opened timestamps.
+- Declined recipients on new invites may send one optional WINK-mediated
+  message that appears only on the private sender link.
+- Legacy invites without sender access keep manual-copy Kind Reply ideas.
+- No external messaging, email, SMS, push notification, webhook, analytics,
+  read receipt, open count, auth, dashboard, sender controls, new invite modes,
+  or route expansion beyond `/s/[token]` was added.
+- `/i/[slug]` and `/s/[token]` metadata remain generic and `noindex,nofollow`.
+- User validation remains incomplete.
+
 ## Not In Current MVP Work
 
 Do not add these unless explicitly requested:
@@ -423,6 +445,8 @@ Do not add these unless explicitly requested:
 - Authentication.
 - Dashboard.
 - Notifications.
+- External messaging delivery.
+- Message read receipts.
 - Payments.
 - Native mobile app.
 - Expo.

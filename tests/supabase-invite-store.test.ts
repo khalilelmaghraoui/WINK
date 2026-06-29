@@ -91,14 +91,17 @@ test("Supabase row mapping preserves the Invite model", async () => {
   const memoryStore = new InMemoryInviteStore({
     slugGenerator: () => "ABCDEFGH"
   });
-  const invite = await memoryStore.createInvite(baseInput);
-  const row = inviteToSupabaseRow(invite);
+  const { invite: invite } = await memoryStore.createInvite(baseInput);
+  const row = inviteToSupabaseRow(invite, {
+    senderTokenHash: "hash-for-row-mapping"
+  });
 
   assert.equal(row.share_slug, invite.slug);
   assert.equal(row.sender_name, invite.senderName);
   assert.equal(row.recipient_name, invite.recipientName);
   assert.equal(row.date_type, invite.dateType);
   assert.equal(row.no_tap_count, 0);
+  assert.equal(row.sender_token_hash, "hash-for-row-mapping");
   assert.deepEqual(inviteFromSupabaseRow(row), invite);
 });
 
@@ -109,7 +112,7 @@ test("Supabase adapter creates and reads invites with a fake client", async () =
     slugGenerator: () => "ABCDEFGH"
   });
 
-  const invite = await store.createInvite(baseInput);
+  const { invite: invite } = await store.createInvite(baseInput);
   const persistedInvite = await store.getInviteBySlug(invite.slug);
 
   assert.equal(invite.slug, "ABCDEFGH");
@@ -128,7 +131,7 @@ test("Supabase adapter keeps openedAt write-once", async () => {
     now: () => times.shift() ?? "2026-06-04T10:03:00.000Z",
     slugGenerator: () => "ABCDEFGH"
   });
-  const invite = await store.createInvite(baseInput);
+  const { invite: invite } = await store.createInvite(baseInput);
   const firstOpen = await store.markOpened(invite.slug);
   const secondOpen = await store.markOpened(invite.slug);
 
@@ -142,7 +145,7 @@ test("Supabase adapter preview mode blocks persisted writes", async () => {
     client: new FakeSupabaseInviteClient(),
     slugGenerator: () => "ABCDEFGH"
   });
-  const invite = await store.createInvite({
+  const { invite: invite } = await store.createInvite({
     ...baseInput,
     expiresAt: "2026-06-01T10:00:00.000Z"
   });
@@ -175,7 +178,7 @@ test("Supabase adapter preserves noTapCount cap and response transitions", async
     client: new FakeSupabaseInviteClient(),
     slugGenerator: () => "ABCDEFGH"
   });
-  const invite = await store.createInvite(baseInput);
+  const { invite: invite } = await store.createInvite(baseInput);
 
   await store.recordNoTap(invite.slug);
   await store.recordNoTap(invite.slug);
@@ -207,7 +210,7 @@ test("Supabase adapter blocks expired response and safety mutations", async () =
     now: () => "2026-06-10T12:00:00.000Z",
     slugGenerator: () => "ABCDEFGH"
   });
-  const invite = await store.createInvite({
+  const { invite: invite } = await store.createInvite({
     ...baseInput,
     expiresAt: "2026-06-10T12:00:00.000Z"
   });
@@ -287,6 +290,11 @@ class FakeSupabaseListQuery {
     return this;
   }
 
+  not(column: string, operator: string, value: unknown) {
+    this.filters.push({ column, op: "not", operator, value });
+    return this;
+  }
+
   lte(column: string, value: unknown) {
     this.filters.push({ column, op: "lte", value });
     return this;
@@ -348,6 +356,11 @@ class FakeSupabaseSingleQuery {
     return this;
   }
 
+  not(column: string, operator: string, value: unknown) {
+    this.filters.push({ column, op: "not", operator, value });
+    return this;
+  }
+
   maybeSingle() {
     if (this.insertedValue) {
       this.rows.set(this.insertedValue.share_slug, cloneRow(this.insertedValue));
@@ -388,6 +401,11 @@ class FakeSupabaseMutationQuery {
     return this;
   }
 
+  not(column: string, operator: string, value: unknown) {
+    this.filters.push({ column, op: "not", operator, value });
+    return this;
+  }
+
   select() {
     const [row = null] = Array.from(this.rows.values()).filter((candidate) =>
       this.filters.every((filter) => matchesFilter(candidate, filter))
@@ -415,6 +433,10 @@ class FakeStaticSingleQuery {
     return this;
   }
 
+  not() {
+    return this;
+  }
+
   maybeSingle() {
     return Promise.resolve({
       data: this.row ? cloneRow(this.row) : null,
@@ -434,7 +456,8 @@ interface QueryListResult {
 
 interface Filter {
   column: string;
-  op: "eq" | "is" | "lte";
+  op: "eq" | "is" | "lte" | "not";
+  operator?: string;
   value: unknown;
 }
 
@@ -447,6 +470,14 @@ function matchesFilter(row: SupabaseInviteRow, filter: Filter): boolean {
 
   if (filter.op === "is") {
     return value === filter.value;
+  }
+
+  if (filter.op === "not") {
+    if (filter.operator === "is") {
+      return value !== filter.value;
+    }
+
+    return value !== filter.value;
   }
 
   return (

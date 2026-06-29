@@ -7,9 +7,9 @@ import {
   type CreateInviteFormValues
 } from "@/lib/create-invite-validation";
 import type {
+  CreatedInviteAccess,
   CreateInviteInput,
   DateType,
-  Invite,
   InviteMode,
   InviteTone
 } from "@/lib/invite-store";
@@ -17,6 +17,8 @@ import { isInvitePersistenceConfigurationError } from "@/lib/storage/invite-stor
 
 export interface CreateInviteActionState {
   invitePath?: string;
+  recipientPath?: string;
+  senderPath?: string;
   errors: Partial<Record<CreateInviteField, string>>;
   serviceError?: string;
 }
@@ -52,10 +54,10 @@ export async function createInviteAction(
     }
   };
 
-  let invite: Invite;
+  let createdInvite: CreatedInviteAccess;
 
   try {
-    invite = await inviteStore.createInvite(input);
+    createdInvite = await inviteStore.createInvite(input);
   } catch (error) {
     if (isInvitePersistenceConfigurationError(error)) {
       return {
@@ -68,7 +70,9 @@ export async function createInviteAction(
   }
 
   return {
-    invitePath: `/i/${invite.slug}`,
+    invitePath: `/i/${createdInvite.invite.slug}`,
+    recipientPath: `/i/${createdInvite.invite.slug}`,
+    senderPath: `/s/${createdInvite.senderAccessToken}`,
     errors: {}
   };
 }

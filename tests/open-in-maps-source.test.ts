@@ -109,7 +109,8 @@ test("maps action does not introduce a new product route", () => {
     [
       "app/create/page.tsx",
       "app/i/[slug]/page.tsx",
-      "app/page.tsx"
+      "app/page.tsx",
+      "app/s/[token]/page.tsx"
     ].sort()
   );
 });

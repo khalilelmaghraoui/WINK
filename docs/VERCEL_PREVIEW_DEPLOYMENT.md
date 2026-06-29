@@ -72,9 +72,12 @@ misclassifying the problem as invite-not-found.
 ## Supabase Preparation
 
 1. Run the SQL from `docs/SUPABASE_SCHEMA.md`.
-2. Enable RLS on `public.invites`.
-3. Do not add broad anon insert/update/delete policies for preview.
-4. Confirm writes still work through the Vercel app because server actions use
+2. For existing projects, run
+   `supabase/migrations/20260610_private_sender_link_reply.sql` before testing
+   Sprint 3.6 branches.
+3. Enable RLS on `public.invites`.
+4. Do not add broad anon insert/update/delete policies for preview.
+5. Confirm writes still work through the Vercel app because server actions use
    the service-role provider code.
 
 ## Post-Deployment Smoke Checklist
@@ -85,12 +88,17 @@ Run this against the Vercel preview URL.
 
 1. Open `/create`.
 2. Create a Lawyer invite.
-3. Confirm a `/i/[slug]` link is shown.
-4. In Supabase, confirm one row was inserted into `public.invites`.
-5. Confirm:
+3. Confirm a recipient `/i/[slug]` link is shown.
+4. Confirm a private sender `/s/[token]` link is shown.
+5. In Supabase, confirm one row was inserted into `public.invites`.
+6. Confirm:
+   - `sender_token_hash` is set.
+   - no raw sender token is stored.
    - `status` is `pending`.
    - `phase` is `sent`.
    - `opened_at` is null.
+   - `recipient_message` is null.
+   - `recipient_message_sent_at` is null.
    - `no_tap_count` is `0`.
 
 ### Missing Configuration Fail-Closed Check
@@ -143,13 +151,21 @@ Use a disposable Vercel deployment or environment override only:
 ### No
 
 1. Create a fresh invite.
-2. Open `/i/[slug]`.
-3. Submit No.
-4. Confirm the same URL renders the declined state.
-5. Confirm Supabase has:
+2. Save the private `/s/[token]` link.
+3. Open `/i/[slug]`.
+4. Submit No.
+5. Confirm the same URL renders the declined state.
+6. Send one optional WINK message from the declined state.
+7. Confirm Supabase has:
    - `status = declined`
    - `phase = responded`
    - `response = no`
+   - `recipient_message` set
+   - `recipient_message_sent_at` set
+8. Open `/s/[token]` and confirm the declined status and optional message are
+   visible there.
+9. Confirm no email, SMS, push notification, webhook, or external message was
+   sent.
 
 ### Metadata And Privacy
 
@@ -167,6 +183,9 @@ Use a disposable Vercel deployment or environment override only:
 3. Search network responses for the actual service-role key value.
 4. Confirm no `NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_KEY` exists in Vercel env.
 5. Confirm no `app/create/*` or `app/i/[slug]/*` file imports Supabase.
+6. Confirm `/s/[token]` source does not import Supabase directly.
+7. Confirm `sender_token_hash` is not exposed in browser-visible source,
+   JavaScript bundles, or network responses.
 
 ## In-Memory Fallback Check
 

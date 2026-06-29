@@ -88,6 +88,11 @@ create table if not exists public.invites (
 
   response text check (response in ('yes', 'raincheck', 'no')),
   counter_offer jsonb,
+  sender_token_hash text,
+  recipient_message text check (
+    recipient_message is null or char_length(recipient_message) <= 300
+  ),
+  recipient_message_sent_at timestamptz,
   no_tap_count smallint not null default 0 check (
     no_tap_count >= 0 and no_tap_count <= 2
   ),
@@ -108,7 +113,17 @@ create index if not exists invites_share_slug_idx
 create index if not exists invites_expires_at_idx
   on public.invites (expires_at)
   where expires_at is not null and expired_at is null;
+
+create unique index if not exists invites_sender_token_hash_idx
+  on public.invites (sender_token_hash)
+  where sender_token_hash is not null;
 ```
+
+Existing Supabase projects created before Sprint 3.6 must also run the
+migration in `supabase/migrations/20260610_private_sender_link_reply.sql`.
+It adds `sender_token_hash`, `recipient_message`,
+`recipient_message_sent_at`, the unique sender-token hash index, and the
+recipient-message length check. Do not add a raw sender token column.
 
 ## Row Level Security Review
 
@@ -185,6 +200,11 @@ Do not make broad anon write policies part of public preview or production.
   `0`, `1`, or `2`.
 - `counterOffer` is stored as JSONB to preserve Raincheck option, note, and
   suggested day without changing the existing `InviteStore` contract.
+- New invites store only `sender_token_hash` for the private sender link. The
+  raw `/s/[token]` token is generated once and is not stored or recoverable.
+- `recipient_message` and `recipient_message_sent_at` support a one-time
+  declined recipient reply that appears only on the private sender status link.
+  Legacy invites without `sender_token_hash` keep manual-copy reply ideas.
 - `openedAt` remains write-once in the adapter. The app reads first, then
   updates only rows whose `opened_at` is still null.
 - `expires_at` / `expired_at` support lazy invite expiry enforcement. Pending
@@ -198,6 +218,8 @@ Do not make broad anon write policies part of public preview or production.
 Do not add these fields:
 
 - `openCount`
+- raw sender access tokens
+- message read receipts
 - device identifiers
 - location or IP fields
 - hover, cursor path, dwell-time, or repeated-open tracking

@@ -12,6 +12,19 @@ import {
   normalizeRaincheckNote,
   normalizeSuggestedDate
 } from "@/lib/invite-page";
+import { validateRecipientMessage } from "@/lib/recipient-message";
+import { isInvitePersistenceConfigurationError } from "@/lib/storage/invite-store-config";
+
+export interface RecipientMessageActionState {
+  error?: string;
+  status:
+    | "idle"
+    | "success"
+    | "validation_error"
+    | "already_sent"
+    | "unavailable"
+    | "storage_unavailable";
+}
 
 export async function respondToInviteAction(formData: FormData) {
   const slug = formData.get("slug");
@@ -84,6 +97,70 @@ export async function recordNoTapAction(formData: FormData) {
   revalidatePath(`/i/${slug}`);
 
   return invite?.noTapCount ?? null;
+}
+
+export async function sendRecipientMessageAction(
+  _previousState: RecipientMessageActionState,
+  formData: FormData
+): Promise<RecipientMessageActionState> {
+  const slug = formData.get("slug");
+  const previewMode = formData.get("previewMode") === "true";
+  const message = formData.get("message");
+
+  if (typeof slug !== "string" || !slug) {
+    return {
+      status: "unavailable"
+    };
+  }
+
+  const validation = validateRecipientMessage(message);
+
+  if (!validation.ok) {
+    return {
+      error: validation.error,
+      status: "validation_error"
+    };
+  }
+
+  try {
+    const updatedInvite = await inviteStore.sendRecipientMessage(
+      slug,
+      validation.message,
+      { previewMode }
+    );
+
+    revalidatePath(`/i/${slug}`);
+
+    if (!updatedInvite) {
+      return {
+        status: "unavailable"
+      };
+    }
+
+    if (updatedInvite.recipientMessage === validation.message) {
+      return {
+        status: "success"
+      };
+    }
+
+    if (updatedInvite.recipientMessageSentAt) {
+      return {
+        status: "already_sent"
+      };
+    }
+
+    return {
+      status: "unavailable"
+    };
+  } catch (error) {
+    if (isInvitePersistenceConfigurationError(error)) {
+      return {
+        status: "storage_unavailable"
+      };
+    }
+
+    throw error;
+  }
 }
 
 function isInviteResponse(value: FormDataEntryValue | null): value is InviteResponse {

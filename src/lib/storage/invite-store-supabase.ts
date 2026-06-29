@@ -6,7 +6,14 @@ import {
   isInviteExpired,
   shouldPersistInviteExpiry
 } from "../invite-lifecycle";
+import { validateRecipientMessage } from "../recipient-message";
+import {
+  generateSenderAccessToken,
+  hashSenderAccessToken,
+  isValidSenderAccessToken
+} from "../sender-access-token";
 import type {
+  CreatedInviteAccess,
   CounterOffer,
   CreateInviteInput,
   DateType,
@@ -51,6 +58,9 @@ export interface SupabaseInviteRow {
   canceled_at: string | null;
   expires_at: string | null;
   expired_at: string | null;
+  sender_token_hash: string | null;
+  recipient_message: string | null;
+  recipient_message_sent_at: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -73,6 +83,7 @@ interface SupabaseListResult<T> {
 interface SupabaseSingleQuery<T> {
   eq(column: string, value: unknown): SupabaseSingleQuery<T>;
   is(column: string, value: unknown): SupabaseSingleQuery<T>;
+  not(column: string, operator: string, value: unknown): SupabaseSingleQuery<T>;
   maybeSingle(): Promise<SupabaseSingleResult<T>>;
   single(): Promise<SupabaseSingleResult<T>>;
 }
@@ -80,6 +91,7 @@ interface SupabaseSingleQuery<T> {
 interface SupabaseListQuery<T> {
   eq(column: string, value: unknown): SupabaseSelectQuery<T>;
   is(column: string, value: unknown): SupabaseSelectQuery<T>;
+  not(column: string, operator: string, value: unknown): SupabaseSelectQuery<T>;
   lte(column: string, value: unknown): SupabaseSelectQuery<T>;
   select(columns?: string): SupabaseSelectQuery<T>;
   then<TResult1 = SupabaseListResult<T>, TResult2 = never>(
@@ -95,6 +107,7 @@ type SupabaseSelectQuery<T> = SupabaseListQuery<T> & SupabaseSingleQuery<T>;
 interface SupabaseMutationQuery<T> {
   eq(column: string, value: unknown): SupabaseMutationQuery<T>;
   is(column: string, value: unknown): SupabaseMutationQuery<T>;
+  not(column: string, operator: string, value: unknown): SupabaseMutationQuery<T>;
   select(columns?: string): SupabaseSingleQuery<T>;
 }
 
@@ -114,6 +127,7 @@ export interface SupabaseInviteStoreOptions {
   client?: SupabaseInviteClient;
   env?: Partial<NodeJS.ProcessEnv>;
   now?: () => string;
+  senderAccessTokenGenerator?: () => string;
   slugGenerator?: (length?: number) => string;
   slugLength?: number;
 }
@@ -121,6 +135,7 @@ export interface SupabaseInviteStoreOptions {
 export class SupabaseInviteStore implements InviteStore {
   private readonly client: SupabaseInviteClient;
   private readonly now: () => string;
+  private readonly senderAccessTokenGenerator: () => string;
   private readonly slugGenerator: (length?: number) => string;
   private readonly slugLength: number;
 
@@ -131,12 +146,16 @@ export class SupabaseInviteStore implements InviteStore {
         options.env
       ) as unknown as SupabaseInviteClient);
     this.now = options.now ?? (() => new Date().toISOString());
+    this.senderAccessTokenGenerator =
+      options.senderAccessTokenGenerator ?? generateSenderAccessToken;
     this.slugGenerator = options.slugGenerator ?? generateSlug;
     this.slugLength = options.slugLength ?? 10;
   }
 
-  async createInvite(input: CreateInviteInput): Promise<Invite> {
+  async createInvite(input: CreateInviteInput): Promise<CreatedInviteAccess> {
     const nowIso = this.now();
+    const { senderAccessToken, senderTokenHash } =
+      await this.createUniqueSenderAccessToken();
     const invite: Invite = {
       id: randomUUID(),
       slug: await this.createUniqueSlug(),
@@ -159,18 +178,24 @@ export class SupabaseInviteStore implements InviteStore {
       canceledAt: null,
       expiresAt: input.expiresAt ?? null,
       expiredAt: null,
+      recipientMessage: null,
+      recipientMessageSentAt: null,
+      hasSenderAccess: true,
       createdAt: nowIso,
       updatedAt: nowIso
     };
 
     const { data, error } = await this.table()
-      .insert(inviteToSupabaseRow(invite))
+      .insert(inviteToSupabaseRow(invite, { senderTokenHash }))
       .select("*")
       .single();
 
     throwIfSupabaseError(error, "create invite");
 
-    return inviteFromSupabaseRow(data);
+    return {
+      invite: inviteFromSupabaseRow(data),
+      senderAccessToken
+    };
   }
 
   async getInviteBySlug(
@@ -178,6 +203,16 @@ export class SupabaseInviteStore implements InviteStore {
     _opts: InviteReadOptions = {}
   ): Promise<Invite | null> {
     const row = await this.getRowBySlug(slug);
+
+    return row ? inviteFromSupabaseRow(row) : null;
+  }
+
+  async getInviteBySenderToken(token: string): Promise<Invite | null> {
+    if (!isValidSenderAccessToken(token)) {
+      return null;
+    }
+
+    const row = await this.getRowBySenderTokenHash(hashSenderAccessToken(token));
 
     return row ? inviteFromSupabaseRow(row) : null;
   }
@@ -283,6 +318,62 @@ export class SupabaseInviteStore implements InviteStore {
       updated_at: nowIso
     });
   }
+
+  async sendRecipientMessage(
+    recipientSlug: string,
+    message: string,
+    opts: InviteWriteOptions = {}
+  ): Promise<Invite | null> {
+    const invite = await this.getInviteBySlug(recipientSlug);
+
+    if (!invite) {
+      return null;
+    }
+
+    if (invite.recipientMessageSentAt) {
+      return invite;
+    }
+
+    if (!canStoreRecipientMessage(invite)) {
+      return null;
+    }
+
+    const validation = validateRecipientMessage(message);
+
+    if (!validation.ok) {
+      return null;
+    }
+
+    if (opts.previewMode) {
+      return invite;
+    }
+
+    const nowIso = this.now();
+    const { data, error } = await this.table()
+      .update({
+        recipient_message: validation.message,
+        recipient_message_sent_at: nowIso,
+        updated_at: nowIso
+      })
+      .eq("share_slug", recipientSlug)
+      .eq("status", "declined")
+      .eq("response", "no")
+      .is("recipient_message_sent_at", null)
+      .not("sender_token_hash", "is", null)
+      .select("*")
+      .maybeSingle();
+
+    throwIfSupabaseError(error, "send recipient message");
+
+    if (data) {
+      return inviteFromSupabaseRow(data);
+    }
+
+    const currentInvite = await this.getInviteBySlug(recipientSlug);
+
+    return currentInvite?.recipientMessageSentAt ? currentInvite : null;
+  }
+
 
   async flagUnknownSender(
     slug: string,
@@ -395,6 +486,26 @@ export class SupabaseInviteStore implements InviteStore {
     return slug;
   }
 
+  private async createUniqueSenderAccessToken(): Promise<{
+    senderAccessToken: string;
+    senderTokenHash: string;
+  }> {
+    let senderAccessToken = this.senderAccessTokenGenerator();
+    let senderTokenHash = hashSenderAccessToken(senderAccessToken);
+    let existingInvite = await this.getRowBySenderTokenHash(senderTokenHash);
+
+    while (existingInvite) {
+      senderAccessToken = this.senderAccessTokenGenerator();
+      senderTokenHash = hashSenderAccessToken(senderAccessToken);
+      existingInvite = await this.getRowBySenderTokenHash(senderTokenHash);
+    }
+
+    return {
+      senderAccessToken,
+      senderTokenHash
+    };
+  }
+
   private async getRowBySlug(slug: string): Promise<SupabaseInviteRow | null> {
     const { data, error } = await this.table()
       .select("*")
@@ -402,6 +513,19 @@ export class SupabaseInviteStore implements InviteStore {
       .maybeSingle();
 
     throwIfSupabaseError(error, "load invite");
+
+    return data;
+  }
+
+  private async getRowBySenderTokenHash(
+    senderTokenHash: string
+  ): Promise<SupabaseInviteRow | null> {
+    const { data, error } = await this.table()
+      .select("*")
+      .eq("sender_token_hash", senderTokenHash)
+      .maybeSingle();
+
+    throwIfSupabaseError(error, "load sender invite");
 
     return data;
   }
@@ -426,7 +550,10 @@ export class SupabaseInviteStore implements InviteStore {
   }
 }
 
-export function inviteToSupabaseRow(invite: Invite): SupabaseInviteRow {
+export function inviteToSupabaseRow(
+  invite: Invite,
+  options: { senderTokenHash?: string | null } = {}
+): SupabaseInviteRow {
   return {
     id: invite.id,
     share_slug: invite.slug,
@@ -449,6 +576,9 @@ export function inviteToSupabaseRow(invite: Invite): SupabaseInviteRow {
     canceled_at: invite.canceledAt,
     expires_at: invite.expiresAt,
     expired_at: invite.expiredAt,
+    sender_token_hash: options.senderTokenHash ?? null,
+    recipient_message: invite.recipientMessage,
+    recipient_message_sent_at: invite.recipientMessageSentAt,
     created_at: invite.createdAt,
     updated_at: invite.updatedAt
   };
@@ -481,9 +611,21 @@ export function inviteFromSupabaseRow(row: SupabaseInviteRow | null): Invite {
     canceledAt: row.canceled_at,
     expiresAt: row.expires_at,
     expiredAt: row.expired_at,
+    recipientMessage: row.recipient_message,
+    recipientMessageSentAt: row.recipient_message_sent_at,
+    hasSenderAccess: row.sender_token_hash !== null,
     createdAt: row.created_at,
     updatedAt: row.updated_at
   };
+}
+
+function canStoreRecipientMessage(invite: Invite): boolean {
+  return (
+    invite.status === "declined" &&
+    invite.response === "no" &&
+    invite.hasSenderAccess &&
+    invite.recipientMessageSentAt === null
+  );
 }
 
 function applyResponse(

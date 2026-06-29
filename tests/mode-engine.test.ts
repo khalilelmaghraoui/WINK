@@ -26,7 +26,7 @@ const baseInput: CreateInviteInput = {
 
 test("ModeEngine returns a config for lawyer mode", async () => {
   const store = new InMemoryInviteStore();
-  const invite = await store.createInvite({
+  const { invite: invite } = await store.createInvite({
     ...baseInput,
     mode: "lawyer"
   });
@@ -39,7 +39,7 @@ test("ModeEngine returns a config for lawyer mode", async () => {
 
 test("ModeEngine returns a config for unbothered mode", async () => {
   const store = new InMemoryInviteStore();
-  const invite = await store.createInvite({
+  const { invite: invite } = await store.createInvite({
     ...baseInput,
     mode: "unbothered"
   });
@@ -52,12 +52,12 @@ test("ModeEngine returns a config for unbothered mode", async () => {
 
 test("compatibility score is fixed and not derived from names", async () => {
   const store = new InMemoryInviteStore();
-  const firstInvite = await store.createInvite({
+  const { invite: firstInvite } = await store.createInvite({
     ...baseInput,
     senderName: "Ada",
     recipientName: "Grace"
   });
-  const secondInvite = await store.createInvite({
+  const { invite: secondInvite } = await store.createInvite({
     ...baseInput,
     senderName: "Different Sender",
     recipientName: "Different Recipient"

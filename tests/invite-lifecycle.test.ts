@@ -32,6 +32,9 @@ const baseInvite: Invite = {
   canceledAt: null,
   expiresAt: "2026-06-10T12:00:00.000Z",
   expiredAt: null,
+  recipientMessage: null,
+  recipientMessageSentAt: null,
+  hasSenderAccess: true,
   createdAt: "2026-06-01T12:00:00.000Z",
   updatedAt: "2026-06-01T12:00:00.000Z"
 };

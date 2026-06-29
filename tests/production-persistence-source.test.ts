@@ -79,8 +79,13 @@ test("configuration error messages contain variable names but no values", () => 
 });
 
 test("client and app UI do not read deployment variables or storage config", () => {
+  const allowedServerConfigFiles = new Set([
+    "app/create/actions.ts",
+    "app/i/[slug]/actions.ts",
+    "app/s/[token]/page.tsx"
+  ]);
   const browserOrUiFiles = appFiles.filter(
-    (file) => file.normalizedPath !== "app/create/actions.ts"
+    (file) => !allowedServerConfigFiles.has(file.normalizedPath)
   );
   const disallowedAppImports = browserOrUiFiles.flatMap((file) =>
     getImportSpecifiers(file.text)

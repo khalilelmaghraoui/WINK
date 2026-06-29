@@ -19,8 +19,10 @@ accepted-experience Production closure with a `ready with caveats` verdict.
 Sprint 3.4 hardens deployed persistence configuration so Preview and Production
 fail closed instead of silently using temporary memory storage. Sprint 3.5
 enforces existing invite expiry semantics at read/write boundaries without a
-scheduler or schema change. User validation is not completed. This is not a
-public launch or production-readiness claim.
+scheduler or schema change. Sprint 3.6 adds a private sender status link and a
+one-time declined reply stored behind `InviteStore` without external messaging
+or notifications. User validation is not completed. This is not a public launch
+or production-readiness claim.
 
 Active stack:
 
@@ -532,6 +534,40 @@ Constraints:
   invite.
 - User validation remains incomplete.
 
+## Sprint 3.6 - Private Sender Link And Declined Reply
+
+Status: implemented.
+
+Deliverables:
+
+- New invite creation returns a recipient link and a private sender link.
+- `/s/[token]` renders a private sender status page using a one-time generated
+  bearer token.
+- Only `sender_token_hash` is stored; the raw sender token is not stored or
+  recoverable.
+- Sender status includes pending/opened, accepted, raincheck, declined,
+  expired, and cancelled summaries while hiding unknown-sender flag details.
+- Declined recipients on new invites can send one optional short WINK-mediated
+  message through the declined state.
+- Legacy invites without sender access keep manual-copy Kind Reply ideas.
+- Supabase migration adds `sender_token_hash`, `recipient_message`, and
+  `recipient_message_sent_at` with a unique sender-token hash index and
+  recipient-message length check.
+- Source and behavior tests cover sender-token generation, hashing, status
+  privacy, one-time recipient message storage, migration safety, route
+  inventory, and no-notification/no-tracking boundaries.
+
+Constraints:
+
+- No authentication, dashboard, notifications, email, SMS, push, webhook,
+  analytics, read receipts, external messaging delivery, sender controls, route
+  expansion beyond `/s/[token]`, new invite modes, or public metadata exposure
+  was added.
+- `/i/[slug]` remains the recipient URL and stays `noindex,nofollow` with
+  generic metadata.
+- `/s/[token]` is also `noindex,nofollow` with generic metadata.
+- User validation remains incomplete.
+
 ## Future, Not Now
 
 Do not implement these during MVP foundation or Core Ask unless explicitly
@@ -543,6 +579,8 @@ requested:
 - Dashboard.
 - Payments or subscriptions.
 - Full notifications.
+- External messaging delivery.
+- Message read receipts.
 - Reveal drip.
 - Camera.
 - Scrapbook.

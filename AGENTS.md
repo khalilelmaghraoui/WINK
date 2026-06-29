@@ -27,7 +27,7 @@ expanding.
 
 ## Current Scope
 
-Act I MVP is implemented through Sprint 2.2.1:
+WINK is implemented through Sprint 3.6:
 
 - Next.js 15 app foundation.
 - TypeScript.
@@ -41,15 +41,22 @@ Act I MVP is implemented through Sprint 2.2.1:
 - Slug generator.
 - `/create` creator flow.
 - `/i/[slug]` living invite URL.
+- `/s/[token]` private sender status URL for new invites.
 - Lawyer and Unbothered modes only.
 - Compatibility Report.
 - Yes, Raincheck, No, and unknown-sender response paths.
-- Kind Reply Assistant on declined state.
+- Kind Reply Assistant on declined state, including a one-time WINK-mediated
+  declined reply for new invites and manual-copy fallback for legacy invites.
+- Act II accepted reveal utilities: accepted plan view, Add to calendar, Open
+  in Google Maps.
+- Invite expiry enforcement.
+- Deployed persistence fail-closed safety.
 - Privacy metadata baseline.
 - Act I QA, Vercel Preview smoke, and real-device QA evidence.
 
-Current readiness: Act I MVP is ready for closed alpha preparation. It is not a
-public launch or production-readiness claim.
+Current readiness: WINK is an alpha technical milestone with Production smoke
+evidence, but user validation remains incomplete. It is not a public launch or
+production-readiness claim.
 
 ## Stack
 
@@ -60,7 +67,8 @@ Use:
 - Tailwind CSS.
 - App Router.
 - Supabase persistence behind the existing `InviteStore` interface.
-- In-memory storage fallback when Supabase env vars are absent.
+- In-memory storage fallback for local development and tests when Supabase env
+  vars are absent.
 
 Do not add additional backend services, databases, authentication, Prisma,
 payments, notifications, native mobile app, dashboard, or admin panel unless
@@ -90,6 +98,7 @@ Current MVP routes:
   sprint.
 - `/create` - sender creates an invitation.
 - `/i/[slug]` - recipient views and responds to an invitation.
+- `/s/[token]` - sender views a private status page for a created invite.
 
 Do not add extra routes unless the task explicitly asks for them.
 
@@ -139,6 +148,10 @@ These rules are non-negotiable:
 - Use this generic preview text: "You have a surprise waiting."
 - Include an "I do not know this person" escape action on the recipient page.
 - Flagging unknown sender sends no notification to the sender.
+- Sender status links are bearer/private links. Store only the sender-token
+  hash; never store or expose the raw sender access token after creation.
+- Declined recipient messages are optional, one-time, WINK-mediated, and do not
+  send external notifications.
 - Do not show or track recipient device, location, IP, hover, cursor path,
   repeated opens, dwell time, exact open timestamp, or open count.
 - Never implement `openCount`.
@@ -253,7 +266,11 @@ Future, not now:
 - Scrapbook.
 - Partner offers.
 - AI-generated messages.
-- Music or map integrations.
+- Music integrations.
+- Embedded maps, geolocation, automatic directions, origin detection,
+  distance/travel-time calculation, and map SDK integrations.
+- Private sender link and declined reply beyond the scoped Sprint 3.6
+  implementation.
 
 ## Scope Control
 

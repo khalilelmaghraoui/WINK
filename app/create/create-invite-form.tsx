@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import type { ReactNode } from "react";
 import { useActionState, useEffect, useMemo, useState } from "react";
 import { useFormStatus } from "react-dom";
 
@@ -29,8 +30,13 @@ const stepFields: CreateInviteField[][] = [
 export function CreateInviteForm() {
   const [state, formAction] = useActionState(createInviteAction, initialState);
   const [stepIndex, setStepIndex] = useState(0);
-  const [copied, setCopied] = useState(false);
-  const [copyFallback, setCopyFallback] = useState(false);
+  const [copiedLink, setCopiedLink] = useState<"recipient" | "sender" | null>(
+    null
+  );
+  const [copyFallbackLink, setCopyFallbackLink] = useState<
+    "recipient" | "sender" | null
+  >(null);
+  const [browserOrigin, setBrowserOrigin] = useState("");
 
   const currentStepFields = stepFields[stepIndex];
   const currentStepHasErrors = useMemo(
@@ -48,58 +54,75 @@ export function CreateInviteForm() {
     }
   }, [state.errors]);
 
-  if (state.invitePath) {
+  useEffect(() => {
+    setBrowserOrigin(window.location.origin);
+  }, []);
+
+  const recipientPath = state.recipientPath ?? state.invitePath;
+  const senderPath = state.senderPath;
+
+  function getDisplayLink(path: string): string {
+    return browserOrigin ? new URL(path, browserOrigin).toString() : path;
+  }
+
+  async function copyLink(path: string, linkType: "recipient" | "sender") {
+    if (!navigator.clipboard) {
+      setCopiedLink(null);
+      setCopyFallbackLink(linkType);
+      return;
+    }
+
+    try {
+      await navigator.clipboard.writeText(getDisplayLink(path));
+      setCopyFallbackLink(null);
+      setCopiedLink(linkType);
+    } catch {
+      setCopiedLink(null);
+      setCopyFallbackLink(linkType);
+    }
+  }
+
+  if (recipientPath && senderPath) {
     return (
-      <main className="mx-auto flex min-h-screen w-full max-w-xl flex-col justify-center px-5 py-10">
-        <div className="space-y-5 rounded-lg border border-stone-300 bg-white p-5">
+      <main className="mx-auto flex min-h-screen w-full max-w-2xl flex-col justify-center px-5 py-10">
+        <div className="space-y-6 rounded-lg border border-stone-300 bg-white p-5">
           <div className="space-y-2">
             <p className="text-sm font-medium text-stone-600">Invite created</p>
             <h1 className="text-2xl font-semibold text-stone-950">
-              Share this invite path
+              Save these links carefully
             </h1>
+            <p className="text-base text-stone-700">
+              The recipient gets one link. You keep the private sender link.
+            </p>
           </div>
 
-          <p className="select-all break-all rounded-md border border-stone-300 bg-stone-50 px-3 py-3 font-mono text-sm text-stone-950">
-            {state.invitePath}
-          </p>
-          <p aria-live="polite" className="text-sm text-stone-700">
-            {copied
-              ? "Copied. Paste it wherever you want to send the invite."
-              : copyFallback
-                ? "Clipboard copy is unavailable. Select the path above and copy it manually."
-                : "Copy the path or open it to preview the invite."}
-          </p>
-
-          <div className="flex flex-col gap-3 sm:flex-row">
-            <button
-              type="button"
-              className="min-h-11 rounded-md bg-stone-950 px-4 py-2 text-sm font-medium text-white"
-              onClick={async () => {
-                if (!navigator.clipboard) {
-                  setCopied(false);
-                  setCopyFallback(true);
-                  return;
-                }
-
-                try {
-                  await navigator.clipboard.writeText(state.invitePath ?? "");
-                  setCopyFallback(false);
-                  setCopied(true);
-                } catch {
-                  setCopied(false);
-                  setCopyFallback(true);
-                }
-              }}
-            >
-              {copied ? "Copied" : "Copy link"}
-            </button>
+          <SuccessLinkPanel
+            buttonLabel="Copy recipient link"
+            copied={copiedLink === "recipient"}
+            copyFallback={copyFallbackLink === "recipient"}
+            description="This link opens the invitation and lets them respond."
+            displayLink={getDisplayLink(recipientPath)}
+            heading="Share this with the recipient"
+            onCopy={() => copyLink(recipientPath, "recipient")}
+          >
             <Link
-              className="inline-flex min-h-11 items-center justify-center rounded-md border border-stone-300 px-4 py-2 text-sm font-medium text-stone-950"
-              href={state.invitePath}
+              className="inline-flex min-h-11 items-center justify-center rounded-md border border-stone-300 px-4 py-2 text-sm font-medium text-stone-950 focus:outline-none focus:ring-2 focus:ring-stone-950 focus:ring-offset-2"
+              href={recipientPath}
             >
               View invite
             </Link>
-          </div>
+          </SuccessLinkPanel>
+
+          <SuccessLinkPanel
+            buttonLabel="Copy private sender link"
+            copied={copiedLink === "sender"}
+            copyFallback={copyFallbackLink === "sender"}
+            description="Use it to check the invitation status and read an optional message. Anyone with this link can view the sender page."
+            displayLink={getDisplayLink(senderPath)}
+            heading="Keep this private link"
+            onCopy={() => copyLink(senderPath, "sender")}
+            warning="Save it now. WINK cannot recover this private link later."
+          />
         </div>
       </main>
     );
@@ -248,6 +271,60 @@ export function CreateInviteForm() {
         </div>
       </form>
     </main>
+  );
+}
+
+function SuccessLinkPanel({
+  buttonLabel,
+  children,
+  copied,
+  copyFallback,
+  description,
+  displayLink,
+  heading,
+  onCopy,
+  warning
+}: {
+  buttonLabel: string;
+  children?: ReactNode;
+  copied: boolean;
+  copyFallback: boolean;
+  description: string;
+  displayLink: string;
+  heading: string;
+  onCopy: () => void;
+  warning?: string;
+}) {
+  return (
+    <section className="space-y-3 border-t border-stone-200 pt-5">
+      <div className="space-y-1">
+        <h2 className="text-lg font-semibold text-stone-950">{heading}</h2>
+        <p className="text-sm text-stone-700">{description}</p>
+        {warning ? (
+          <p className="text-sm font-medium text-red-800">{warning}</p>
+        ) : null}
+      </div>
+      <p className="select-all break-all rounded-md border border-stone-300 bg-white px-3 py-3 font-mono text-sm text-stone-950">
+        {displayLink}
+      </p>
+      <p aria-live="polite" className="text-sm text-stone-700">
+        {copied
+          ? `${buttonLabel.replace("Copy ", "")} copied.`
+          : copyFallback
+            ? "Clipboard copy is unavailable. Select the link above and copy it manually."
+            : "Copy the link when you're ready."}
+      </p>
+      <div className="flex flex-col gap-3 sm:flex-row">
+        <button
+          type="button"
+          className="min-h-11 rounded-md bg-stone-950 px-4 py-2 text-sm font-medium text-white focus:outline-none focus:ring-2 focus:ring-stone-950 focus:ring-offset-2"
+          onClick={onCopy}
+        >
+          {copied ? "Copied" : buttonLabel}
+        </button>
+        {children}
+      </div>
+    </section>
   );
 }
 

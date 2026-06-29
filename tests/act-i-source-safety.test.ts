@@ -163,13 +163,21 @@ test("Unbothered keeps Raincheck and No outside the slot panel", () => {
   assert.equal(unbotheredSource.includes("disabled={"), false);
 });
 
-test("Kind Reply Assistant remains local-only and non-notifying", () => {
+test("Kind Reply Assistant remains private and non-notifying", () => {
+  assert.match(kindReplySource, /sendRecipientMessageAction/);
+  assert.match(kindReplySource, /Send through WINK/);
+  assert.match(kindReplySource, /Use this message/);
+  assert.match(kindReplySource, /Optional message ideas/);
   assert.match(kindReplySource, /navigator\.clipboard\?\.writeText/);
-  assert.match(kindReplySource, /Copied ✓/);
+  assert.match(kindReplySource, /Copied/);
   assert.doesNotMatch(kindReplySource, /inviteStore|InviteStore/);
   assert.doesNotMatch(kindReplySource, /respondToInviteAction/);
   assert.doesNotMatch(kindReplySource, /fetch\(|XMLHttpRequest/);
-  assert.doesNotMatch(kindReplySource, /notification|notify|sendEmail|sendSms/i);
+  assert.doesNotMatch(
+    kindReplySource,
+    /Notification\(|pushNotification|sendNotification|notifySender|sendEmail|sendSms/i
+  );
+  assert.doesNotMatch(kindReplySource, /senderAccessToken|senderTokenHash/);
 });
 
 function readSourceFiles(roots: string[]): SourceFile[] {

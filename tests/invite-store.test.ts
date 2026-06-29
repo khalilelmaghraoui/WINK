@@ -27,7 +27,7 @@ test("createInvite stores each supported tone", async () => {
 
   for (const tone of tones) {
     const store = new InMemoryInviteStore();
-    const invite = await store.createInvite({
+    const { invite: invite } = await store.createInvite({
       ...baseInput,
       tone
     });
@@ -38,7 +38,7 @@ test("createInvite stores each supported tone", async () => {
 
 test("createInvite initializes noTapCount to zero", async () => {
   const store = new InMemoryInviteStore();
-  const invite = await store.createInvite(baseInput);
+  const { invite: invite } = await store.createInvite(baseInput);
 
   assert.equal(invite.noTapCount, 0);
 });
@@ -61,7 +61,7 @@ test("markOpened writes openedAt once only", async () => {
   const store = new InMemoryInviteStore({
     now: () => times.shift() ?? "2026-06-03T10:03:00.000Z"
   });
-  const invite = await store.createInvite(baseInput);
+  const { invite: invite } = await store.createInvite(baseInput);
 
   const firstOpen = await store.markOpened(invite.slug);
   const secondOpen = await store.markOpened(invite.slug);
@@ -73,7 +73,7 @@ test("markOpened writes openedAt once only", async () => {
 
 test("preview mode blocks openedAt and response writes", async () => {
   const store = new InMemoryInviteStore();
-  const invite = await store.createInvite(baseInput);
+  const { invite: invite } = await store.createInvite(baseInput);
 
   await store.markOpened(invite.slug, { previewMode: true });
   await store.respond(invite.slug, {
@@ -90,7 +90,7 @@ test("preview mode blocks openedAt and response writes", async () => {
 
 test("recordNoTap stores only a capped integer", async () => {
   const store = new InMemoryInviteStore();
-  const invite = await store.createInvite(baseInput);
+  const { invite: invite } = await store.createInvite(baseInput);
 
   const firstTap = await store.recordNoTap(invite.slug);
   const secondTap = await store.recordNoTap(invite.slug);
@@ -103,7 +103,7 @@ test("recordNoTap stores only a capped integer", async () => {
 
 test("preview mode blocks noTapCount writes", async () => {
   const store = new InMemoryInviteStore();
-  const invite = await store.createInvite(baseInput);
+  const { invite: invite } = await store.createInvite(baseInput);
 
   const previewTap = await store.recordNoTap(invite.slug, {
     previewMode: true
@@ -123,7 +123,7 @@ test("respond applies status transitions", async () => {
 
   for (const [response, expectedStatus] of responses) {
     const store = new InMemoryInviteStore();
-    const invite = await store.createInvite(baseInput);
+    const { invite: invite } = await store.createInvite(baseInput);
     const updatedInvite = await store.respond(invite.slug, { response });
 
     assert.equal(updatedInvite?.status, expectedStatus);
@@ -135,7 +135,7 @@ test("respond applies status transitions", async () => {
 
 test("raincheck response stores a minimal counter-offer message", async () => {
   const store = new InMemoryInviteStore();
-  const invite = await store.createInvite(baseInput);
+  const { invite: invite } = await store.createInvite(baseInput);
   const updatedInvite = await store.respond(invite.slug, {
     response: "raincheck",
     counterOffer: {
@@ -149,7 +149,7 @@ test("raincheck response stores a minimal counter-offer message", async () => {
 
 test("raincheck response stores option note and suggested date", async () => {
   const store = new InMemoryInviteStore();
-  const invite = await store.createInvite(baseInput);
+  const { invite: invite } = await store.createInvite(baseInput);
   const updatedInvite = await store.respond(invite.slug, {
     response: "raincheck",
     counterOffer: {
@@ -174,7 +174,7 @@ test("expired invites block response transitions without mutating stored data", 
     const store = new InMemoryInviteStore({
       now: () => "2026-06-10T12:00:00.000Z"
     });
-    const invite = await store.createInvite({
+    const { invite: invite } = await store.createInvite({
       ...baseInput,
       expiresAt: "2026-06-10T12:00:00.000Z"
     });
@@ -203,7 +203,7 @@ test("expired invites block unknown-sender and no-tap mutations", async () => {
   const store = new InMemoryInviteStore({
     now: () => "2026-06-10T12:00:00.000Z"
   });
-  const invite = await store.createInvite({
+  const { invite: invite } = await store.createInvite({
     ...baseInput,
     expiresAt: "2026-06-10T12:00:00.000Z"
   });
@@ -223,7 +223,7 @@ test("persisted expired status blocks later response mutation", async () => {
   const store = new InMemoryInviteStore({
     now: () => "2026-06-10T12:01:00.000Z"
   });
-  const invite = await store.createInvite({
+  const { invite: invite } = await store.createInvite({
     ...baseInput,
     expiresAt: "2026-06-10T12:00:00.000Z"
   });
@@ -242,9 +242,9 @@ test("persisted expired status blocks later response mutation", async () => {
 
 test("safety and availability actions update status", async () => {
   const store = new InMemoryInviteStore();
-  const flaggedInvite = await store.createInvite(baseInput);
-  const cancelledInvite = await store.createInvite(baseInput);
-  const expiringInvite = await store.createInvite({
+  const { invite: flaggedInvite } = await store.createInvite(baseInput);
+  const { invite: cancelledInvite } = await store.createInvite(baseInput);
+  const { invite: expiringInvite } = await store.createInvite({
     ...baseInput,
     expiresAt: "2026-06-03T10:00:00.000Z"
   });
@@ -265,8 +265,8 @@ test("createInvite retries slug generation on collision", async () => {
     slugGenerator: () => slugs.shift() ?? "STUVWXYZ"
   });
 
-  const firstInvite = await store.createInvite(baseInput);
-  const secondInvite = await store.createInvite(baseInput);
+  const { invite: firstInvite } = await store.createInvite(baseInput);
+  const { invite: secondInvite } = await store.createInvite(baseInput);
 
   assert.equal(firstInvite.slug, "ABCDEFGH");
   assert.equal(secondInvite.slug, "JKLMNPQR");

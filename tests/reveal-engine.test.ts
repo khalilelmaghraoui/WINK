@@ -34,6 +34,9 @@ const completeInvite: Invite = {
   canceledAt: null,
   expiresAt: null,
   expiredAt: null,
+  recipientMessage: null,
+  recipientMessageSentAt: null,
+  hasSenderAccess: true,
   createdAt: "2026-06-08T09:55:00.000Z",
   updatedAt: "2026-06-08T10:05:00.000Z"
 };

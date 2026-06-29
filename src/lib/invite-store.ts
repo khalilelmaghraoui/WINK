@@ -6,6 +6,12 @@ import {
   isInviteExpired,
   shouldPersistInviteExpiry
 } from "./invite-lifecycle";
+import { validateRecipientMessage } from "./recipient-message";
+import {
+  generateSenderAccessToken,
+  hashSenderAccessToken,
+  isValidSenderAccessToken
+} from "./sender-access-token";
 import {
   readInvitePersistenceEnvironment,
   resolveInvitePersistenceMode
@@ -75,6 +81,9 @@ export interface Invite {
   canceledAt: string | null;
   expiresAt: string | null;
   expiredAt: string | null;
+  recipientMessage: string | null;
+  recipientMessageSentAt: string | null;
+  hasSenderAccess: boolean;
   createdAt: string;
   updatedAt: string;
 }
@@ -91,6 +100,11 @@ export interface CreateInviteInput {
   expiresAt?: string | null;
 }
 
+export interface CreatedInviteAccess {
+  invite: Invite;
+  senderAccessToken: string;
+}
+
 export interface InviteReadOptions {
   previewMode?: boolean;
 }
@@ -105,14 +119,20 @@ export interface InviteResponsePayload extends InviteWriteOptions {
 }
 
 export interface InviteStore {
-  createInvite(input: CreateInviteInput): Promise<Invite>;
+  createInvite(input: CreateInviteInput): Promise<CreatedInviteAccess>;
   getInviteBySlug(
     slug: string,
     opts?: InviteReadOptions
   ): Promise<Invite | null>;
+  getInviteBySenderToken(token: string): Promise<Invite | null>;
   markOpened(slug: string, opts?: InviteWriteOptions): Promise<Invite | null>;
   recordNoTap(slug: string, opts?: InviteWriteOptions): Promise<Invite | null>;
   respond(slug: string, payload: InviteResponsePayload): Promise<Invite | null>;
+  sendRecipientMessage(
+    recipientSlug: string,
+    message: string,
+    opts?: InviteWriteOptions
+  ): Promise<Invite | null>;
   flagUnknownSender(
     slug: string,
     opts?: InviteWriteOptions
@@ -127,8 +147,13 @@ export interface InviteStore {
 export interface InMemoryInviteStoreOptions {
   slugLength?: number;
   slugGenerator?: (length?: number) => string;
+  senderAccessTokenGenerator?: () => string;
   now?: () => string;
 }
+
+type StoredInvite = Invite & {
+  senderTokenHash: string | null;
+};
 
 const responseStatus: Record<InviteResponse, InviteStatus> = {
   yes: "accepted",
@@ -137,44 +162,39 @@ const responseStatus: Record<InviteResponse, InviteStatus> = {
 };
 
 export class InMemoryInviteStore implements InviteStore {
-  private invitesBySlug = new Map<string, Invite>();
+  private invitesBySlug = new Map<string, StoredInvite>();
+  private slugsBySenderTokenHash = new Map<string, string>();
   private readonly slugLength: number;
   private readonly slugGenerator: (length?: number) => string;
+  private readonly senderAccessTokenGenerator: () => string;
   private readonly now: () => string;
 
   constructor(options: InMemoryInviteStoreOptions = {}) {
     this.slugLength = options.slugLength ?? 10;
     this.slugGenerator = options.slugGenerator ?? generateSlug;
+    this.senderAccessTokenGenerator =
+      options.senderAccessTokenGenerator ?? generateSenderAccessToken;
     this.now = options.now ?? (() => new Date().toISOString());
   }
 
-  async createInvite(input: CreateInviteInput): Promise<Invite> {
+  async createInvite(input: CreateInviteInput): Promise<CreatedInviteAccess> {
     const nowIso = this.now();
-    const invite: Invite = {
-      id: randomUUID(),
-      slug: this.createUniqueSlug(),
-      mode: input.mode,
-      tone: input.tone ?? "romantic",
-      dateType: input.dateType ?? "date",
-      status: "pending",
-      phase: "sent",
-      senderName: input.senderName ?? "",
-      recipientName: input.recipientName,
-      message: input.message,
-      dateDetails: input.dateDetails ?? {},
-      placeDetails: input.placeDetails ?? {},
-      response: null,
-      counterOffer: null,
-      noTapCount: 0,
-      openedAt: null,
-      respondedAt: null,
-      unknownSenderFlaggedAt: null,
-      canceledAt: null,
-      expiresAt: input.expiresAt ?? null,
-      expiredAt: null,
-      createdAt: nowIso,
-      updatedAt: nowIso
+    const { senderAccessToken, senderTokenHash } =
+      this.createUniqueSenderAccessToken();
+    const invite = this.buildInvite(input, nowIso, senderTokenHash);
+
+    this.invitesBySlug.set(invite.slug, invite);
+    this.slugsBySenderTokenHash.set(senderTokenHash, invite.slug);
+
+    return {
+      invite: cloneInvite(invite),
+      senderAccessToken
     };
+  }
+
+  async createLegacyInviteForTest(input: CreateInviteInput): Promise<Invite> {
+    const nowIso = this.now();
+    const invite = this.buildInvite(input, nowIso, null);
 
     this.invitesBySlug.set(invite.slug, invite);
 
@@ -185,6 +205,23 @@ export class InMemoryInviteStore implements InviteStore {
     slug: string,
     _opts: InviteReadOptions = {}
   ): Promise<Invite | null> {
+    const invite = this.invitesBySlug.get(slug);
+
+    return invite ? cloneInvite(invite) : null;
+  }
+
+  async getInviteBySenderToken(token: string): Promise<Invite | null> {
+    if (!isValidSenderAccessToken(token)) {
+      return null;
+    }
+
+    const senderTokenHash = hashSenderAccessToken(token);
+    const slug = this.slugsBySenderTokenHash.get(senderTokenHash);
+
+    if (!slug) {
+      return null;
+    }
+
     const invite = this.invitesBySlug.get(slug);
 
     return invite ? cloneInvite(invite) : null;
@@ -215,7 +252,7 @@ export class InMemoryInviteStore implements InviteStore {
       return cloneInvite(invite);
     }
 
-    const nextInvite: Invite = {
+    const nextInvite: StoredInvite = {
       ...invite,
       status: invite.status === "pending" ? "opened" : invite.status,
       phase: invite.phase === "sent" ? "opened" : invite.phase,
@@ -272,7 +309,7 @@ export class InMemoryInviteStore implements InviteStore {
     }
 
     const nextNoTapCount = capNoTapCount(invite.noTapCount + 1);
-    const nextInvite: Invite = {
+    const nextInvite: StoredInvite = {
       ...invite,
       noTapCount: nextNoTapCount,
       updatedAt: nowIso
@@ -284,6 +321,49 @@ export class InMemoryInviteStore implements InviteStore {
 
     return cloneInvite(opts.previewMode ? invite : nextInvite);
   }
+
+  async sendRecipientMessage(
+    recipientSlug: string,
+    message: string,
+    opts: InviteWriteOptions = {}
+  ): Promise<Invite | null> {
+    const invite = this.invitesBySlug.get(recipientSlug);
+
+    if (!invite) {
+      return null;
+    }
+
+    if (invite.recipientMessageSentAt) {
+      return cloneInvite(invite);
+    }
+
+    if (!canStoreRecipientMessage(invite)) {
+      return null;
+    }
+
+    const validation = validateRecipientMessage(message);
+
+    if (!validation.ok) {
+      return null;
+    }
+
+    if (opts.previewMode) {
+      return cloneInvite(invite);
+    }
+
+    const nowIso = this.now();
+    const nextInvite: StoredInvite = {
+      ...invite,
+      recipientMessage: validation.message,
+      recipientMessageSentAt: nowIso,
+      updatedAt: nowIso
+    };
+
+    this.invitesBySlug.set(recipientSlug, nextInvite);
+
+    return cloneInvite(nextInvite);
+  }
+
 
   async flagUnknownSender(
     slug: string,
@@ -302,7 +382,7 @@ export class InMemoryInviteStore implements InviteStore {
       return getEffectiveInvite(invite, now);
     }
 
-    const nextInvite: Invite = {
+    const nextInvite: StoredInvite = {
       ...invite,
       status: "flagged",
       phase: "closed",
@@ -328,7 +408,7 @@ export class InMemoryInviteStore implements InviteStore {
     }
 
     const nowIso = this.now();
-    const nextInvite: Invite = {
+    const nextInvite: StoredInvite = {
       ...invite,
       status: "cancelled",
       phase: "closed",
@@ -354,7 +434,7 @@ export class InMemoryInviteStore implements InviteStore {
         continue;
       }
 
-      const nextInvite: Invite = {
+      const nextInvite: StoredInvite = {
         ...invite,
         status: "expired",
         phase: "closed",
@@ -382,11 +462,65 @@ export class InMemoryInviteStore implements InviteStore {
     return slug;
   }
 
+  private createUniqueSenderAccessToken(): {
+    senderAccessToken: string;
+    senderTokenHash: string;
+  } {
+    let senderAccessToken = this.senderAccessTokenGenerator();
+    let senderTokenHash = hashSenderAccessToken(senderAccessToken);
+
+    while (this.slugsBySenderTokenHash.has(senderTokenHash)) {
+      senderAccessToken = this.senderAccessTokenGenerator();
+      senderTokenHash = hashSenderAccessToken(senderAccessToken);
+    }
+
+    return {
+      senderAccessToken,
+      senderTokenHash
+    };
+  }
+
+  private buildInvite(
+    input: CreateInviteInput,
+    nowIso: string,
+    senderTokenHash: string | null
+  ): StoredInvite {
+    return {
+      id: randomUUID(),
+      slug: this.createUniqueSlug(),
+      mode: input.mode,
+      tone: input.tone ?? "romantic",
+      dateType: input.dateType ?? "date",
+      status: "pending",
+      phase: "sent",
+      senderName: input.senderName ?? "",
+      recipientName: input.recipientName,
+      message: input.message,
+      dateDetails: input.dateDetails ?? {},
+      placeDetails: input.placeDetails ?? {},
+      response: null,
+      counterOffer: null,
+      noTapCount: 0,
+      openedAt: null,
+      respondedAt: null,
+      unknownSenderFlaggedAt: null,
+      canceledAt: null,
+      expiresAt: input.expiresAt ?? null,
+      expiredAt: null,
+      recipientMessage: null,
+      recipientMessageSentAt: null,
+      hasSenderAccess: senderTokenHash !== null,
+      senderTokenHash,
+      createdAt: nowIso,
+      updatedAt: nowIso
+    };
+  }
+
   private applyResponse(
-    invite: Invite,
+    invite: StoredInvite,
     payload: InviteResponsePayload,
     nowIso: string
-  ): Invite {
+  ): StoredInvite {
     return {
       ...invite,
       status: responseStatus[payload.response],
@@ -400,12 +534,25 @@ export class InMemoryInviteStore implements InviteStore {
 }
 
 function cloneInvite(invite: Invite): Invite {
-  return {
-    ...invite,
-    dateDetails: { ...invite.dateDetails },
-    placeDetails: { ...invite.placeDetails },
-    counterOffer: invite.counterOffer ? { ...invite.counterOffer } : null
+  const { senderTokenHash: _senderTokenHash, ...publicInvite } = invite as Invite & {
+    senderTokenHash?: string | null;
   };
+
+  return {
+    ...publicInvite,
+    dateDetails: { ...publicInvite.dateDetails },
+    placeDetails: { ...publicInvite.placeDetails },
+    counterOffer: publicInvite.counterOffer ? { ...publicInvite.counterOffer } : null
+  };
+}
+
+function canStoreRecipientMessage(invite: StoredInvite): boolean {
+  return (
+    invite.status === "declined" &&
+    invite.response === "no" &&
+    invite.senderTokenHash !== null &&
+    invite.hasSenderAccess
+  );
 }
 
 function capNoTapCount(value: number): 0 | 1 | 2 {
@@ -464,6 +611,9 @@ function createLazyInviteStore(): InviteStore {
     getInviteBySlug(slug, opts) {
       return getGlobalInviteStore().getInviteBySlug(slug, opts);
     },
+    getInviteBySenderToken(token) {
+      return getGlobalInviteStore().getInviteBySenderToken(token);
+    },
     markOpened(slug, opts) {
       return getGlobalInviteStore().markOpened(slug, opts);
     },
@@ -472,6 +622,13 @@ function createLazyInviteStore(): InviteStore {
     },
     respond(slug, payload) {
       return getGlobalInviteStore().respond(slug, payload);
+    },
+    sendRecipientMessage(recipientSlug, message, opts) {
+      return getGlobalInviteStore().sendRecipientMessage(
+        recipientSlug,
+        message,
+        opts
+      );
     },
     flagUnknownSender(slug, opts) {
       return getGlobalInviteStore().flagUnknownSender(slug, opts);

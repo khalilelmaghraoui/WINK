@@ -46,7 +46,7 @@ test("Act I flow creates an invite and opens it exactly once", async () => {
   const store = new InMemoryInviteStore({
     now: () => times.shift() ?? "2026-06-04T10:03:00.000Z"
   });
-  const invite = await store.createInvite(baseInput);
+  const { invite: invite } = await store.createInvite(baseInput);
 
   const firstOpen = await getInviteForRecipientPage({
     previewMode: false,
@@ -66,7 +66,7 @@ test("Act I flow creates an invite and opens it exactly once", async () => {
 
 test("preview mode blocks every Act I write path", async () => {
   const store = new InMemoryInviteStore();
-  const invite = await store.createInvite({
+  const { invite: invite } = await store.createInvite({
     ...baseInput,
     expiresAt: "2026-06-01T10:00:00.000Z"
   });
@@ -129,7 +129,7 @@ test("Act I responses and safety actions resolve to expected living URL states",
 
   for (const { action, expectedState, expectedStatus } of cases) {
     const store = new InMemoryInviteStore();
-    const invite = await store.createInvite(baseInput);
+    const { invite: invite } = await store.createInvite(baseInput);
 
     await action(store, invite.slug);
 
@@ -144,7 +144,7 @@ test("Act I responses and safety actions resolve to expected living URL states",
   }
 
   const store = new InMemoryInviteStore();
-  const expiringInvite = await store.createInvite({
+  const { invite: expiringInvite } = await store.createInvite({
     ...baseInput,
     expiresAt: "2026-06-01T10:00:00.000Z"
   });
@@ -222,7 +222,7 @@ test("metadata stays generic and excludes private invite data", () => {
 
 test("raincheck counter-offer details persist for the raincheck state", async () => {
   const store = new InMemoryInviteStore();
-  const invite = await store.createInvite(baseInput);
+  const { invite: invite } = await store.createInvite(baseInput);
   const updatedInvite = await store.respond(invite.slug, {
     response: "raincheck",
     counterOffer: {

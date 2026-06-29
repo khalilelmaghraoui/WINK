@@ -9,9 +9,11 @@ this manual pass is the proof that a configured project works end to end.
 1. Create a Supabase project.
 2. Open the SQL editor.
 3. Run the table SQL from `docs/SUPABASE_SCHEMA.md`.
-4. Enable RLS using the preview-safe guidance in `docs/SUPABASE_SCHEMA.md`.
-5. Do not add broad anon insert/update/delete policies for Vercel preview.
-6. Confirm the `public.invites` table exists.
+4. For existing projects, also run
+   `supabase/migrations/20260610_private_sender_link_reply.sql`.
+5. Enable RLS using the preview-safe guidance in `docs/SUPABASE_SCHEMA.md`.
+6. Do not add broad anon insert/update/delete policies for Vercel preview.
+7. Confirm the `public.invites` table exists.
 
 Do not use production data for this smoke pass.
 
@@ -60,15 +62,28 @@ credentials.
 
 1. Open `/create`.
 2. Create a Lawyer invite.
-3. Copy the generated `/i/[slug]` path.
-4. In Supabase Table Editor, confirm one row appears in `public.invites`.
-5. Confirm:
+3. Copy the generated recipient `/i/[slug]` path.
+4. Save the generated private sender `/s/[token]` path somewhere safe.
+5. In Supabase Table Editor, confirm one row appears in `public.invites`.
+6. Confirm:
    - `share_slug` matches the path slug.
+   - `sender_token_hash` is set.
+   - no raw sender token column exists.
    - `status` is `pending`.
    - `phase` is `sent`.
    - `opened_at` is null.
    - `response` is null.
+   - `recipient_message` is null.
+   - `recipient_message_sent_at` is null.
    - `no_tap_count` is `0`.
+
+## 4A. Private Sender Link Smoke
+
+1. Open the saved `/s/[token]` path.
+2. Confirm it renders a private sender status page.
+3. Confirm pending/opened status does not reveal an exact opened timestamp.
+4. Confirm an invalid `/s/[token]` path renders a generic unavailable state.
+5. Confirm the sender token itself does not appear in `public.invites`.
 
 ## 5. Open Invite Smoke
 
@@ -114,14 +129,24 @@ credentials.
 ## 8. No Response Smoke
 
 1. Create a third invite.
-2. Open `/i/[slug]`.
-3. Submit No.
-4. Confirm the same `/i/[slug]` URL renders the declined state.
-5. In Supabase, confirm:
+2. Save both the recipient `/i/[slug]` link and private sender `/s/[token]`
+   link.
+3. Open `/i/[slug]`.
+4. Submit No.
+5. Confirm the same `/i/[slug]` URL renders the declined state.
+6. Send one optional kind message through WINK.
+7. In Supabase, confirm:
    - `status` is `declined`.
    - `phase` is `responded`.
    - `response` is `no`.
    - `responded_at` is set.
+   - `recipient_message` contains only the submitted message.
+   - `recipient_message_sent_at` is set.
+8. Open `/s/[token]` and confirm the declined status and message appear.
+9. Confirm no email, SMS, push notification, webhook, or external message was
+   sent.
+10. Try sending a second recipient message and confirm the first message is not
+    replaced.
 
 ## 9. Unknown Sender Flag Smoke
 
@@ -164,14 +189,18 @@ Confirm:
 - No sender name, recipient name, message, date, time, place, or address appears
   in metadata.
 - No `openCount` column exists.
+- No raw sender-token column exists.
 - No device, location, hover, cursor path, dwell-time, repeated-open, or
   analytics fields exist.
 - Supabase imports appear only in provider/adapter code.
 - `SUPABASE_SERVICE_ROLE_KEY` appears only in server/provider code and docs.
 - No `NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_KEY` appears anywhere.
 - No `app/create/*` or `app/i/[slug]/*` file imports Supabase.
+- The private sender status route `/s/[token]` does not import Supabase
+  directly.
 - Browser devtools do not expose the service-role key in page source,
   JavaScript bundles, or network responses.
+- Browser devtools do not expose `sender_token_hash`.
 - RLS is enabled.
 - There are no broad anon insert/update/delete policies.
 

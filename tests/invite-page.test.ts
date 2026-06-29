@@ -65,6 +65,13 @@ class UnconfiguredInviteStore implements InviteStore {
     ]);
   };
 
+  getInviteBySenderToken = async () => {
+    throw new InvitePersistenceConfigurationError([
+      "NEXT_PUBLIC_SUPABASE_URL",
+      "SUPABASE_SERVICE_ROLE_KEY"
+    ]);
+  };
+
   markOpened = async () => {
     throw new InvitePersistenceConfigurationError([
       "NEXT_PUBLIC_SUPABASE_URL",
@@ -80,6 +87,13 @@ class UnconfiguredInviteStore implements InviteStore {
   };
 
   respond = async () => {
+    throw new InvitePersistenceConfigurationError([
+      "NEXT_PUBLIC_SUPABASE_URL",
+      "SUPABASE_SERVICE_ROLE_KEY"
+    ]);
+  };
+
+  sendRecipientMessage = async () => {
     throw new InvitePersistenceConfigurationError([
       "NEXT_PUBLIC_SUPABASE_URL",
       "SUPABASE_SERVICE_ROLE_KEY"
@@ -160,7 +174,7 @@ test("recipient page load result distinguishes missing invite from storage unava
 
 test("recipient page loader marks opened only for non-preview loads", async () => {
   const store = new CountingInviteStore();
-  const invite = await store.createInvite(inviteInput);
+  const { invite: invite } = await store.createInvite(inviteInput);
 
   const previewInvite = await getInviteForRecipientPage({
     previewMode: true,
@@ -185,7 +199,7 @@ test("recipient page loader marks opened only for non-preview loads", async () =
 
 test("recipient page loader derives expired state without marking opened", async () => {
   const store = new CountingInviteStore();
-  const invite = await store.createInvite({
+  const { invite: invite } = await store.createInvite({
     ...inviteInput,
     expiresAt: "2026-06-10T12:00:00.000Z"
   });
@@ -206,8 +220,10 @@ test("recipient page loader derives expired state without marking opened", async
 });
 
 test("accepted invite remains accepted after its expiry timestamp", async () => {
-  const store = new CountingInviteStore();
-  const invite = await store.createInvite({
+  const store = new CountingInviteStore({
+    now: () => "2026-06-10T11:59:00.000Z"
+  });
+  const { invite: invite } = await store.createInvite({
     ...inviteInput,
     expiresAt: "2026-06-10T12:00:00.000Z"
   });
@@ -250,7 +266,7 @@ test("invite page metadata is generic and noindex", () => {
 
 test("same slug resolves to accepted state after yes response", async () => {
   const store = new CountingInviteStore();
-  const invite = await store.createInvite(inviteInput);
+  const { invite: invite } = await store.createInvite(inviteInput);
 
   await store.respond(invite.slug, { response: "yes" });
 
@@ -347,7 +363,7 @@ test("raincheck counter offer stores option note and suggested date", () => {
 
 test("raincheck state details render selected option note and date", async () => {
   const store = new CountingInviteStore();
-  const invite = await store.createInvite(inviteInput);
+  const { invite: invite } = await store.createInvite(inviteInput);
   const updatedInvite = await store.respond(invite.slug, {
     response: "raincheck",
     counterOffer: {
@@ -386,7 +402,7 @@ test("kind reply assistant has exactly three static reply options", () => {
 
 test("kind reply intro can use safe invite context", async () => {
   const store = new CountingInviteStore();
-  const invite = await store.createInvite({
+  const { invite: invite } = await store.createInvite({
     ...inviteInput,
     senderName: "Riley",
     dateType: "romantic_moment"
@@ -526,7 +542,7 @@ test("unbothered slot final confirmation is the only yes consent path", () => {
 
 test("unbothered copy uses invite sender recipient and date type", async () => {
   const store = new CountingInviteStore();
-  const invite = await store.createInvite({
+  const { invite: invite } = await store.createInvite({
     ...inviteInput,
     senderName: "Riley",
     recipientName: "Avery",
