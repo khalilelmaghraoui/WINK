@@ -14,6 +14,14 @@ test("root page includes WINK value proposition and primary create CTA", () => {
   assert.match(pageSource, /No account required/);
 });
 
+test("root page keeps the hero layout balanced and CTA text unwrapped", () => {
+  assert.match(pageSource, /max-w-\[1080px\]/);
+  assert.match(pageSource, /lg:grid-cols-\[minmax\(0,1fr\)_440px\]/);
+  assert.match(pageSource, /max-w-\[460px\]/);
+  assert.match(pageSource, /whitespace-nowrap/);
+  assert.match(pageSource, /min-h-11/);
+});
+
 test("root page explains recipient link sender link and response loop", () => {
   assert.match(pageSource, /Send the recipient link/);
   assert.match(pageSource, /keep your private sender link/);

@@ -6,51 +6,53 @@ const focusRing =
 export default function HomePage() {
   return (
     <main className="min-h-screen overflow-x-hidden bg-wink-background text-wink-text">
-      <header className="mx-auto flex w-full max-w-[960px] flex-wrap items-center justify-between gap-3 px-5 py-5 sm:px-8 lg:px-10">
-        <Link
-          className={`font-display text-xl font-semibold text-wink-text ${focusRing}`}
-          href="/"
-        >
-          WINK
-        </Link>
-        <Link
-          className={`inline-flex min-h-11 items-center justify-center rounded-md border border-wink-border bg-wink-surface px-4 py-2 text-sm font-semibold text-wink-text transition-colors duration-200 hover:border-wink-primary hover:text-wink-primary ${focusRing}`}
-          href="/create"
-        >
-          Create an invite
-        </Link>
-      </header>
+      <div className="mx-auto w-full max-w-[1080px] px-5 py-6 sm:px-8 lg:px-10 lg:py-8">
+        <header className="mb-10 flex flex-wrap items-center justify-between gap-3 lg:mb-12">
+          <Link
+            className={`font-display text-xl font-semibold text-wink-text ${focusRing}`}
+            href="/"
+          >
+            WINK
+          </Link>
+          <Link
+            className={`inline-flex min-h-11 items-center justify-center whitespace-nowrap rounded-md border border-wink-border bg-wink-surface px-4 py-2 text-sm font-semibold text-wink-text transition-colors duration-200 hover:border-wink-primary hover:text-wink-primary ${focusRing}`}
+            href="/create"
+          >
+            Create an invite
+          </Link>
+        </header>
 
-      <section className="mx-auto grid w-full max-w-[960px] gap-10 px-5 pb-14 pt-8 sm:px-8 sm:pb-20 lg:grid-cols-[minmax(0,1fr)_minmax(320px,400px)] lg:items-center lg:px-10 lg:pt-16">
-        <div className="min-w-0 space-y-7">
-          <div className="max-w-[680px] space-y-4">
-            <p className="text-sm font-semibold uppercase text-wink-primary">
-              Private playful invitations
-            </p>
-            <h1 className="break-words font-display text-4xl font-semibold leading-[1.06] text-wink-text sm:text-6xl">
-              Make the ask unforgettable.
-            </h1>
-            <p className="text-base leading-7 text-wink-text-secondary sm:text-lg sm:leading-8">
-              Create a playful invite link, share it privately, and keep your
-              own private status link to see their response.
-            </p>
+        <section className="grid w-full items-start gap-8 pb-12 sm:pb-16 lg:grid-cols-[minmax(0,1fr)_440px] lg:gap-10 lg:pb-14">
+          <div className="min-w-0 space-y-7">
+            <div className="max-w-[560px] space-y-4">
+              <p className="text-sm font-semibold uppercase text-wink-primary">
+                Private playful invitations
+              </p>
+              <h1 className="break-words font-display text-4xl font-semibold leading-[1.06] text-wink-text sm:text-5xl lg:text-6xl">
+                Make the ask unforgettable.
+              </h1>
+              <p className="text-base leading-7 text-wink-text-secondary sm:text-lg sm:leading-8">
+                Create a playful invite link, share it privately, and keep your
+                own private status link to see their response.
+              </p>
+            </div>
+
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+              <Link
+                className={`inline-flex min-h-11 w-full items-center justify-center whitespace-nowrap rounded-md bg-wink-primary px-6 py-3 text-sm font-semibold text-wink-surface transition-colors duration-200 hover:bg-wink-primary-hover sm:w-auto ${focusRing}`}
+                href="/create"
+              >
+                Create an invite
+              </Link>
+              <p className="flex min-h-11 items-center text-sm leading-6 text-wink-text-secondary">
+                No account required. Alpha-stage, not user-validated yet.
+              </p>
+            </div>
           </div>
 
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-            <Link
-              className={`inline-flex min-h-11 items-center justify-center rounded-md bg-wink-primary px-5 py-3 text-sm font-semibold text-wink-surface transition-colors duration-200 hover:bg-wink-primary-hover ${focusRing}`}
-              href="/create"
-            >
-              Create an invite
-            </Link>
-            <p className="flex min-h-11 items-center text-sm text-wink-text-secondary">
-              No account required. Alpha-stage, not user-validated yet.
-            </p>
-          </div>
-        </div>
-
-        <SampleInvitePreview />
-      </section>
+          <SampleInvitePreview />
+        </section>
+      </div>
 
       <section
         aria-labelledby="how-it-works-heading"
@@ -174,7 +176,7 @@ function SampleInvitePreview() {
   return (
     <aside
       aria-labelledby="sample-invitation-heading"
-      className="w-full min-w-0 rounded-lg border border-wink-border bg-wink-surface p-5 shadow-[0_18px_50px_rgba(24,21,18,0.08)]"
+      className="mx-auto w-full max-w-[460px] min-w-0 rounded-lg border border-wink-border bg-wink-surface p-5 shadow-[0_18px_50px_rgba(24,21,18,0.08)] lg:mx-0"
     >
       <div className="space-y-5">
         <div className="flex flex-wrap items-center justify-between gap-3">
