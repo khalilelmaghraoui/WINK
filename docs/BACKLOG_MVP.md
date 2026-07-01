@@ -22,9 +22,10 @@ enforces existing invite expiry semantics at read/write boundaries without a
 scheduler or schema change. Sprint 3.6 adds a private sender status link and a
 one-time declined reply stored behind `InviteStore` without external messaging
 or notifications. Sprint 3.7 polishes the public home page so it explains the
-complete current alpha loop, including recipient and private sender links. User
-validation is not completed. This is not a public launch or
-production-readiness claim.
+complete current alpha loop, including recipient and private sender links.
+Sprint 3.8 adds sender controls v1: copy the recipient link again and cancel a
+pending/opened invite from the private sender link. User validation is not
+completed. This is not a public launch or production-readiness claim.
 
 Active stack:
 
@@ -628,6 +629,34 @@ Constraints:
   control behavior changed.
 - User validation remains incomplete.
 
+## Sprint 3.8 - Sender Controls v1
+
+Status: implemented.
+
+Deliverables:
+
+- Private `/s/[token]` sender page includes a compact sender-controls section.
+- Sender can copy the recipient `/i/[slug]` link again.
+- Sender can cancel only pending/opened invites before a terminal response.
+- Cancellation uses the existing `cancelled` status and `canceledAt` field.
+- Recipient cancelled state remains closed and hides response mechanics.
+- Flagged sender status remains generic and does not reveal the unknown-sender
+  reason.
+- Source and behavior tests cover sender-token cancellation, terminal-state
+  blocking, copied recipient-link safety, route inventory, no tracking, and no
+  direct Supabase imports in sender UI.
+
+Constraints:
+
+- No authentication, dashboard, sender inbox, notification, external
+  messaging, analytics, read receipt, open count, schema change, migration,
+  invite editing, sender message editing, cancellation reason, new route, new
+  mode, dependency, or provider change was added.
+- Yes, Raincheck, No, unknown-sender behavior, expiry, accepted reveal,
+  calendar, maps, metadata privacy, persistence fail-closed behavior, and
+  declined recipient-message behavior remain intact.
+- User validation remains incomplete.
+
 ## Future, Not Now
 
 Do not implement these during MVP foundation or Core Ask unless explicitly
@@ -641,6 +670,9 @@ requested:
 - Full notifications.
 - External messaging delivery.
 - Message read receipts.
+- Sender inbox.
+- Sender editing.
+- Cancellation reason.
 - Reveal drip.
 - Camera.
 - Scrapbook.

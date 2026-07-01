@@ -114,6 +114,13 @@ class UnconfiguredInviteStore implements InviteStore {
     ]);
   };
 
+  cancelInviteBySenderToken = async () => {
+    throw new InvitePersistenceConfigurationError([
+      "NEXT_PUBLIC_SUPABASE_URL",
+      "SUPABASE_SERVICE_ROLE_KEY"
+    ]);
+  };
+
   expireInvites = async () => {
     throw new InvitePersistenceConfigurationError([
       "NEXT_PUBLIC_SUPABASE_URL",

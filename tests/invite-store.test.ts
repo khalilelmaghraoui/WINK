@@ -258,6 +258,110 @@ test("safety and availability actions update status", async () => {
   assert.equal(expired.find((invite) => invite.slug === expiringInvite.slug)?.status, "expired");
 });
 
+test("sender token cancellation only cancels pending and opened invites", async () => {
+  const store = new InMemoryInviteStore({
+    now: () => "2026-06-10T12:00:00.000Z"
+  });
+  const { invite: pendingInvite, senderAccessToken: pendingToken } =
+    await store.createInvite(baseInput);
+  const { invite: openedInvite, senderAccessToken: openedToken } =
+    await store.createInvite(baseInput);
+  const terminalCases: Array<{
+    label: string;
+    setup: (slug: string) => Promise<void>;
+  }> = [
+    {
+      label: "accepted",
+      setup: async (slug) => {
+        await store.respond(slug, { response: "yes" });
+      }
+    },
+    {
+      label: "raincheck",
+      setup: async (slug) => {
+        await store.respond(slug, { response: "raincheck" });
+      }
+    },
+    {
+      label: "declined",
+      setup: async (slug) => {
+        await store.respond(slug, { response: "no" });
+      }
+    },
+    {
+      label: "flagged",
+      setup: async (slug) => {
+        await store.flagUnknownSender(slug);
+      }
+    },
+    {
+      label: "cancelled",
+      setup: async (slug) => {
+        await store.cancelInvite(slug);
+      }
+    }
+  ];
+
+  await store.markOpened(openedInvite.slug);
+
+  const cancelledPending = await store.cancelInviteBySenderToken(pendingToken);
+  const cancelledOpened = await store.cancelInviteBySenderToken(openedToken);
+
+  assert.equal(cancelledPending?.status, "cancelled");
+  assert.equal(cancelledPending?.canceledAt, "2026-06-10T12:00:00.000Z");
+  assert.equal(cancelledPending?.response, null);
+  assert.equal(cancelledOpened?.status, "cancelled");
+
+  for (const { label, setup } of terminalCases) {
+    const { invite, senderAccessToken } = await store.createInvite(baseInput);
+
+    await setup(invite.slug);
+
+    assert.equal(
+      await store.cancelInviteBySenderToken(senderAccessToken),
+      null,
+      label
+    );
+  }
+
+  assert.equal(await store.cancelInviteBySenderToken("not-a-real-token"), null);
+  assert.equal(await store.cancelInviteBySenderToken(pendingInvite.slug), null);
+});
+
+test("effectively expired invites cannot be cancelled by sender token", async () => {
+  const store = new InMemoryInviteStore({
+    now: () => "2026-06-10T12:00:00.000Z"
+  });
+  const { invite, senderAccessToken } = await store.createInvite({
+    ...baseInput,
+    expiresAt: "2026-06-10T12:00:00.000Z"
+  });
+
+  const result = await store.cancelInviteBySenderToken(senderAccessToken);
+  const persistedInvite = await store.getInviteBySlug(invite.slug);
+
+  assert.equal(result, null);
+  assert.equal(persistedInvite?.status, "pending");
+  assert.equal(persistedInvite?.canceledAt, null);
+});
+
+test("cancelled invites block stale recipient response mutations", async () => {
+  const store = new InMemoryInviteStore();
+  const { invite } = await store.createInvite(baseInput);
+
+  await store.cancelInvite(invite.slug);
+
+  const responseResult = await store.respond(invite.slug, { response: "yes" });
+  const flagResult = await store.flagUnknownSender(invite.slug);
+  const persistedInvite = await store.getInviteBySlug(invite.slug);
+
+  assert.equal(responseResult?.status, "cancelled");
+  assert.equal(flagResult?.status, "cancelled");
+  assert.equal(persistedInvite?.status, "cancelled");
+  assert.equal(persistedInvite?.response, null);
+  assert.equal(persistedInvite?.unknownSenderFlaggedAt, null);
+});
+
 test("createInvite retries slug generation on collision", async () => {
   const slugs = ["ABCDEFGH", "ABCDEFGH", "JKLMNPQR"];
   const store = new InMemoryInviteStore({

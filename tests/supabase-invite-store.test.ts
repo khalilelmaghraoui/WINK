@@ -238,6 +238,88 @@ test("Supabase adapter blocks expired response and safety mutations", async () =
   assert.equal(persistedInvite?.unknownSenderFlaggedAt, null);
 });
 
+test("Supabase adapter cancels by sender token only for cancellable states", async () => {
+  const store = new SupabaseInviteStore({
+    client: new FakeSupabaseInviteClient(),
+    now: () => "2026-06-10T12:00:00.000Z",
+    slugGenerator: () => "ABCDEFGH"
+  });
+  const { invite, senderAccessToken } = await store.createInvite(baseInput);
+
+  const cancelled = await store.cancelInviteBySenderToken(senderAccessToken);
+  const persistedInvite = await store.getInviteBySlug(invite.slug);
+
+  assert.equal(cancelled?.status, "cancelled");
+  assert.equal(cancelled?.canceledAt, "2026-06-10T12:00:00.000Z");
+  assert.equal(cancelled?.response, null);
+  assert.equal(persistedInvite?.status, "cancelled");
+  assert.equal(persistedInvite?.canceledAt, "2026-06-10T12:00:00.000Z");
+  assert.equal(await store.cancelInviteBySenderToken(senderAccessToken), null);
+  assert.equal(await store.cancelInviteBySenderToken("not-a-real-token"), null);
+  assert.equal(await store.cancelInviteBySenderToken(invite.slug), null);
+});
+
+test("Supabase adapter does not overwrite terminal or expired invites on sender cancellation", async () => {
+  const store = new SupabaseInviteStore({
+    client: new FakeSupabaseInviteClient(),
+    now: () => "2026-06-10T12:00:00.000Z"
+  });
+  const terminalCases: Array<{
+    label: string;
+    setup: (slug: string) => Promise<void>;
+  }> = [
+    {
+      label: "accepted",
+      setup: async (slug) => {
+        await store.respond(slug, { response: "yes" });
+      }
+    },
+    {
+      label: "raincheck",
+      setup: async (slug) => {
+        await store.respond(slug, { response: "raincheck" });
+      }
+    },
+    {
+      label: "declined",
+      setup: async (slug) => {
+        await store.respond(slug, { response: "no" });
+      }
+    },
+    {
+      label: "flagged",
+      setup: async (slug) => {
+        await store.flagUnknownSender(slug);
+      }
+    },
+    {
+      label: "expired",
+      setup: async () => {}
+    }
+  ];
+
+  for (const { label, setup } of terminalCases) {
+    const { invite, senderAccessToken } = await store.createInvite({
+      ...baseInput,
+      expiresAt:
+        label === "expired" ? "2026-06-10T12:00:00.000Z" : undefined
+    });
+
+    await setup(invite.slug);
+
+    assert.equal(
+      await store.cancelInviteBySenderToken(senderAccessToken),
+      null,
+      label
+    );
+
+    const persistedInvite = await store.getInviteBySlug(invite.slug);
+
+    assert.notEqual(persistedInvite?.status, "cancelled", label);
+    assert.equal(persistedInvite?.canceledAt, null, label);
+  }
+});
+
 test("Supabase schema documents RLS smoke posture without open count", () => {
   const schema = readFileSync("docs/SUPABASE_SCHEMA.md", "utf8");
 
@@ -282,6 +364,11 @@ class FakeSupabaseListQuery {
 
   eq(column: string, value: unknown) {
     this.filters.push({ column, op: "eq", value });
+    return this;
+  }
+
+  in(column: string, values: unknown[]) {
+    this.filters.push({ column, op: "in", value: values });
     return this;
   }
 
@@ -351,6 +438,11 @@ class FakeSupabaseSingleQuery {
     return this;
   }
 
+  in(column: string, values: unknown[]) {
+    this.filters.push({ column, op: "in", value: values });
+    return this;
+  }
+
   is(column: string, value: unknown) {
     this.filters.push({ column, op: "is", value });
     return this;
@@ -396,6 +488,11 @@ class FakeSupabaseMutationQuery {
     return this;
   }
 
+  in(column: string, values: unknown[]) {
+    this.filters.push({ column, op: "in", value: values });
+    return this;
+  }
+
   is(column: string, value: unknown) {
     this.filters.push({ column, op: "is", value });
     return this;
@@ -429,6 +526,10 @@ class FakeStaticSingleQuery {
     return this;
   }
 
+  in() {
+    return this;
+  }
+
   is() {
     return this;
   }
@@ -456,7 +557,7 @@ interface QueryListResult {
 
 interface Filter {
   column: string;
-  op: "eq" | "is" | "lte" | "not";
+  op: "eq" | "in" | "is" | "lte" | "not";
   operator?: string;
   value: unknown;
 }
@@ -466,6 +567,10 @@ function matchesFilter(row: SupabaseInviteRow, filter: Filter): boolean {
 
   if (filter.op === "eq") {
     return value === filter.value;
+  }
+
+  if (filter.op === "in") {
+    return Array.isArray(filter.value) && filter.value.includes(value);
   }
 
   if (filter.op === "is") {

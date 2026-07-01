@@ -1,5 +1,9 @@
 import type { Metadata } from "next";
 
+import { cancelSenderInviteAction } from "./actions";
+import type { SenderCancelActionState } from "./actions";
+import { SenderControls } from "./sender-controls";
+import { getEffectiveInvite } from "@/lib/invite-lifecycle";
 import { inviteStore } from "@/lib/invite-store";
 import { formatInviteDateTime } from "@/lib/invite-date-time";
 import {
@@ -44,19 +48,26 @@ export default async function SenderStatusPage({
   const { token } = await params;
 
   try {
-    const invite = await inviteStore.getInviteBySenderToken(token);
+    const loadedInvite = await inviteStore.getInviteBySenderToken(token);
 
-    if (!invite) {
+    if (!loadedInvite) {
       return <SenderUnavailableState />;
     }
 
+    const invite = getEffectiveInvite(loadedInvite, new Date());
     const viewModel = getSenderStatusViewModel(invite);
 
     if (viewModel.isUnavailable) {
       return <SenderUnavailableState />;
     }
 
-    return <SenderStatusView viewModel={viewModel} />;
+    return (
+      <SenderStatusView
+        cancelAction={cancelSenderInviteAction.bind(null, token)}
+        recipientPath={`/i/${invite.slug}`}
+        viewModel={viewModel}
+      />
+    );
   } catch (error) {
     if (isInvitePersistenceConfigurationError(error)) {
       return <SenderTemporaryUnavailableState />;
@@ -67,8 +78,15 @@ export default async function SenderStatusPage({
 }
 
 function SenderStatusView({
+  cancelAction,
+  recipientPath,
   viewModel
 }: {
+  cancelAction: (
+    state: SenderCancelActionState,
+    formData: FormData
+  ) => Promise<SenderCancelActionState>;
+  recipientPath: string;
   viewModel: SenderStatusViewModel;
 }) {
   return (
@@ -94,6 +112,12 @@ function SenderStatusView({
             recipientMessage={viewModel.recipientMessage}
           />
         ) : null}
+
+        <SenderControls
+          canCancel={viewModel.kind === "pending" || viewModel.kind === "opened"}
+          cancelAction={cancelAction}
+          recipientPath={recipientPath}
+        />
 
         <p className="border-t border-stone-200 pt-4 text-sm text-stone-600">
           Keep this private link. Anyone with it can view this status page.

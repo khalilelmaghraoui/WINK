@@ -2,6 +2,7 @@ import { randomUUID } from "node:crypto";
 
 import { generateSlug } from "../generate-slug";
 import {
+  canCancelInvite,
   getEffectiveInvite,
   isInviteExpired,
   shouldPersistInviteExpiry
@@ -35,6 +36,8 @@ const responseStatus: Record<InviteResponse, InviteStatus> = {
   raincheck: "raincheck",
   no: "declined"
 };
+
+const recipientMutableStatuses = new Set<InviteStatus>(["pending", "opened"]);
 
 export interface SupabaseInviteRow {
   id: string;
@@ -106,6 +109,7 @@ type SupabaseSelectQuery<T> = SupabaseListQuery<T> & SupabaseSingleQuery<T>;
 
 interface SupabaseMutationQuery<T> {
   eq(column: string, value: unknown): SupabaseMutationQuery<T>;
+  in(column: string, values: unknown[]): SupabaseMutationQuery<T>;
   is(column: string, value: unknown): SupabaseMutationQuery<T>;
   not(column: string, operator: string, value: unknown): SupabaseMutationQuery<T>;
   select(columns?: string): SupabaseSingleQuery<T>;
@@ -276,6 +280,10 @@ export class SupabaseInviteStore implements InviteStore {
       return getEffectiveInvite(invite, now);
     }
 
+    if (!canReceiveRecipientMutation(invite, now)) {
+      return cloneInvite(invite);
+    }
+
     const nextInvite = applyResponse(invite, payload, nowIso);
 
     if (payload.previewMode) {
@@ -311,6 +319,10 @@ export class SupabaseInviteStore implements InviteStore {
 
     if (isInviteExpired(invite, now)) {
       return getEffectiveInvite(invite, now);
+    }
+
+    if (!canReceiveRecipientMutation(invite, now)) {
+      return cloneInvite(invite);
     }
 
     return this.updateInvite(slug, {
@@ -396,6 +408,10 @@ export class SupabaseInviteStore implements InviteStore {
       return getEffectiveInvite(invite, now);
     }
 
+    if (!canReceiveRecipientMutation(invite, now)) {
+      return cloneInvite(invite);
+    }
+
     return this.updateInvite(slug, {
       phase: "closed",
       status: "flagged",
@@ -419,13 +435,72 @@ export class SupabaseInviteStore implements InviteStore {
     }
 
     const nowIso = this.now();
+    const now = new Date(nowIso);
 
-    return this.updateInvite(slug, {
-      canceled_at: nowIso,
-      phase: "closed",
-      status: "cancelled",
-      updated_at: nowIso
-    });
+    if (!canCancelInvite(invite, now)) {
+      return null;
+    }
+
+    const { data, error } = await this.table()
+      .update({
+        canceled_at: nowIso,
+        phase: "closed",
+        status: "cancelled",
+        updated_at: nowIso
+      })
+      .eq("share_slug", slug)
+      .in("status", ["pending", "opened"])
+      .select("*")
+      .maybeSingle();
+
+    throwIfSupabaseError(error, "cancel invite");
+
+    return data ? inviteFromSupabaseRow(data) : null;
+  }
+
+  async cancelInviteBySenderToken(
+    token: string,
+    opts: InviteWriteOptions = {}
+  ): Promise<Invite | null> {
+    if (!isValidSenderAccessToken(token)) {
+      return null;
+    }
+
+    const senderTokenHash = hashSenderAccessToken(token);
+    const row = await this.getRowBySenderTokenHash(senderTokenHash);
+
+    if (!row) {
+      return null;
+    }
+
+    const invite = inviteFromSupabaseRow(row);
+
+    if (opts.previewMode) {
+      return invite;
+    }
+
+    const nowIso = this.now();
+    const now = new Date(nowIso);
+
+    if (!canCancelInvite(invite, now)) {
+      return null;
+    }
+
+    const { data, error } = await this.table()
+      .update({
+        canceled_at: nowIso,
+        phase: "closed",
+        status: "cancelled",
+        updated_at: nowIso
+      })
+      .eq("sender_token_hash", senderTokenHash)
+      .in("status", ["pending", "opened"])
+      .select("*")
+      .maybeSingle();
+
+    throwIfSupabaseError(error, "cancel sender invite");
+
+    return data ? inviteFromSupabaseRow(data) : null;
   }
 
   async expireInvites(
@@ -625,6 +700,13 @@ function canStoreRecipientMessage(invite: Invite): boolean {
     invite.response === "no" &&
     invite.hasSenderAccess &&
     invite.recipientMessageSentAt === null
+  );
+}
+
+function canReceiveRecipientMutation(invite: Invite, now: Date): boolean {
+  return (
+    recipientMutableStatuses.has(invite.status) &&
+    !isInviteExpired(invite, now)
   );
 }
 

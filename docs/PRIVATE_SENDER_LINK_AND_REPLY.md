@@ -54,6 +54,39 @@ The sender status page does not:
 - show recipient device, location, IP, hover, cursor, dwell-time, repeated-open,
   or open-count data
 
+## Sender Controls v1
+
+Sprint 3.8 adds two narrow controls to the valid private sender page. The
+private sender link remains a bearer capability; this is not authentication or
+a dashboard.
+
+The sender can:
+
+- copy the recipient `/i/[slug]` link again
+- cancel the invitation while its effective status is `pending` or `opened`
+
+The copied recipient link must not include:
+
+- the `/s/[token]` sender path
+- the raw sender token
+- `sender_token_hash`
+- Supabase details
+
+Cancellation rules:
+
+- cancellation is unavailable after `accepted`, `raincheck`, `declined`,
+  `flagged`, `expired`, or `cancelled`
+- effectively expired pending/opened invites cannot be cancelled
+- cancellation uses the existing `cancelled` status and `canceledAt` field
+- cancellation does not change declined recipient messages
+- cancellation sends no notification
+- flagged sender links still show the generic unavailable state and do not
+  reveal the unknown-sender reason
+
+After cancellation, the recipient `/i/[slug]` page shows the closed/cancelled
+state and hides Yes, Raincheck, No, Kind Reply Assistant, accepted reveal,
+calendar, and maps actions.
+
 ## Declined Reply
 
 For new invites with sender access, the declined state includes an optional
@@ -132,7 +165,7 @@ Do not add:
 - read receipts
 - open counts
 - device/location/IP tracking
-- sender controls
+- sender editing or sender inbox
 
 `/i/[slug]` metadata remains generic and `noindex,nofollow`.
 `/s/[token]` metadata is also generic and `noindex,nofollow`.

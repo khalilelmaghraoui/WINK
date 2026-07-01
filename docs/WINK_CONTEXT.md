@@ -478,6 +478,24 @@ Sprint 3.7 - Public home page alpha polish:
   changed.
 - User validation remains incomplete.
 
+Sprint 3.8 - Sender controls v1:
+
+- Adds a small sender-control section to the private `/s/[token]` page.
+- Senders can copy the recipient `/i/[slug]` link again without exposing the
+  sender token or token hash.
+- Senders can cancel an invite only while its effective status is `pending` or
+  `opened`.
+- Cancellation sets the existing `cancelled` status and `canceledAt` timestamp
+  through the `InviteStore` boundary; no schema change or migration was added.
+- Accepted, raincheck, declined, flagged, expired, cancelled, and effectively
+  expired invites cannot be cancelled from the sender link.
+- Cancelled recipient pages stay closed: Yes, Raincheck, No, Kind Reply
+  Assistant, accepted reveal, calendar, and maps actions are hidden.
+- Flagged sender links continue to reveal only the generic unavailable state.
+- No notification, external messaging, auth, dashboard, analytics, read
+  receipts, route expansion, or sender editing was added.
+- User validation remains incomplete.
+
 ## Not In Current MVP Work
 
 Do not add these unless explicitly requested:
@@ -490,6 +508,7 @@ Do not add these unless explicitly requested:
 - Notifications.
 - External messaging delivery.
 - Message read receipts.
+- Sender editing.
 - Payments.
 - Native mobile app.
 - Expo.

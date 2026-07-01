@@ -2,6 +2,7 @@ import { randomUUID } from "node:crypto";
 
 import { generateSlug } from "./generate-slug";
 import {
+  canCancelInvite,
   getEffectiveInvite,
   isInviteExpired,
   shouldPersistInviteExpiry
@@ -13,6 +14,7 @@ import {
   isValidSenderAccessToken
 } from "./sender-access-token";
 import {
+  isInvitePersistenceConfigurationError,
   readInvitePersistenceEnvironment,
   resolveInvitePersistenceMode
 } from "./storage/invite-store-config";
@@ -138,6 +140,10 @@ export interface InviteStore {
     opts?: InviteWriteOptions
   ): Promise<Invite | null>;
   cancelInvite(slug: string, opts?: InviteWriteOptions): Promise<Invite | null>;
+  cancelInviteBySenderToken(
+    token: string,
+    opts?: InviteWriteOptions
+  ): Promise<Invite | null>;
   expireInvites(
     nowIso: string,
     opts?: InviteWriteOptions
@@ -160,6 +166,8 @@ const responseStatus: Record<InviteResponse, InviteStatus> = {
   raincheck: "raincheck",
   no: "declined"
 };
+
+const recipientMutableStatuses = new Set<InviteStatus>(["pending", "opened"]);
 
 export class InMemoryInviteStore implements InviteStore {
   private invitesBySlug = new Map<string, StoredInvite>();
@@ -282,6 +290,10 @@ export class InMemoryInviteStore implements InviteStore {
       return getEffectiveInvite(invite, now);
     }
 
+    if (!canReceiveRecipientMutation(invite, now)) {
+      return cloneInvite(invite);
+    }
+
     const nextInvite = this.applyResponse(invite, payload, nowIso);
 
     if (!payload.previewMode) {
@@ -306,6 +318,10 @@ export class InMemoryInviteStore implements InviteStore {
 
     if (isInviteExpired(invite, now)) {
       return getEffectiveInvite(invite, now);
+    }
+
+    if (!canReceiveRecipientMutation(invite, now)) {
+      return cloneInvite(invite);
     }
 
     const nextNoTapCount = capNoTapCount(invite.noTapCount + 1);
@@ -382,6 +398,10 @@ export class InMemoryInviteStore implements InviteStore {
       return getEffectiveInvite(invite, now);
     }
 
+    if (!canReceiveRecipientMutation(invite, now)) {
+      return cloneInvite(invite);
+    }
+
     const nextInvite: StoredInvite = {
       ...invite,
       status: "flagged",
@@ -408,6 +428,61 @@ export class InMemoryInviteStore implements InviteStore {
     }
 
     const nowIso = this.now();
+    const now = new Date(nowIso);
+
+    if (!canCancelInvite(invite, now)) {
+      return null;
+    }
+
+    if (opts.previewMode) {
+      return cloneInvite(invite);
+    }
+
+    const nextInvite: StoredInvite = {
+      ...invite,
+      status: "cancelled",
+      phase: "closed",
+      canceledAt: nowIso,
+      updatedAt: nowIso
+    };
+
+    this.invitesBySlug.set(slug, nextInvite);
+
+    return cloneInvite(nextInvite);
+  }
+
+  async cancelInviteBySenderToken(
+    token: string,
+    opts: InviteWriteOptions = {}
+  ): Promise<Invite | null> {
+    if (!isValidSenderAccessToken(token)) {
+      return null;
+    }
+
+    const senderTokenHash = hashSenderAccessToken(token);
+    const slug = this.slugsBySenderTokenHash.get(senderTokenHash);
+
+    if (!slug) {
+      return null;
+    }
+
+    const invite = this.invitesBySlug.get(slug);
+
+    if (!invite) {
+      return null;
+    }
+
+    const nowIso = this.now();
+    const now = new Date(nowIso);
+
+    if (!canCancelInvite(invite, now)) {
+      return null;
+    }
+
+    if (opts.previewMode) {
+      return cloneInvite(invite);
+    }
+
     const nextInvite: StoredInvite = {
       ...invite,
       status: "cancelled",
@@ -595,6 +670,10 @@ export function createDefaultInviteStore(
 
 export const inviteStore: InviteStore = createLazyInviteStore();
 
+export function isInviteStoreConfigurationError(error: unknown): boolean {
+  return isInvitePersistenceConfigurationError(error);
+}
+
 function getGlobalInviteStore(): InviteStore {
   if (!globalInviteStore.__winkInviteStore) {
     globalInviteStore.__winkInviteStore = createDefaultInviteStore();
@@ -636,8 +715,18 @@ function createLazyInviteStore(): InviteStore {
     cancelInvite(slug, opts) {
       return getGlobalInviteStore().cancelInvite(slug, opts);
     },
+    cancelInviteBySenderToken(token, opts) {
+      return getGlobalInviteStore().cancelInviteBySenderToken(token, opts);
+    },
     expireInvites(nowIso, opts) {
       return getGlobalInviteStore().expireInvites(nowIso, opts);
     }
   };
+}
+
+function canReceiveRecipientMutation(invite: Invite, now: Date): boolean {
+  return (
+    recipientMutableStatuses.has(invite.status) &&
+    !isInviteExpired(invite, now)
+  );
 }

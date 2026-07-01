@@ -1,6 +1,7 @@
 import type { Invite, InviteStatus } from "./invite-store";
 
 const expirableStatuses = new Set<InviteStatus>(["pending", "opened"]);
+const senderCancellableStatuses = new Set<InviteStatus>(["pending", "opened"]);
 
 export function isInviteExpired(invite: Invite, now: Date): boolean {
   return getEffectiveInviteStatus(invite, now) === "expired";
@@ -49,6 +50,13 @@ export function shouldPersistInviteExpiry(
   nowIso: string
 ): boolean {
   return isInviteExpired(invite, new Date(nowIso)) && invite.expiredAt === null;
+}
+
+export function canCancelInvite(invite: Invite, now: Date): boolean {
+  return (
+    senderCancellableStatuses.has(invite.status) &&
+    !isInviteExpired(invite, now)
+  );
 }
 
 function cloneInvite(invite: Invite): Invite {
