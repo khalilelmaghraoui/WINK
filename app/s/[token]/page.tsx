@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
 
-import { cancelSenderInviteAction } from "./actions";
-import type { SenderCancelActionState } from "./actions";
-import { SenderControls } from "./sender-controls";
+import { cancelSenderInviteFormAction } from "./actions";
+import {
+  SenderControls,
+  type SenderControlsCancelStatus
+} from "./sender-controls";
 import { getEffectiveInvite } from "@/lib/invite-lifecycle";
 import { inviteStore } from "@/lib/invite-store";
 import { formatInviteDateTime } from "@/lib/invite-date-time";
@@ -40,12 +42,17 @@ interface SenderStatusPageProps {
   params: Promise<{
     token: string;
   }>;
+  searchParams?: Promise<{
+    cancel?: string | string[];
+  }>;
 }
 
 export default async function SenderStatusPage({
-  params
+  params,
+  searchParams
 }: SenderStatusPageProps) {
   const { token } = await params;
+  const cancelStatus = normalizeCancelStatus((await searchParams)?.cancel);
 
   try {
     const loadedInvite = await inviteStore.getInviteBySenderToken(token);
@@ -63,7 +70,8 @@ export default async function SenderStatusPage({
 
     return (
       <SenderStatusView
-        cancelAction={cancelSenderInviteAction.bind(null, token)}
+        cancelAction={cancelSenderInviteFormAction.bind(null, token)}
+        cancelStatus={cancelStatus}
         recipientPath={`/i/${invite.slug}`}
         viewModel={viewModel}
       />
@@ -79,13 +87,12 @@ export default async function SenderStatusPage({
 
 function SenderStatusView({
   cancelAction,
+  cancelStatus,
   recipientPath,
   viewModel
 }: {
-  cancelAction: (
-    state: SenderCancelActionState,
-    formData: FormData
-  ) => Promise<SenderCancelActionState>;
+  cancelAction: (formData: FormData) => Promise<never>;
+  cancelStatus: SenderControlsCancelStatus;
   recipientPath: string;
   viewModel: SenderStatusViewModel;
 }) {
@@ -116,6 +123,7 @@ function SenderStatusView({
         <SenderControls
           canCancel={viewModel.kind === "pending" || viewModel.kind === "opened"}
           cancelAction={cancelAction}
+          cancelStatus={cancelStatus}
           recipientPath={recipientPath}
         />
 
@@ -260,4 +268,12 @@ function Detail({ label, value }: { label: string; value?: string | null }) {
       </dd>
     </div>
   );
+}
+
+function normalizeCancelStatus(
+  value: string | string[] | undefined
+): SenderControlsCancelStatus {
+  const status = Array.isArray(value) ? value[0] : value;
+
+  return status === "success" || status === "unavailable" ? status : null;
 }

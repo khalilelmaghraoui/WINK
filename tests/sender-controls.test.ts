@@ -20,6 +20,10 @@ const senderControlsSource = readFileSync(
   "app/s/[token]/sender-controls.tsx",
   "utf8"
 );
+const copyRecipientLinkSource = readFileSync(
+  "app/s/[token]/copy-recipient-link-control.tsx",
+  "utf8"
+);
 const senderActionsSource = readFileSync("app/s/[token]/actions.ts", "utf8");
 const inviteStoreSource = readFileSync("src/lib/invite-store.ts", "utf8");
 const supabaseStoreSource = readFileSync(
@@ -45,16 +49,46 @@ const baseInput: CreateInviteInput = {
 test("sender page wires copy recipient link control without exposing sender token", () => {
   assert.match(senderPageSource, /<SenderControls/);
   assert.match(senderPageSource, /recipientPath=\{`\/i\/\$\{invite\.slug\}`\}/);
-  assert.match(senderControlsSource, /Copy recipient link/);
-  assert.match(senderControlsSource, /navigator\.clipboard\.writeText/);
-  assert.match(senderControlsSource, /Recipient link copied\./);
+  assert.match(senderControlsSource, /CopyRecipientLinkControl/);
+  assert.match(copyRecipientLinkSource, /Copy recipient link/);
+  assert.match(copyRecipientLinkSource, /navigator\.clipboard\.writeText/);
+  assert.match(copyRecipientLinkSource, /Recipient link copied\./);
   assert.match(
-    senderControlsSource,
+    copyRecipientLinkSource,
     /Could not copy\. Select the link manually\./
   );
-  assert.match(senderControlsSource, /select-all break-all/);
+  assert.match(copyRecipientLinkSource, /select-all break-all/);
   assert.doesNotMatch(senderControlsSource, /\/s\/|senderTokenHash|tokenHash/);
-  assert.doesNotMatch(senderControlsSource, /localStorage|document\.cookie/);
+  assert.doesNotMatch(copyRecipientLinkSource, /\/s\/|senderTokenHash|tokenHash/);
+  assert.doesNotMatch(
+    [senderControlsSource, copyRecipientLinkSource].join("\n"),
+    /localStorage|document\.cookie/
+  );
+});
+
+test("sender controls render from the server shell for opened and pending states", () => {
+  assert.doesNotMatch(senderControlsSource, /^"use client";/m);
+  assert.match(senderControlsSource, /Sender controls/);
+  assert.match(senderControlsSource, /Cancel invitation/);
+  assert.match(
+    senderPageSource,
+    /cancelSenderInviteFormAction\.bind\(null, token\)/
+  );
+  assert.match(
+    senderPageSource,
+    /canCancel=\{viewModel\.kind === "pending" \|\| viewModel\.kind === "opened"\}/
+  );
+
+  for (const status of ["pending", "opened"] as const) {
+    const viewModel = getSenderStatusViewModel(baseInvite(status));
+
+    assert.equal(viewModel.kind, status);
+    assert.equal(
+      viewModel.kind === "pending" || viewModel.kind === "opened",
+      true,
+      status
+    );
+  }
 });
 
 test("sender controls show cancel only for pending and opened sender states", () => {
@@ -65,7 +99,7 @@ test("sender controls show cancel only for pending and opened sender states", ()
   assert.match(senderControlsSource, /Cancel invitation/);
   assert.match(senderControlsSource, /Cancel this invitation\?/);
   assert.match(senderControlsSource, /Yes, cancel invitation/);
-  assert.match(senderControlsSource, /Keep invitation open/);
+  assert.match(senderControlsSource, /keep the invitation open/i);
 
   const cancellableStatuses: InviteStatus[] = ["pending", "opened"];
   const nonCancellableStatuses: InviteStatus[] = [
@@ -183,6 +217,7 @@ test("sender controls source preserves privacy and route guardrails", () => {
   const sourceText = [
     senderPageSource,
     senderControlsSource,
+    copyRecipientLinkSource,
     senderActionsSource
   ].join("\n");
 
