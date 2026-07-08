@@ -31,6 +31,13 @@ const stepIndicatorSource = readFileSync(
   "components/ui/step-indicator.tsx",
   "utf8"
 );
+const copyControlSource = readFileSync("components/ui/copy-control.tsx", "utf8");
+const inviteCardSource = readFileSync("components/ui/invite-card.tsx", "utf8");
+const privateLinkNoticeSource = readFileSync(
+  "components/ui/private-link-notice.tsx",
+  "utf8"
+);
+const statusCardSource = readFileSync("components/ui/status-card.tsx", "utf8");
 const uiIndexSource = readFileSync("components/ui/index.ts", "utf8");
 const recipientPageSource = readFileSync("app/i/[slug]/page.tsx", "utf8");
 const createInviteFormSource = readFileSync(
@@ -293,6 +300,93 @@ test("Sprint 4.0 Pass A2 UI barrel exports form and choice primitives", () => {
   assert.match(uiIndexSource, /export \{ FormField \}/);
   assert.match(uiIndexSource, /export \{ StepIndicator \}/);
   assert.match(uiIndexSource, /export \{ ModeBadge \}/);
+});
+
+test("Sprint 4.0 Pass A3 CopyControl exists exports and keeps local copy behavior", () => {
+  assert.equal(existsSync("components/ui/copy-control.tsx"), true);
+  assert.match(copyControlSource, /export function CopyControl/);
+  assert.match(copyControlSource, /navigator\.clipboard/);
+  assert.match(copyControlSource, /writeText/);
+  assert.match(copyControlSource, /catch/);
+  assert.match(copyControlSource, /failedFeedbackLabel/);
+  assert.match(uiIndexSource, /export \{ CopyControl \}/);
+});
+
+test("Sprint 4.0 Pass A3 CopyControl presents selectable wrapping value and polite feedback", () => {
+  assert.match(copyControlSource, /<output/);
+  assert.match(copyControlSource, /select-all/);
+  assert.match(copyControlSource, /whitespace-pre-wrap/);
+  assert.match(copyControlSource, /break-all/);
+  assert.match(copyControlSource, /aria-live="polite"/);
+  assert.match(copyControlSource, /focus-visible:ring-2/);
+  assert.match(copyControlSource, /focus-visible:ring-wink-focus/);
+  assert.match(copyControlSource, /disabled=\{disabled\}/);
+});
+
+test("Sprint 4.0 Pass A3 CopyControl source stays private and non-messaging", () => {
+  assert.doesNotMatch(copyControlSource, /fetch\(/);
+  assert.doesNotMatch(copyControlSource, /XMLHttpRequest/);
+  assert.doesNotMatch(copyControlSource, /sendBeacon/);
+  assert.doesNotMatch(copyControlSource, /localStorage/);
+  assert.doesNotMatch(copyControlSource, /document\.cookie/);
+  assert.doesNotMatch(copyControlSource, /mailto:/);
+  assert.doesNotMatch(copyControlSource, /tel:/);
+  assert.doesNotMatch(copyControlSource, /SMS/);
+  assert.doesNotMatch(copyControlSource, /WhatsApp/);
+  assert.doesNotMatch(copyControlSource, /Instagram/);
+  assert.doesNotMatch(copyControlSource, /analytics/);
+  assert.doesNotMatch(copyControlSource, /openCount/);
+  assert.doesNotMatch(copyControlSource, /readReceipt/);
+});
+
+test("Sprint 4.0 Pass A3 InviteCard exists exports and supports variants", () => {
+  assert.equal(existsSync("components/ui/invite-card.tsx"), true);
+  assert.match(inviteCardSource, /export function InviteCard/);
+  assert.match(inviteCardSource, /type InviteCardVariant = "preview" \| "live" \| "accepted" \| "declined"/);
+  assert.match(inviteCardSource, /preview: "border-wink-border"/);
+  assert.match(inviteCardSource, /live: "border-wink-accent"/);
+  assert.match(inviteCardSource, /accepted: "border-wink-success"/);
+  assert.match(inviteCardSource, /declined: "border-wink-border"/);
+  assert.match(uiIndexSource, /export \{ InviteCard \}/);
+});
+
+test("Sprint 4.0 Pass A3 InviteCard uses article labeling and polite state region", () => {
+  assert.match(inviteCardSource, /<article/);
+  assert.match(inviteCardSource, /aria-labelledby=\{titleId\}/);
+  assert.match(inviteCardSource, /id=\{titleId\}/);
+  assert.match(inviteCardSource, /aria-live="polite"/);
+  assert.match(inviteCardSource, /overflow-hidden/);
+  assert.match(inviteCardSource, /break-words/);
+});
+
+test("Sprint 4.0 Pass A3 StatusCard exists exports and supports sender statuses", () => {
+  assert.equal(existsSync("components/ui/status-card.tsx"), true);
+  assert.match(statusCardSource, /export function StatusCard/);
+  assert.match(statusCardSource, /"pending"/);
+  assert.match(statusCardSource, /"opened"/);
+  assert.match(statusCardSource, /"accepted"/);
+  assert.match(statusCardSource, /"rainchecked"/);
+  assert.match(statusCardSource, /"declined"/);
+  assert.match(statusCardSource, /"cancelled"/);
+  assert.match(statusCardSource, /"expired"/);
+  assert.match(statusCardSource, /"flagged"/);
+  assert.match(uiIndexSource, /export \{ StatusCard \}/);
+});
+
+test("Sprint 4.0 Pass A3 StatusCard quotes messages without urgent alert semantics", () => {
+  assert.match(statusCardSource, /<h1/);
+  assert.match(statusCardSource, /<blockquote/);
+  assert.match(statusCardSource, /<figcaption/);
+  assert.doesNotMatch(statusCardSource, /role="alert"/);
+});
+
+test("Sprint 4.0 Pass A3 PrivateLinkNotice exists exports and is not an alert", () => {
+  assert.equal(existsSync("components/ui/private-link-notice.tsx"), true);
+  assert.match(privateLinkNoticeSource, /export function PrivateLinkNotice/);
+  assert.match(privateLinkNoticeSource, /border-y border-wink-accent/);
+  assert.match(privateLinkNoticeSource, /uppercase/);
+  assert.doesNotMatch(privateLinkNoticeSource, /role="alert"/);
+  assert.match(uiIndexSource, /export \{ PrivateLinkNotice \}/);
 });
 
 test("required create fields expose native required semantics", () => {
