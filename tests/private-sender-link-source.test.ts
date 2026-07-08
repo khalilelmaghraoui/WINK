@@ -8,6 +8,14 @@ const createFormSource = readFileSync(
   "app/create/create-invite-form.tsx",
   "utf8"
 );
+const recipientShareSource = readFileSync(
+  "app/create/share-recipient-link-control.tsx",
+  "utf8"
+);
+const privateSenderCopySource = readFileSync(
+  "app/create/copy-private-sender-link-control.tsx",
+  "utf8"
+);
 const senderPageSource = readFileSync("app/s/[token]/page.tsx", "utf8");
 const kindReplySource = readFileSync(
   "app/i/[slug]/kind-reply-assistant.tsx",
@@ -29,10 +37,13 @@ test("create flow returns distinct recipient and sender paths", () => {
   assert.match(createActionSource, /senderPath: `\/s\/\$\{createdInvite\.senderAccessToken\}`/);
   assert.match(createFormSource, /Share this with the recipient/);
   assert.match(createFormSource, /Keep this private link/);
-  assert.match(createFormSource, /Copy recipient link/);
-  assert.match(createFormSource, /Copy private sender link/);
-  assert.match(createFormSource, /WINK cannot recover this private link later/);
-  assert.doesNotMatch(createFormSource, /localStorage|document\.cookie/);
+  assert.match(recipientShareSource, /Copy recipient link/);
+  assert.match(privateSenderCopySource, /Copy private sender link/);
+  assert.match(createFormSource, /WINK cannot recover it later/);
+  assert.doesNotMatch(
+    [createFormSource, recipientShareSource, privateSenderCopySource].join("\n"),
+    /localStorage|document\.cookie/
+  );
 });
 
 test("sender route metadata is generic and noindex", () => {
@@ -72,6 +83,8 @@ test("private reply feature does not add external delivery or tracking", () => {
   const sourceText = [
     createActionSource,
     createFormSource,
+    recipientShareSource,
+    privateSenderCopySource,
     senderPageSource,
     kindReplySource,
     recipientActionSource,

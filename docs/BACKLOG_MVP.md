@@ -24,8 +24,10 @@ one-time declined reply stored behind `InviteStore` without external messaging
 or notifications. Sprint 3.7 polishes the public home page so it explains the
 complete current alpha loop, including recipient and private sender links.
 Sprint 3.8 adds sender controls v1: copy the recipient link again and cancel a
-pending/opened invite from the private sender link. User validation is not
-completed. This is not a public launch or production-readiness claim.
+pending/opened invite from the private sender link. Sprint 3.9 improves the
+creation success share UX so the recipient link can use browser-native share
+when available while the private sender link remains copy-only. User validation
+is not completed. This is not a public launch or production-readiness claim.
 
 Active stack:
 
@@ -655,6 +657,32 @@ Constraints:
 - Yes, Raincheck, No, unknown-sender behavior, expiry, accepted reveal,
   calendar, maps, metadata privacy, persistence fail-closed behavior, and
   declined recipient-message behavior remain intact.
+- User validation remains incomplete.
+
+## Sprint 3.9 - Better Share UX v1
+
+Status: implemented.
+
+Deliverables:
+
+- Creation success screen visually separates the recipient link from the
+  private sender link.
+- Recipient link is labeled as the link to share and can use the browser-native
+  share API when supported.
+- Recipient copy fallback remains available and uses the current origin rather
+  than a hardcoded production domain.
+- Private sender link is labeled as private, warns that anyone with it can view
+  the sender page, and remains copy-only.
+- Source tests cover recipient-only native sharing, sender copy-only behavior,
+  live-region feedback, route inventory, and no external messaging/tracking
+  providers.
+
+Constraints:
+
+- No external messaging provider, notification, authentication, dashboard,
+  route, schema, dependency, `InviteStore`, Supabase, recipient response,
+  sender controls, expiry, accepted reveal, calendar, maps, or metadata
+  behavior changed.
 - User validation remains incomplete.
 
 ## Future, Not Now

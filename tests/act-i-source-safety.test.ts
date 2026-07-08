@@ -13,6 +13,14 @@ const createInviteFormSource = readFileSync(
   "app/create/create-invite-form.tsx",
   "utf8"
 );
+const createShareRecipientSource = readFileSync(
+  "app/create/share-recipient-link-control.tsx",
+  "utf8"
+);
+const createCopySenderSource = readFileSync(
+  "app/create/copy-private-sender-link-control.tsx",
+  "utf8"
+);
 const envExampleSource = readFileSync(".env.example", "utf8");
 const lawyerSource = readFileSync("app/i/[slug]/lawyer-mode.tsx", "utf8");
 const raincheckSource = readFileSync(
@@ -107,10 +115,16 @@ test("recipient page gates mode and helper UI through state helpers", () => {
 });
 
 test("create share screen supports mobile copy fallback", () => {
-  assert.match(createInviteFormSource, /select-all break-all/);
-  assert.match(createInviteFormSource, /aria-live="polite"/);
-  assert.match(createInviteFormSource, /Clipboard copy is unavailable/);
-  assert.match(createInviteFormSource, /catch/);
+  const shareSource = [
+    createInviteFormSource,
+    createShareRecipientSource,
+    createCopySenderSource
+  ].join("\n");
+
+  assert.match(shareSource, /select-all break-all/);
+  assert.match(shareSource, /aria-live="polite"/);
+  assert.match(shareSource, /Could not copy\. Select/);
+  assert.match(shareSource, /catch/);
 });
 
 test("required create fields expose native required semantics", () => {

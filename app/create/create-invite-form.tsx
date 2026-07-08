@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import type { ReactNode } from "react";
 import { useActionState, useEffect, useMemo, useState } from "react";
 import { useFormStatus } from "react-dom";
 
@@ -9,6 +8,8 @@ import {
   createInviteAction,
   type CreateInviteActionState
 } from "./actions";
+import { CopyPrivateSenderLinkControl } from "./copy-private-sender-link-control";
+import { ShareRecipientLinkControl } from "./share-recipient-link-control";
 import type { CreateInviteField } from "@/lib/create-invite-validation";
 
 const initialState: CreateInviteActionState = {
@@ -30,13 +31,6 @@ const stepFields: CreateInviteField[][] = [
 export function CreateInviteForm() {
   const [state, formAction] = useActionState(createInviteAction, initialState);
   const [stepIndex, setStepIndex] = useState(0);
-  const [copiedLink, setCopiedLink] = useState<"recipient" | "sender" | null>(
-    null
-  );
-  const [copyFallbackLink, setCopyFallbackLink] = useState<
-    "recipient" | "sender" | null
-  >(null);
-  const [browserOrigin, setBrowserOrigin] = useState("");
 
   const currentStepFields = stepFields[stepIndex];
   const currentStepHasErrors = useMemo(
@@ -54,75 +48,71 @@ export function CreateInviteForm() {
     }
   }, [state.errors]);
 
-  useEffect(() => {
-    setBrowserOrigin(window.location.origin);
-  }, []);
-
   const recipientPath = state.recipientPath ?? state.invitePath;
   const senderPath = state.senderPath;
 
-  function getDisplayLink(path: string): string {
-    return browserOrigin ? new URL(path, browserOrigin).toString() : path;
-  }
-
-  async function copyLink(path: string, linkType: "recipient" | "sender") {
-    if (!navigator.clipboard) {
-      setCopiedLink(null);
-      setCopyFallbackLink(linkType);
-      return;
-    }
-
-    try {
-      await navigator.clipboard.writeText(getDisplayLink(path));
-      setCopyFallbackLink(null);
-      setCopiedLink(linkType);
-    } catch {
-      setCopiedLink(null);
-      setCopyFallbackLink(linkType);
-    }
-  }
-
   if (recipientPath && senderPath) {
     return (
-      <main className="mx-auto flex min-h-screen w-full max-w-2xl flex-col justify-center px-5 py-10">
-        <div className="space-y-6 rounded-lg border border-stone-300 bg-white p-5">
+      <main className="mx-auto flex min-h-screen w-full max-w-2xl flex-col justify-center bg-wink-background px-5 py-10 text-wink-text">
+        <div className="space-y-6 rounded-lg border border-wink-border bg-wink-surface p-5 shadow-[0_18px_50px_rgba(24,21,18,0.08)]">
           <div className="space-y-2">
-            <p className="text-sm font-medium text-stone-600">Invite created</p>
-            <h1 className="text-2xl font-semibold text-stone-950">
+            <p className="text-sm font-medium text-wink-text-secondary">
+              Invite created
+            </p>
+            <h1 className="font-display text-3xl font-semibold text-wink-text">
               Save these links carefully
             </h1>
-            <p className="text-base text-stone-700">
+            <p className="text-base leading-7 text-wink-text-secondary">
               The recipient gets one link. You keep the private sender link.
             </p>
           </div>
 
-          <SuccessLinkPanel
-            buttonLabel="Copy recipient link"
-            copied={copiedLink === "recipient"}
-            copyFallback={copyFallbackLink === "recipient"}
-            description="This link opens the invitation and lets them respond."
-            displayLink={getDisplayLink(recipientPath)}
-            heading="Share this with the recipient"
-            onCopy={() => copyLink(recipientPath, "recipient")}
-          >
+          <section className="space-y-4 rounded-lg border border-wink-primary bg-wink-surface p-4">
+            <div className="space-y-1">
+              <p className="text-xs font-semibold uppercase text-wink-primary">
+                Recipient link
+              </p>
+              <h2 className="text-lg font-semibold text-wink-text">
+                Share this with the recipient
+              </h2>
+              <p className="text-sm leading-6 text-wink-text-secondary">
+                This opens the invitation and lets them respond.
+              </p>
+            </div>
+            <ShareRecipientLinkControl recipientPath={recipientPath} />
             <Link
-              className="inline-flex min-h-11 items-center justify-center rounded-md border border-stone-300 px-4 py-2 text-sm font-medium text-stone-950 focus:outline-none focus:ring-2 focus:ring-stone-950 focus:ring-offset-2"
+              className="inline-flex min-h-11 w-full items-center justify-center rounded-md border border-wink-border bg-wink-surface px-4 py-2 text-sm font-semibold text-wink-text transition-colors hover:border-wink-primary hover:text-wink-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-wink-focus focus-visible:ring-offset-2 sm:w-auto"
               href={recipientPath}
             >
               View invite
             </Link>
-          </SuccessLinkPanel>
+          </section>
 
-          <SuccessLinkPanel
-            buttonLabel="Copy private sender link"
-            copied={copiedLink === "sender"}
-            copyFallback={copyFallbackLink === "sender"}
-            description="Use it to check the invitation status and read an optional message. Anyone with this link can view the sender page."
-            displayLink={getDisplayLink(senderPath)}
-            heading="Keep this private link"
-            onCopy={() => copyLink(senderPath, "sender")}
-            warning="Save it now. WINK cannot recover this private link later."
-          />
+          <section className="space-y-4 rounded-lg border border-wink-border bg-wink-surface-muted/40 p-4">
+            <div className="space-y-1">
+              <p className="text-xs font-semibold uppercase text-wink-danger">
+                Private sender link
+              </p>
+              <h2 className="text-lg font-semibold text-wink-text">
+                Keep this private link
+              </h2>
+              <p className="text-sm leading-6 text-wink-text-secondary">
+                Use it to check the invitation status, copy the recipient link
+                again, cancel before they answer, and read an optional declined
+                message.
+              </p>
+              <p className="text-sm font-semibold leading-6 text-wink-danger">
+                Anyone with this link can view the sender page. Save it now -
+                WINK cannot recover it later.
+              </p>
+            </div>
+            <CopyPrivateSenderLinkControl senderPath={senderPath} />
+          </section>
+
+          <p className="border-t border-wink-border pt-4 text-sm leading-6 text-wink-text-secondary">
+            Send only the recipient link. Keep the sender link somewhere
+            private.
+          </p>
         </div>
       </main>
     );
@@ -271,60 +261,6 @@ export function CreateInviteForm() {
         </div>
       </form>
     </main>
-  );
-}
-
-function SuccessLinkPanel({
-  buttonLabel,
-  children,
-  copied,
-  copyFallback,
-  description,
-  displayLink,
-  heading,
-  onCopy,
-  warning
-}: {
-  buttonLabel: string;
-  children?: ReactNode;
-  copied: boolean;
-  copyFallback: boolean;
-  description: string;
-  displayLink: string;
-  heading: string;
-  onCopy: () => void;
-  warning?: string;
-}) {
-  return (
-    <section className="space-y-3 border-t border-stone-200 pt-5">
-      <div className="space-y-1">
-        <h2 className="text-lg font-semibold text-stone-950">{heading}</h2>
-        <p className="text-sm text-stone-700">{description}</p>
-        {warning ? (
-          <p className="text-sm font-medium text-red-800">{warning}</p>
-        ) : null}
-      </div>
-      <p className="select-all break-all rounded-md border border-stone-300 bg-white px-3 py-3 font-mono text-sm text-stone-950">
-        {displayLink}
-      </p>
-      <p aria-live="polite" className="text-sm text-stone-700">
-        {copied
-          ? `${buttonLabel.replace("Copy ", "")} copied.`
-          : copyFallback
-            ? "Clipboard copy is unavailable. Select the link above and copy it manually."
-            : "Copy the link when you're ready."}
-      </p>
-      <div className="flex flex-col gap-3 sm:flex-row">
-        <button
-          type="button"
-          className="min-h-11 rounded-md bg-stone-950 px-4 py-2 text-sm font-medium text-white focus:outline-none focus:ring-2 focus:ring-stone-950 focus:ring-offset-2"
-          onClick={onCopy}
-        >
-          {copied ? "Copied" : buttonLabel}
-        </button>
-        {children}
-      </div>
-    </section>
   );
 }
 

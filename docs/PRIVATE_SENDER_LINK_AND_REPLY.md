@@ -28,6 +28,28 @@ recover it.
 Legacy invites without `sender_token_hash` still work, but they cannot show a
 private sender status page and cannot receive a WINK-mediated declined reply.
 
+## Creation Success Share UX
+
+Sprint 3.9 improves the creation success screen without changing link
+generation or persistence.
+
+The success screen shows two distinct sections:
+
+- recipient link: `/i/[slug]`, labeled as the link to share with the recipient
+- private sender link: `/s/[token]`, labeled as the link the sender keeps
+  private
+
+The recipient link may use the browser-native share sheet when supported. The
+shared payload contains only the recipient URL, a generic WINK title, and a
+short generic message. Copy fallback remains available.
+
+The private sender link is copy-only. WINK does not expose it through the
+native share action because anyone with that link can view the sender page and
+use sender controls.
+
+No external messaging provider, email, SMS, WhatsApp, Instagram, notification,
+analytics, or tracking behavior is added.
+
 ## Sender Status Page
 
 `/s/[token]` is server rendered and marked `noindex,nofollow`. Metadata is

@@ -496,6 +496,20 @@ Sprint 3.8 - Sender controls v1:
   receipts, route expansion, or sender editing was added.
 - User validation remains incomplete.
 
+Sprint 3.9 - Better share UX v1:
+
+- Improves the `/create` success screen so senders can clearly distinguish the
+  recipient `/i/[slug]` link from the private sender `/s/[token]` link.
+- The recipient link can use browser-native share when supported, and copy
+  remains available as the fallback.
+- The private sender link remains copy-only and is explicitly labeled as
+  private because anyone with it can view the sender page and use sender
+  controls.
+- No external messaging provider, email, SMS, WhatsApp, notification,
+  analytics, route, schema, `InviteStore`, Supabase, recipient behavior, sender
+  behavior, or metadata behavior changed.
+- User validation remains incomplete.
+
 ## Not In Current MVP Work
 
 Do not add these unless explicitly requested:
