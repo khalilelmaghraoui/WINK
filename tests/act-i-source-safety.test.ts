@@ -3,11 +3,29 @@ import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { dirname, join, normalize, resolve } from "node:path";
 import { test } from "node:test";
 
-const sourceRoots = ["app", "src"];
+const sourceRoots = ["app", "components", "src"];
 const sourceFiles = readSourceFiles(sourceRoots);
 const sourceText = sourceFiles.map((file) => file.text).join("\n");
 const appFiles = sourceFiles.filter((file) => isUnderDirectory(file, "app"));
 const appText = appFiles.map((file) => file.text).join("\n");
+const pageShellSource = readFileSync("components/ui/page-shell.tsx", "utf8");
+const primaryButtonSource = readFileSync(
+  "components/ui/primary-button.tsx",
+  "utf8"
+);
+const secondaryButtonSource = readFileSync(
+  "components/ui/secondary-button.tsx",
+  "utf8"
+);
+const dangerButtonSource = readFileSync(
+  "components/ui/danger-button.tsx",
+  "utf8"
+);
+const sectionDividerSource = readFileSync(
+  "components/ui/section-divider.tsx",
+  "utf8"
+);
+const uiIndexSource = readFileSync("components/ui/index.ts", "utf8");
 const recipientPageSource = readFileSync("app/i/[slug]/page.tsx", "utf8");
 const createInviteFormSource = readFileSync(
   "app/create/create-invite-form.tsx",
@@ -125,6 +143,71 @@ test("create share screen supports mobile copy fallback", () => {
   assert.match(shareSource, /aria-live="polite"/);
   assert.match(shareSource, /Could not copy\. Select/);
   assert.match(shareSource, /catch/);
+});
+
+test("Sprint 4.0 Pass A1 UI primitives exist and export correctly", () => {
+  assert.equal(existsSync("components/ui/page-shell.tsx"), true);
+  assert.equal(existsSync("components/ui/primary-button.tsx"), true);
+  assert.equal(existsSync("components/ui/secondary-button.tsx"), true);
+  assert.equal(existsSync("components/ui/danger-button.tsx"), true);
+  assert.equal(existsSync("components/ui/section-divider.tsx"), true);
+  assert.match(pageShellSource, /export function PageShell/);
+  assert.match(primaryButtonSource, /export function PrimaryButton/);
+  assert.match(secondaryButtonSource, /export function SecondaryButton/);
+  assert.match(dangerButtonSource, /export function DangerButton/);
+  assert.match(sectionDividerSource, /export function SectionDivider/);
+  assert.match(uiIndexSource, /export \{ PageShell \}/);
+  assert.match(uiIndexSource, /export \{ PrimaryButton \}/);
+  assert.match(uiIndexSource, /export \{ SecondaryButton \}/);
+  assert.match(uiIndexSource, /export \{ DangerButton \}/);
+  assert.match(uiIndexSource, /export \{ SectionDivider \}/);
+});
+
+test("Sprint 4.0 Pass A1 button primitives include disabled semantics and focus styles", () => {
+  const buttonSources = [
+    primaryButtonSource,
+    secondaryButtonSource,
+    dangerButtonSource
+  ];
+
+  for (const buttonSource of buttonSources) {
+    assert.match(buttonSource, /disabled=/);
+    assert.match(buttonSource, /aria-disabled=/);
+    assert.match(buttonSource, /disabled:cursor-not-allowed/);
+    assert.match(buttonSource, /focus-visible:ring-2/);
+    assert.match(buttonSource, /focus-visible:ring-wink-focus/);
+    assert.match(buttonSource, /min-h-11/);
+    assert.match(buttonSource, /rounded-md/);
+  }
+});
+
+test("Sprint 4.0 Pass A1 primary button loading preserves readable label text", () => {
+  assert.match(primaryButtonSource, /loading/);
+  assert.match(primaryButtonSource, /aria-busy/);
+  assert.match(primaryButtonSource, /disabled=\{isDisabled\}/);
+  assert.match(primaryButtonSource, /<span>\{children\}<\/span>/);
+});
+
+test("Sprint 4.0 Pass A1 section divider supports default and accent variants", () => {
+  assert.match(sectionDividerSource, /"default" \| "accent"/);
+  assert.match(sectionDividerSource, /default: "border-wink-border"/);
+  assert.match(sectionDividerSource, /accent: "border-wink-accent"/);
+  assert.match(sectionDividerSource, /<hr/);
+  assert.match(sectionDividerSource, /border-t/);
+});
+
+test("Sprint 4.0 Pass A1 page shell supports variants and documented widths", () => {
+  assert.match(pageShellSource, /"default" \| "dim"/);
+  assert.match(pageShellSource, /default: "bg-wink-background"/);
+  assert.match(pageShellSource, /dim: "bg-wink-surface-muted"/);
+  assert.match(pageShellSource, /"form" \| "invite" \| "landing"/);
+  assert.match(pageShellSource, /form: "max-w-\[560px\]"/);
+  assert.match(pageShellSource, /invite: "max-w-\[680px\]"/);
+  assert.match(pageShellSource, /landing: "max-w-\[1120px\]"/);
+  assert.match(pageShellSource, /<main/);
+  assert.match(pageShellSource, /px-5/);
+  assert.match(pageShellSource, /sm:px-8/);
+  assert.match(pageShellSource, /lg:px-12/);
 });
 
 test("required create fields expose native required semantics", () => {
