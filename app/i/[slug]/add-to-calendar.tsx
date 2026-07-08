@@ -50,7 +50,7 @@ export function AddToCalendar({
   return (
     <div className="space-y-2">
       <button
-        className="min-h-11 w-full cursor-pointer rounded-md border border-wink-border bg-wink-surface px-4 py-2 text-sm font-semibold text-wink-text transition-colors duration-200 hover:border-wink-focus hover:bg-wink-surface-muted focus:outline-none focus:ring-2 focus:ring-wink-focus focus:ring-offset-2 focus:ring-offset-wink-background"
+        className="min-h-11 w-full cursor-pointer rounded-md border border-wink-border bg-wink-surface px-4 py-2 text-sm font-semibold text-wink-text transition-colors duration-200 hover:border-wink-focus hover:bg-wink-surface-muted focus:outline-none focus:ring-2 focus:ring-wink-focus focus:ring-offset-2 focus:ring-offset-wink-background motion-reduce:transition-none"
         onClick={handleDownload}
         type="button"
       >

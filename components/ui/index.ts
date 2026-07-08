@@ -6,6 +6,7 @@ export { ModeBadge } from "./mode-badge";
 export { PageShell } from "./page-shell";
 export { PrimaryButton } from "./primary-button";
 export { PrivateLinkNotice } from "./private-link-notice";
+export { ResponseButtonGroup } from "./response-button-group";
 export { SecondaryButton } from "./secondary-button";
 export { SectionDivider } from "./section-divider";
 export { StatusCard } from "./status-card";

@@ -12,14 +12,14 @@ export function AcceptedReveal({
   return (
     <section
       aria-labelledby="accepted-reveal-heading"
-      className="space-y-6 rounded-lg border border-wink-border border-t-wink-success bg-wink-surface p-5 shadow-[0_18px_50px_rgba(24,21,18,0.08)]"
+      className="space-y-6"
     >
       <div className="space-y-3 border-b border-wink-border pb-5">
-        <p className="text-sm font-semibold uppercase text-wink-success">
+        <p className="text-xs font-semibold uppercase text-wink-success">
           Accepted
         </p>
         <h1
-          className="font-display text-3xl font-semibold leading-tight text-wink-text"
+          className="font-display text-3xl leading-tight text-wink-text sm:text-4xl"
           id="accepted-reveal-heading"
         >
           {reveal.heading}

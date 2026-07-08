@@ -40,16 +40,18 @@ function RealKindReplyComposer({ invite }: { invite: Invite }) {
     return (
       <section
         aria-labelledby="kind-reply-heading"
-        className="space-y-3 rounded-lg border border-stone-300 bg-white p-5"
+        className="space-y-3 border-t border-wink-border pt-5"
       >
-        <p className="text-sm font-medium text-stone-600">Optional message</p>
+        <p className="text-xs font-semibold uppercase text-wink-text-secondary">
+          Optional message
+        </p>
         <h2
-          className="text-lg font-semibold text-stone-950"
+          className="text-lg font-semibold text-wink-text"
           id="kind-reply-heading"
         >
           Message saved.
         </h2>
-        <p className="text-base text-stone-700">
+        <p className="text-base text-wink-text-secondary">
           The sender can read it from their private WINK link. No notification
           was sent.
         </p>
@@ -60,35 +62,37 @@ function RealKindReplyComposer({ invite }: { invite: Invite }) {
   return (
     <section
       aria-labelledby="kind-reply-heading"
-      className="space-y-4 rounded-lg border border-stone-300 bg-white p-5"
+      className="space-y-4 border-t border-wink-border pt-5"
     >
       <div className="space-y-2">
         <h2
-          className="text-lg font-semibold text-stone-950"
+          className="text-lg font-semibold text-wink-text"
           id="kind-reply-heading"
         >
           Want to leave a kind message?
         </h2>
-        <p className="text-base text-stone-700">
+        <p className="text-base text-wink-text-secondary">
           This is optional. The sender can read it from their private WINK link.
           WINK does not send a notification.
         </p>
-        <p className="text-sm font-medium text-stone-700">
+        <p className="text-sm font-semibold text-wink-text-secondary">
           You do not owe anyone an explanation.
         </p>
-        <p className="text-sm text-stone-600">{getKindReplyIntro(invite)}</p>
+        <p className="text-sm text-wink-text-secondary">
+          {getKindReplyIntro(invite)}
+        </p>
       </div>
 
       <div className="grid gap-3">
         {kindReplyOptions.map((reply, index) => (
           <article
-            className="space-y-3 border-t border-stone-200 pt-3 first:border-t-0 first:pt-0"
+            className="space-y-3 border-t border-wink-border pt-3 first:border-t-0 first:pt-0"
             key={reply}
           >
-            <p className="text-base leading-7 text-stone-900">{reply}</p>
+            <p className="text-base leading-7 text-wink-text">{reply}</p>
             <button
               aria-label={`Use kind message option ${index + 1}`}
-              className="min-h-11 rounded-md border border-stone-300 bg-white px-4 py-2 text-sm font-medium text-stone-950 focus:outline-none focus:ring-2 focus:ring-stone-950 focus:ring-offset-2"
+              className="min-h-11 rounded-md border border-wink-border bg-wink-surface px-4 py-2 text-sm font-semibold text-wink-text focus:outline-none focus-visible:ring-2 focus-visible:ring-wink-focus focus-visible:ring-offset-2 focus-visible:ring-offset-wink-background"
               onClick={() => setMessage(reply)}
               type="button"
             >
@@ -103,14 +107,14 @@ function RealKindReplyComposer({ invite }: { invite: Invite }) {
         <input name="previewMode" type="hidden" value="false" />
         <div className="space-y-2">
           <label
-            className="block text-sm font-medium text-stone-950"
+            className="block text-sm font-semibold text-wink-text"
             htmlFor="recipient-kind-message"
           >
             Your optional message
           </label>
           <textarea
             aria-describedby="recipient-kind-message-help"
-            className="min-h-32 w-full rounded-md border border-stone-300 bg-white px-3 py-2 text-base text-stone-950 outline-none focus:border-stone-950 focus:ring-2 focus:ring-stone-950/20"
+            className="min-h-32 w-full rounded-md border border-wink-border bg-wink-surface px-3 py-2 text-base text-wink-text outline-none focus-visible:ring-2 focus-visible:ring-wink-focus focus-visible:ring-offset-2 focus-visible:ring-offset-wink-background"
             id="recipient-kind-message"
             maxLength={recipientMessageMaxLength}
             name="message"
@@ -118,7 +122,10 @@ function RealKindReplyComposer({ invite }: { invite: Invite }) {
             rows={5}
             value={message}
           />
-          <p className="text-sm text-stone-600" id="recipient-kind-message-help">
+          <p
+            className="text-sm text-wink-text-secondary"
+            id="recipient-kind-message-help"
+          >
             {remaining} characters remaining
           </p>
         </div>
@@ -155,7 +162,7 @@ function RecipientMessageStatus({
   }
 
   return (
-    <p className="text-sm text-red-700" role="status">
+    <p className="text-sm text-wink-danger" role="status">
       {message}
     </p>
   );
@@ -166,7 +173,7 @@ function SendMessageButton() {
 
   return (
     <button
-      className="min-h-11 rounded-md bg-stone-950 px-4 py-2 text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-stone-950 focus:ring-offset-2"
+      className="min-h-11 rounded-md border border-wink-border bg-wink-surface px-4 py-2 text-sm font-semibold text-wink-text disabled:cursor-not-allowed disabled:opacity-60 focus:outline-none focus-visible:ring-2 focus-visible:ring-wink-focus focus-visible:ring-offset-2 focus-visible:ring-offset-wink-background"
       disabled={pending}
       type="submit"
     >
@@ -206,42 +213,44 @@ function LegacyKindReplyIdeas({ invite }: { invite: Invite }) {
   return (
     <section
       aria-labelledby="kind-reply-heading"
-      className="space-y-4 rounded-lg border border-stone-300 bg-white p-5"
+      className="space-y-4 border-t border-wink-border pt-5"
     >
       <div className="space-y-2">
         <h2
-          className="text-lg font-semibold text-stone-950"
+          className="text-lg font-semibold text-wink-text"
           id="kind-reply-heading"
         >
           Optional message ideas
         </h2>
-        <p className="text-base text-stone-700">
+        <p className="text-base text-wink-text-secondary">
           This older invitation has no private sender link. You can copy a
           message and send it yourself.
         </p>
-        <p className="text-sm text-stone-600">{getKindReplyIntro(invite)}</p>
+        <p className="text-sm text-wink-text-secondary">
+          {getKindReplyIntro(invite)}
+        </p>
       </div>
 
       <div className="space-y-3">
         {kindReplyOptions.map((reply, index) => (
           <article
-            className="space-y-3 rounded-md border border-stone-200 bg-stone-50 p-4"
+            className="space-y-3 rounded-md border border-wink-border bg-wink-background p-4"
             key={reply}
           >
-            <p className="text-base leading-7 text-stone-900">{reply}</p>
+            <p className="text-base leading-7 text-wink-text">{reply}</p>
             <button
               aria-label={`Copy kind reply option ${index + 1}`}
-              className="min-h-11 rounded-md border border-stone-300 bg-white px-4 py-2 text-sm font-medium text-stone-950 focus:outline-none focus:ring-2 focus:ring-stone-950 focus:ring-offset-2"
+              className="min-h-11 rounded-md border border-wink-border bg-wink-surface px-4 py-2 text-sm font-semibold text-wink-text focus:outline-none focus-visible:ring-2 focus-visible:ring-wink-focus focus-visible:ring-offset-2 focus-visible:ring-offset-wink-background"
               onClick={() => copyReply(reply, index)}
               type="button"
             >
               {copiedIndex === index ? "Copied" : "Copy message"}
             </button>
             {fallbackIndex === index ? (
-              <label className="block space-y-2 text-sm text-stone-700">
+              <label className="block space-y-2 text-sm text-wink-text-secondary">
                 <span>Copy this text manually:</span>
                 <textarea
-                  className="min-h-24 w-full rounded-md border border-stone-300 bg-white px-3 py-2 text-base text-stone-950"
+                  className="min-h-24 w-full rounded-md border border-wink-border bg-wink-surface px-3 py-2 text-base text-wink-text"
                   readOnly
                   value={reply}
                 />
@@ -251,14 +260,14 @@ function LegacyKindReplyIdeas({ invite }: { invite: Invite }) {
         ))}
       </div>
 
-      <p aria-live="polite" className="text-sm text-stone-700">
+      <p aria-live="polite" className="text-sm text-wink-text-secondary">
         {copiedIndex !== null
           ? "Copied. Paste it into your messaging app."
           : "Clipboard copy stays on your device."}
       </p>
 
       <button
-        className="min-h-11 rounded-md px-0 py-2 text-sm font-medium text-stone-700 underline underline-offset-4 focus:outline-none focus:ring-2 focus:ring-stone-950 focus:ring-offset-2"
+        className="min-h-11 rounded-md px-0 py-2 text-sm font-semibold text-wink-text-secondary underline underline-offset-4 focus:outline-none focus-visible:ring-2 focus-visible:ring-wink-focus focus-visible:ring-offset-2 focus-visible:ring-offset-wink-background"
         onClick={() => setHidden(true)}
         type="button"
       >

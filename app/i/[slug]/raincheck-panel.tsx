@@ -47,7 +47,7 @@ export function RaincheckPanel({
       <button
         aria-controls={panelId}
         aria-expanded="false"
-        className="min-h-11 w-full rounded-md border border-stone-300 px-4 py-2 text-sm font-medium text-stone-950 focus:outline-none focus:ring-2 focus:ring-stone-950 focus:ring-offset-2"
+        className="min-h-11 w-full rounded-md border border-wink-border bg-wink-surface px-4 py-2 text-sm font-semibold text-wink-text focus:outline-none focus-visible:ring-2 focus-visible:ring-wink-focus focus-visible:ring-offset-2 focus-visible:ring-offset-wink-background"
         onClick={() => {
           setOpen(true);
           setPreviewNotice(false);
@@ -62,26 +62,26 @@ export function RaincheckPanel({
   return (
     <section
       aria-labelledby={`${panelId}-heading`}
-      className="space-y-4 rounded-lg border border-stone-300 bg-stone-50 p-4"
+      className="space-y-4 rounded-md border border-wink-border bg-wink-background p-4"
       id={panelId}
     >
       <div className="space-y-1">
         <h3
-          className="text-lg font-semibold text-stone-950"
+          className="text-lg font-semibold text-wink-text"
           id={`${panelId}-heading`}
           ref={panelHeadingRef}
           tabIndex={-1}
         >
           Bad timing?
         </h3>
-        <p className="text-sm text-stone-700">
+        <p className="text-sm text-wink-text-secondary">
           No pressure. Want to suggest something that works better?
         </p>
-        <p className="text-sm text-stone-700">
+        <p className="text-sm text-wink-text-secondary">
           This does not commit you to anything.
         </p>
         {previewMode ? (
-          <p className="text-sm text-stone-700">
+          <p className="text-sm text-wink-text-secondary">
             Preview mode is on. Rainchecks will not be saved.
           </p>
         ) : null}
@@ -101,16 +101,16 @@ export function RaincheckPanel({
         <input name="response" type="hidden" value="raincheck" />
 
         <fieldset className="space-y-2">
-          <legend className="text-sm font-medium text-stone-950">
+          <legend className="text-sm font-semibold text-wink-text">
             Pick a quick option
           </legend>
           <div className="grid gap-2">
             {raincheckQuickOptions.map((option) => (
               <label
-                className={`flex min-h-11 items-center gap-3 rounded-md border px-3 py-2 text-sm font-medium focus-within:ring-2 focus-within:ring-stone-950 focus-within:ring-offset-2 ${
+                className={`flex min-h-11 items-center gap-3 rounded-md border px-3 py-2 text-sm font-semibold focus-within:ring-2 focus-within:ring-wink-focus focus-within:ring-offset-2 focus-within:ring-offset-wink-background ${
                   selectedOption === option.value
-                    ? "border-stone-950 bg-white text-stone-950"
-                    : "border-stone-300 bg-stone-50 text-stone-800"
+                    ? "border-wink-primary bg-wink-surface text-wink-primary"
+                    : "border-wink-border bg-wink-background text-wink-text"
                 }`}
                 key={option.value}
               >
@@ -130,13 +130,13 @@ export function RaincheckPanel({
 
         <div className="space-y-2">
           <label
-            className="block text-sm font-medium text-stone-950"
+            className="block text-sm font-semibold text-wink-text"
             htmlFor={`${panelId}-note`}
           >
             Want to add a note?
           </label>
           <textarea
-            className="min-h-24 w-full rounded-md border border-stone-300 bg-white px-3 py-2 text-base text-stone-950 outline-none focus:border-stone-950 focus:ring-2 focus:ring-stone-950/20"
+            className="min-h-24 w-full rounded-md border border-wink-border bg-wink-surface px-3 py-2 text-base text-wink-text outline-none focus-visible:ring-2 focus-visible:ring-wink-focus focus-visible:ring-offset-2 focus-visible:ring-offset-wink-background"
             id={`${panelId}-note`}
             maxLength={raincheckNoteMaxLength}
             name="counterOfferMessage"
@@ -145,20 +145,20 @@ export function RaincheckPanel({
             rows={3}
             value={note}
           />
-          <p className="text-sm text-stone-600">
+          <p className="text-sm text-wink-text-secondary">
             {raincheckNoteMaxLength - note.length} characters remaining
           </p>
         </div>
 
         <div className="space-y-2">
           <label
-            className="block text-sm font-medium text-stone-950"
+            className="block text-sm font-semibold text-wink-text"
             htmlFor={`${panelId}-suggested-date`}
           >
             Suggested day
           </label>
           <input
-            className="min-h-11 w-full rounded-md border border-stone-300 bg-white px-3 py-2 text-base text-stone-950 outline-none focus:border-stone-950 focus:ring-2 focus:ring-stone-950/20"
+            className="min-h-11 w-full rounded-md border border-wink-border bg-wink-surface px-3 py-2 text-base text-wink-text outline-none focus-visible:ring-2 focus-visible:ring-wink-focus focus-visible:ring-offset-2 focus-visible:ring-offset-wink-background"
             id={`${panelId}-suggested-date`}
             name="suggestedDate"
             type="date"
@@ -166,20 +166,20 @@ export function RaincheckPanel({
         </div>
 
         {previewNotice ? (
-          <p className="text-sm text-stone-700" role="status">
+          <p className="text-sm text-wink-text-secondary" role="status">
             Preview mode blocked saving that raincheck.
           </p>
         ) : null}
 
         <div className="grid gap-3 sm:grid-cols-2">
           <button
-            className="min-h-11 rounded-md bg-stone-950 px-4 py-2 text-sm font-medium text-white focus:outline-none focus:ring-2 focus:ring-stone-950 focus:ring-offset-2"
+            className="min-h-11 rounded-md bg-wink-primary px-4 py-2 text-sm font-semibold text-wink-surface focus:outline-none focus-visible:ring-2 focus-visible:ring-wink-focus focus-visible:ring-offset-2 focus-visible:ring-offset-wink-background"
             type="submit"
           >
             Send raincheck
           </button>
           <button
-            className="min-h-11 rounded-md border border-stone-300 px-4 py-2 text-sm font-medium text-stone-950 focus:outline-none focus:ring-2 focus:ring-stone-950 focus:ring-offset-2"
+            className="min-h-11 rounded-md border border-wink-border bg-wink-surface px-4 py-2 text-sm font-semibold text-wink-text focus:outline-none focus-visible:ring-2 focus-visible:ring-wink-focus focus-visible:ring-offset-2 focus-visible:ring-offset-wink-background"
             onClick={() => {
               setOpen(false);
               setPreviewNotice(false);

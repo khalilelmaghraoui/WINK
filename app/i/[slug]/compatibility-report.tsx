@@ -8,26 +8,26 @@ export function CompatibilityReport({
   return (
     <section
       aria-labelledby="compatibility-report-heading"
-      className="space-y-3 rounded-lg border border-stone-300 bg-white p-5"
+      className="space-y-3 border-t border-wink-border pt-5"
     >
       <div className="space-y-1">
-        <p className="text-sm font-medium text-stone-600">
+        <p className="text-xs font-semibold uppercase text-wink-text-secondary">
           Fixed comedic score
         </p>
         <h2
-          className="text-lg font-semibold text-stone-950"
+          className="text-lg font-semibold text-wink-text"
           id="compatibility-report-heading"
         >
           {presentation.compatibilityReport.heading}
         </h2>
       </div>
-      <p className="text-4xl font-semibold text-stone-950">
+      <p className="font-display text-4xl text-wink-text">
         {presentation.compatibilityReport.score}
       </p>
-      <p className="text-base leading-7 text-stone-800">
+      <p className="text-base leading-7 text-wink-text">
         {presentation.compatibilityReport.copy}
       </p>
-      <p className="text-sm text-stone-600">
+      <p className="text-sm text-wink-text-secondary">
         {presentation.compatibilityReport.disclaimer}
       </p>
     </section>

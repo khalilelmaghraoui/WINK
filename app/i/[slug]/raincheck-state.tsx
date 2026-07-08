@@ -9,16 +9,16 @@ export function RaincheckState({ invite }: { invite: Invite }) {
   return (
     <section
       aria-labelledby="raincheck-state-heading"
-      className="space-y-4 rounded-lg border border-stone-300 bg-white p-5"
+      className="space-y-4"
     >
       <div className="space-y-2">
         <h2
-          className="text-xl font-semibold text-stone-950"
+          className="text-xl font-semibold text-wink-text"
           id="raincheck-state-heading"
         >
           Raincheck sent.
         </h2>
-        <p className="text-base text-stone-700">
+        <p className="text-base text-wink-text-secondary">
           Timing did not work out, but the door is still open.
         </p>
       </div>
@@ -41,8 +41,8 @@ function Detail({ label, value }: { label: string; value: string | null }) {
 
   return (
     <div className="space-y-1">
-      <dt className="font-medium text-stone-600">{label}</dt>
-      <dd className="text-base text-stone-950">{value}</dd>
+      <dt className="font-semibold text-wink-text-secondary">{label}</dt>
+      <dd className="break-words text-base text-wink-text">{value}</dd>
     </div>
   );
 }

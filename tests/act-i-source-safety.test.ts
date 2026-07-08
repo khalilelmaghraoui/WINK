@@ -38,8 +38,33 @@ const privateLinkNoticeSource = readFileSync(
   "utf8"
 );
 const statusCardSource = readFileSync("components/ui/status-card.tsx", "utf8");
+const responseButtonGroupSource = readFileSync(
+  "components/ui/response-button-group.tsx",
+  "utf8"
+);
 const uiIndexSource = readFileSync("components/ui/index.ts", "utf8");
 const recipientPageSource = readFileSync("app/i/[slug]/page.tsx", "utf8");
+const compatibilityReportSource = readFileSync(
+  "app/i/[slug]/compatibility-report.tsx",
+  "utf8"
+);
+const acceptedRevealSource = readFileSync(
+  "app/i/[slug]/accepted-reveal.tsx",
+  "utf8"
+);
+const acceptedActionsSource = readFileSync(
+  "app/i/[slug]/accepted-plan-actions.tsx",
+  "utf8"
+);
+const addToCalendarSource = readFileSync(
+  "app/i/[slug]/add-to-calendar.tsx",
+  "utf8"
+);
+const openInMapsSource = readFileSync("app/i/[slug]/open-in-maps.tsx", "utf8");
+const raincheckStateSource = readFileSync(
+  "app/i/[slug]/raincheck-state.tsx",
+  "utf8"
+);
 const createInviteFormSource = readFileSync(
   "app/create/create-invite-form.tsx",
   "utf8"
@@ -66,6 +91,7 @@ const kindReplySource = readFileSync(
   "app/i/[slug]/kind-reply-assistant.tsx",
   "utf8"
 );
+const packageJsonSource = readFileSync("package.json", "utf8");
 
 test("Act I does not add response-only routes", () => {
   assert.equal(existsSync("app/no"), false);
@@ -387,6 +413,107 @@ test("Sprint 4.0 Pass A3 PrivateLinkNotice exists exports and is not an alert", 
   assert.match(privateLinkNoticeSource, /uppercase/);
   assert.doesNotMatch(privateLinkNoticeSource, /role="alert"/);
   assert.match(uiIndexSource, /export \{ PrivateLinkNotice \}/);
+});
+
+test("Sprint 4.0 Pass B1 keeps recipient route location and uses premium primitives", () => {
+  assert.equal(existsSync("app/i/[slug]/page.tsx"), true);
+  assert.match(recipientPageSource, /PageShell/);
+  assert.match(recipientPageSource, /maxWidth="invite"/);
+  assert.match(recipientPageSource, /variant="dim"/);
+  assert.match(recipientPageSource, /InviteCard/);
+  assert.match(recipientPageSource, /ModeBadge/);
+  assert.match(recipientPageSource, /SectionDivider/);
+  assert.match(recipientPageSource, /ResponseButtonGroup/);
+});
+
+test("Sprint 4.0 Pass B1 ResponseButtonGroup exists exports and stays presentational", () => {
+  assert.equal(existsSync("components/ui/response-button-group.tsx"), true);
+  assert.match(responseButtonGroupSource, /export function ResponseButtonGroup/);
+  assert.match(responseButtonGroupSource, /data-response-button-group/);
+  assert.doesNotMatch(responseButtonGroupSource, /respondToInviteAction|flagUnknownSenderAction|name="response"|value="yes"|value="raincheck"|value="no"/);
+  assert.match(uiIndexSource, /export \{ ResponseButtonGroup \}/);
+});
+
+test("Sprint 4.0 Pass B1 pending response values and form names stay unchanged", () => {
+  const recipientResponseSource = [
+    recipientPageSource,
+    lawyerSource,
+    raincheckSource,
+    unbotheredSource
+  ].join("\n");
+
+  assert.match(recipientResponseSource, /name="response" type="hidden" value="yes"/);
+  assert.match(recipientResponseSource, /name="response" type="hidden" value="raincheck"/);
+  assert.match(recipientResponseSource, /name="response" type="hidden" value="no"/);
+  assert.match(recipientResponseSource, /name="slug" type="hidden"/);
+  assert.match(recipientResponseSource, /name="previewMode"/);
+  assert.match(lawyerSource, /name="requiresSignature" type="hidden" value="true"/);
+  assert.match(lawyerSource, /name="signatureApproval"/);
+  assert.match(raincheckSource, /name="raincheckOption"/);
+  assert.match(raincheckSource, /name="counterOfferMessage"/);
+  assert.match(raincheckSource, /name="suggestedDate"/);
+  assert.match(kindReplySource, /name="message"/);
+});
+
+test("Sprint 4.0 Pass B1 No action stays calm visible and non-destructive", () => {
+  const responseSurfaceSource = [
+    recipientPageSource,
+    lawyerSource,
+    unbotheredSource
+  ].join("\n");
+
+  assert.doesNotMatch(responseSurfaceSource, /DangerButton/);
+  assert.doesNotMatch(responseSurfaceSource, /translate-x|scale-0|opacity-0|sr-only|invisible/);
+  assert.match(responseSurfaceSource, /aria-label="Answer no to this invitation"/);
+  assert.match(responseSurfaceSource, /min-h-11/);
+  assert.match(responseSurfaceSource, /w-full/);
+  assert.match(raincheckSource, /min-h-11 w-full/);
+});
+
+test("Sprint 4.0 Pass B1 terminal recipient states remain present", () => {
+  assert.match(recipientPageSource, /pageState === "raincheck"/);
+  assert.match(recipientPageSource, /pageState === "accepted"/);
+  assert.match(recipientPageSource, /pageState !== "respondable"/);
+  assert.match(recipientPageSource, /"declined"/);
+  assert.match(recipientPageSource, /"expired"/);
+  assert.match(recipientPageSource, /"cancelled"/);
+  assert.match(recipientPageSource, /"flagged"/);
+});
+
+test("Sprint 4.0 Pass B1 recipient surface stays private and non-tracking", () => {
+  const recipientSurfaceSource = [
+    recipientPageSource,
+    compatibilityReportSource,
+    acceptedRevealSource,
+    acceptedActionsSource,
+    addToCalendarSource,
+    openInMapsSource,
+    raincheckSource,
+    raincheckStateSource,
+    lawyerSource,
+    unbotheredSource,
+    kindReplySource
+  ].join("\n");
+
+  assert.doesNotMatch(recipientSurfaceSource, /fetch\(/);
+  assert.doesNotMatch(recipientSurfaceSource, /XMLHttpRequest/);
+  assert.doesNotMatch(recipientSurfaceSource, /sendBeacon/);
+  assert.doesNotMatch(recipientSurfaceSource, /localStorage/);
+  assert.doesNotMatch(recipientSurfaceSource, /document\.cookie/);
+  assert.doesNotMatch(recipientSurfaceSource, /analytics|openCount|readReceipt/i);
+  assert.doesNotMatch(recipientSurfaceSource, /geolocation|hover tracking|cursor tracking|cursorPath/i);
+  assert.doesNotMatch(recipientSurfaceSource, /mailto:|tel:|SMS|WhatsApp|Instagram/);
+});
+
+test("Sprint 4.0 Pass B1 motion remains reduced-motion safe and dependencies unchanged", () => {
+  const recipientSurfaceSource = [
+    addToCalendarSource,
+    openInMapsSource,
+    unbotheredSource
+  ].join("\n");
+
+  assert.match(recipientSurfaceSource, /motion-reduce|prefers-reduced-motion/);
+  assert.doesNotMatch(packageJsonSource, /framer-motion|@radix-ui|lucide-react|shadcn/);
 });
 
 test("required create fields expose native required semantics", () => {

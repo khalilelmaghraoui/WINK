@@ -20,6 +20,11 @@ import {
   unbotheredSlotTimings
 } from "@/lib/invite-page";
 import type { Invite } from "@/lib/invite-store";
+import {
+  PrimaryButton,
+  ResponseButtonGroup,
+  SecondaryButton
+} from "../../../components/ui";
 
 type SlotState = "idle" | "spinning" | "landed";
 
@@ -47,8 +52,6 @@ export function UnbotheredMode({
   const mainCopy = getUnbotheredMainCopy(invite);
   const slotPanelOpen = slotState !== "idle";
   const slotValue = unbotheredSlotSequence[slotIndex];
-  const noButtonShiftClass =
-    localNoTapCount >= 1 ? "motion-safe:translate-x-1" : "";
 
   useEffect(() => {
     setLocalNoTapCount(noTapCount);
@@ -142,14 +145,14 @@ export function UnbotheredMode({
   return (
     <section
       aria-labelledby="unbothered-mode-heading"
-      className="space-y-5 rounded-lg border border-stone-300 bg-white p-5"
+      className="space-y-5"
     >
       <div className="space-y-2">
-        <p className="text-sm font-medium uppercase text-stone-600">
+        <p className="text-xs font-semibold uppercase text-wink-text-secondary">
           Unbothered mode
         </p>
         <h2
-          className="text-xl font-semibold text-stone-950"
+          className="text-xl font-semibold text-wink-text"
           id="unbothered-mode-heading"
         >
           {header}
@@ -158,10 +161,10 @@ export function UnbotheredMode({
 
       {!slotPanelOpen ? (
         <div className="space-y-2">
-          <p className="text-base leading-7 text-stone-800">
+          <p className="text-base leading-7 text-wink-text">
             {mainCopy.line1}
           </p>
-          <p className="text-base leading-7 text-stone-800">
+          <p className="text-base leading-7 text-wink-text">
             {mainCopy.line2}
           </p>
         </div>
@@ -179,29 +182,29 @@ export function UnbotheredMode({
 
       <div
         aria-labelledby="unbothered-actions-heading"
-        className="space-y-4 border-t border-stone-200 pt-4"
+        className="space-y-4 border-t border-wink-border pt-4"
       >
         <div className="space-y-1">
           <h3
-            className="text-base font-semibold text-stone-950"
+            className="text-base font-semibold text-wink-text"
             id="unbothered-actions-heading"
           >
             Your answer
           </h3>
           {previewMode ? (
-            <p className="text-sm text-stone-700">
+            <p className="text-sm text-wink-text-secondary">
               <span className="font-semibold">PREVIEW</span> mode is on. You
               can try the buttons, but responses and No taps will not be saved.
             </p>
           ) : null}
           {previewNotice ? (
-            <p className="text-sm text-stone-700" role="status">
+            <p className="text-sm text-wink-text-secondary" role="status">
               Preview mode blocked saving that response.
             </p>
           ) : null}
         </div>
 
-        <div className="grid gap-3 sm:grid-cols-2">
+        <ResponseButtonGroup>
           <ResponseForm
             ariaLabel="Answer yes to this invitation"
             label="Fine, I'm in"
@@ -214,7 +217,7 @@ export function UnbotheredMode({
 
           <button
             aria-label="Let fate decide with a rigged joke machine"
-            className="min-h-11 w-full rounded-md bg-stone-950 px-4 py-2 text-sm font-semibold text-white focus:outline-none focus:ring-2 focus:ring-stone-950 focus:ring-offset-2"
+            className="min-h-11 w-full rounded-md border border-wink-border bg-wink-surface px-4 py-2 text-sm font-semibold text-wink-text focus:outline-none focus-visible:ring-2 focus-visible:ring-wink-focus focus-visible:ring-offset-2 focus-visible:ring-offset-wink-background"
             onClick={handleFateClick}
             type="button"
           >
@@ -237,19 +240,19 @@ export function UnbotheredMode({
             <input name="response" type="hidden" value="no" />
             <button
               aria-label="Answer no to this invitation"
-              className={`min-h-11 w-full rounded-md border border-stone-300 px-4 py-2 text-sm font-medium text-stone-950 transition-transform duration-150 ease-out focus:outline-none focus:ring-2 focus:ring-stone-950 focus:ring-offset-2 motion-reduce:transition-none ${noButtonShiftClass}`}
+              className="min-h-11 w-full rounded-md border border-wink-border bg-wink-surface px-4 py-2 text-sm font-semibold text-wink-text focus:outline-none focus-visible:ring-2 focus-visible:ring-wink-focus focus-visible:ring-offset-2 focus-visible:ring-offset-wink-background"
               ref={noButtonRef}
               type="submit"
             >
               No
             </button>
           </form>
-        </div>
+        </ResponseButtonGroup>
 
         <div className="space-y-2">
           <p
             aria-live="polite"
-            className="min-h-5 text-sm italic text-stone-600"
+            className="min-h-5 text-sm italic text-wink-text-secondary"
           >
             {noHint}
           </p>
@@ -262,13 +265,13 @@ export function UnbotheredMode({
                 value={previewMode ? "true" : "false"}
               />
               <input name="response" type="hidden" value="no" />
-              <button
+              <SecondaryButton
                 aria-label="Answer no for real to this invitation"
-                className="min-h-11 rounded-md px-0 py-2 text-sm font-medium text-stone-700 underline underline-offset-4 focus:outline-none focus:ring-2 focus:ring-stone-950 focus:ring-offset-2"
+                className="w-full underline underline-offset-4 sm:w-auto"
                 type="submit"
               >
                 No, for real →
-              </button>
+              </SecondaryButton>
             </form>
           ) : null}
         </div>
@@ -281,7 +284,7 @@ export function UnbotheredMode({
             value={previewMode ? "true" : "false"}
           />
           <button
-            className="min-h-11 w-full rounded-md border border-red-200 px-4 py-2 text-sm font-medium text-red-800 focus:outline-none focus:ring-2 focus:ring-red-800 focus:ring-offset-2"
+            className="min-h-11 w-full rounded-md border border-wink-border bg-wink-surface px-4 py-2 text-sm font-medium text-wink-text-secondary focus:outline-none focus-visible:ring-2 focus-visible:ring-wink-focus focus-visible:ring-offset-2 focus-visible:ring-offset-wink-background"
             type="submit"
           >
             I do not know this person
@@ -314,41 +317,41 @@ function SlotPanel({
   return (
     <div
       aria-labelledby="unbothered-slot-heading"
-      className="space-y-3 rounded-md border border-stone-200 bg-stone-50 p-4"
+      className="space-y-3 rounded-md border border-wink-border bg-wink-background p-4"
     >
       <div className="space-y-1">
         <div className="flex items-center justify-between gap-3">
           <h3
-            className="text-base font-semibold text-stone-950"
+            className="text-base font-semibold text-wink-text"
             id="unbothered-slot-heading"
           >
             Rigged fate machine
           </h3>
           {previewMode ? (
-            <span className="rounded border border-stone-300 px-2 py-1 text-xs font-semibold text-stone-700">
+            <span className="rounded border border-wink-border px-2 py-1 text-xs font-semibold text-wink-text-secondary">
               PREVIEW
             </span>
           ) : null}
         </div>
-        <p className="text-sm text-stone-700">
+        <p className="text-sm text-wink-text-secondary">
           This machine is absolutely not impartial. It cannot answer for you.
           Raincheck and No stay available below.
         </p>
       </div>
       <div
         aria-live="polite"
-        className="rounded-md border border-stone-300 bg-white px-4 py-5 text-center text-4xl font-semibold text-stone-950"
+        className="rounded-md border border-wink-border bg-wink-surface px-4 py-5 text-center text-4xl font-semibold text-wink-text"
       >
         {slotValue}
       </div>
       {landed ? (
-        <p aria-live="polite" className="text-sm text-stone-700">
+        <p aria-live="polite" className="text-sm text-wink-text-secondary">
           The fates have decided: {unbotheredSlotFinalResult}
         </p>
       ) : null}
       {slotConfirmationReady ? (
         <div className="space-y-3">
-          <p className="text-base text-stone-800">
+          <p className="text-base text-wink-text">
             The totally unbiased machine has spoken: YES.
           </p>
           <form action={respondToInviteAction} onSubmit={onPreviewSubmit}>
@@ -359,16 +362,16 @@ function SlotPanel({
               value={previewMode ? "true" : "false"}
             />
             <input name="response" type="hidden" value="yes" />
-            <button
+            <PrimaryButton
               aria-label="Accept the rigged verdict and answer yes"
-              className="min-h-11 w-full rounded-md bg-stone-950 px-4 py-2 text-sm font-medium text-white focus:outline-none focus:ring-2 focus:ring-stone-950 focus:ring-offset-2"
+              className="w-full"
               type="submit"
             >
               {unbotheredSlotConfirmationLabel}
-            </button>
+            </PrimaryButton>
           </form>
           {previewNotice ? (
-            <p className="text-sm text-stone-700" role="status">
+            <p className="text-sm text-wink-text-secondary" role="status">
               Preview mode blocked saving that response.
             </p>
           ) : null}
@@ -384,8 +387,7 @@ function ResponseForm({
   onPreviewSubmit,
   previewMode,
   response,
-  slug,
-  variant
+  slug
 }: {
   ariaLabel: string;
   label: string;
@@ -395,11 +397,6 @@ function ResponseForm({
   slug: string;
   variant: "secondary" | "understated";
 }) {
-  const className =
-    variant === "secondary"
-      ? "min-h-11 w-full rounded-md border border-stone-300 px-4 py-2 text-sm font-medium text-stone-950 focus:outline-none focus:ring-2 focus:ring-stone-950 focus:ring-offset-2"
-      : "min-h-11 w-full rounded-md border border-stone-300 bg-stone-50 px-4 py-2 text-sm font-medium text-stone-950 focus:outline-none focus:ring-2 focus:ring-stone-950 focus:ring-offset-2";
-
   return (
     <form action={respondToInviteAction} onSubmit={onPreviewSubmit}>
       <input name="slug" type="hidden" value={slug} />
@@ -409,9 +406,9 @@ function ResponseForm({
         value={previewMode ? "true" : "false"}
       />
       <input name="response" type="hidden" value={response} />
-      <button aria-label={ariaLabel} className={className} type="submit">
+      <PrimaryButton aria-label={ariaLabel} className="w-full" type="submit">
         {label}
-      </button>
+      </PrimaryButton>
     </form>
   );
 }
