@@ -21,8 +21,14 @@ const dangerButtonSource = readFileSync(
   "components/ui/danger-button.tsx",
   "utf8"
 );
+const formFieldSource = readFileSync("components/ui/form-field.tsx", "utf8");
+const modeBadgeSource = readFileSync("components/ui/mode-badge.tsx", "utf8");
 const sectionDividerSource = readFileSync(
   "components/ui/section-divider.tsx",
+  "utf8"
+);
+const stepIndicatorSource = readFileSync(
+  "components/ui/step-indicator.tsx",
   "utf8"
 );
 const uiIndexSource = readFileSync("components/ui/index.ts", "utf8");
@@ -208,6 +214,85 @@ test("Sprint 4.0 Pass A1 page shell supports variants and documented widths", ()
   assert.match(pageShellSource, /px-5/);
   assert.match(pageShellSource, /sm:px-8/);
   assert.match(pageShellSource, /lg:px-12/);
+});
+
+test("Sprint 4.0 Pass A2 FormField exists exports and supports required variants", () => {
+  assert.equal(existsSync("components/ui/form-field.tsx"), true);
+  assert.match(formFieldSource, /export function FormField/);
+  assert.match(formFieldSource, /type FormFieldType = "text" \| "textarea" \| "select" \| "date" \| "time"/);
+  assert.match(formFieldSource, /props\.type === "textarea"/);
+  assert.match(formFieldSource, /props\.type === "select"/);
+  assert.match(formFieldSource, /<input/);
+  assert.match(formFieldSource, /type=\{type\}/);
+});
+
+test("Sprint 4.0 Pass A2 FormField wires labels helper errors and aria state", () => {
+  assert.match(formFieldSource, /htmlFor=\{id\}/);
+  assert.match(formFieldSource, /const helperId = helperText \? `\$\{id\}-helper`/);
+  assert.match(formFieldSource, /const errorId = errorText \? `\$\{id\}-error`/);
+  assert.match(formFieldSource, /aria-describedby=\{describedBy\}/);
+  assert.match(formFieldSource, /aria-invalid=\{hasError \|\| undefined\}/);
+  assert.match(formFieldSource, /aria-required=\{required \|\| undefined\}/);
+  assert.match(formFieldSource, /id=\{helperId\}/);
+  assert.match(formFieldSource, /id=\{errorId\}/);
+  assert.match(formFieldSource, /Error: \{errorText\}/);
+});
+
+test("Sprint 4.0 Pass A2 FormField uses design tokens focus styles and required semantics", () => {
+  assert.match(formFieldSource, /bg-wink-surface/);
+  assert.match(formFieldSource, /text-wink-text/);
+  assert.match(formFieldSource, /text-wink-text-secondary/);
+  assert.match(formFieldSource, /border-wink-border/);
+  assert.match(formFieldSource, /border-wink-danger/);
+  assert.match(formFieldSource, /text-wink-danger/);
+  assert.match(formFieldSource, /focus-visible:ring-2/);
+  assert.match(formFieldSource, /focus-visible:ring-wink-focus/);
+  assert.match(formFieldSource, /text-base/);
+  assert.match(formFieldSource, /min-h-11/);
+  assert.match(formFieldSource, /Required/);
+  assert.match(formFieldSource, /required=\{required\}/);
+});
+
+test("Sprint 4.0 Pass A2 StepIndicator exists exports and stays non-interactive", () => {
+  assert.equal(existsSync("components/ui/step-indicator.tsx"), true);
+  assert.match(stepIndicatorSource, /export function StepIndicator/);
+  assert.match(stepIndicatorSource, /currentStep/);
+  assert.match(stepIndicatorSource, /totalSteps/);
+  assert.match(stepIndicatorSource, /label/);
+  assert.match(stepIndicatorSource, /aria-label=\{`Step \$\{normalizedCurrent\} of \$\{normalizedTotal\}: \$\{label\}`\}/);
+  assert.match(stepIndicatorSource, /aria-hidden="true"/);
+  assert.match(stepIndicatorSource, /bg-wink-primary/);
+  assert.match(stepIndicatorSource, /bg-wink-border/);
+  assert.doesNotMatch(stepIndicatorSource, /<button|<a\s|href=/);
+});
+
+test("Sprint 4.0 Pass A2 ModeBadge exists exports and keeps MVP modes only", () => {
+  assert.equal(existsSync("components/ui/mode-badge.tsx"), true);
+  assert.match(modeBadgeSource, /export function ModeBadge/);
+  assert.match(modeBadgeSource, /type ModeBadgeMode = "lawyer" \| "unbothered"/);
+  assert.match(modeBadgeSource, /lawyer: "Lawyer"/);
+  assert.match(modeBadgeSource, /unbothered: "Unbothered"/);
+  assert.doesNotMatch(modeBadgeSource, /ceo|desperate|scratch|classic/i);
+});
+
+test("Sprint 4.0 Pass A2 selectable ModeBadge uses accessible real interaction", () => {
+  assert.match(modeBadgeSource, /selectable/);
+  assert.match(modeBadgeSource, /selected/);
+  assert.match(modeBadgeSource, /disabled/);
+  assert.match(modeBadgeSource, /<button/);
+  assert.match(modeBadgeSource, /aria-pressed=\{selected\}/);
+  assert.match(modeBadgeSource, /disabled=\{disabled\}/);
+  assert.match(modeBadgeSource, /min-h-11/);
+  assert.match(modeBadgeSource, /focus-visible:ring-2/);
+  assert.match(modeBadgeSource, /focus-visible:ring-wink-focus/);
+  assert.match(modeBadgeSource, /border-wink-primary bg-wink-surface text-wink-primary/);
+  assert.match(modeBadgeSource, />\s*Selected\s*</);
+});
+
+test("Sprint 4.0 Pass A2 UI barrel exports form and choice primitives", () => {
+  assert.match(uiIndexSource, /export \{ FormField \}/);
+  assert.match(uiIndexSource, /export \{ StepIndicator \}/);
+  assert.match(uiIndexSource, /export \{ ModeBadge \}/);
 });
 
 test("required create fields expose native required semantics", () => {
