@@ -69,6 +69,7 @@ const createInviteFormSource = readFileSync(
   "app/create/create-invite-form.tsx",
   "utf8"
 );
+const createPageSource = readFileSync("app/create/page.tsx", "utf8");
 const createShareRecipientSource = readFileSync(
   "app/create/share-recipient-link-control.tsx",
   "utf8"
@@ -513,6 +514,92 @@ test("Sprint 4.0 Pass B1 motion remains reduced-motion safe and dependencies unc
   ].join("\n");
 
   assert.match(recipientSurfaceSource, /motion-reduce|prefers-reduced-motion/);
+  assert.doesNotMatch(packageJsonSource, /framer-motion|@radix-ui|lucide-react|shadcn/);
+});
+
+test("Sprint 4.0 Pass B2 keeps create route location and uses premium primitives", () => {
+  assert.equal(existsSync("app/create/page.tsx"), true);
+  assert.match(createPageSource, /CreateInviteForm/);
+  assert.match(createInviteFormSource, /PageShell/);
+  assert.match(createInviteFormSource, /maxWidth="form"/);
+  assert.match(createInviteFormSource, /StepIndicator/);
+  assert.match(createInviteFormSource, /FormField/);
+  assert.match(createInviteFormSource, /PrimaryButton/);
+  assert.match(createInviteFormSource, /SecondaryButton/);
+  assert.match(createInviteFormSource, /PrivateLinkNotice/);
+});
+
+test("Sprint 4.0 Pass B2 preserves create form field names", () => {
+  for (const fieldName of [
+    "senderName",
+    "recipientName",
+    "message",
+    "tone",
+    "mode",
+    "dateType",
+    "date",
+    "time",
+    "placeName",
+    "placeAddress"
+  ]) {
+    assert.match(createInviteFormSource, new RegExp(`name="${fieldName}"`));
+  }
+});
+
+test("Sprint 4.0 Pass B2 mode selector uses accessible radios and MVP values only", () => {
+  assert.match(createInviteFormSource, /<fieldset/);
+  assert.match(createInviteFormSource, /<legend/);
+  assert.match(createInviteFormSource, /type="radio"/);
+  assert.match(createInviteFormSource, /name="mode"/);
+  assert.match(createInviteFormSource, /value="lawyer"/);
+  assert.match(createInviteFormSource, /value="unbothered"/);
+  assert.match(createInviteFormSource, /Selected/);
+  assert.match(createInviteFormSource, /group-has-\[:checked\]/);
+  assert.doesNotMatch(createInviteFormSource, /ceo|desperate|scratch|classic/i);
+});
+
+test("Sprint 4.0 Pass B2 keeps native date and time controls and no live preview", () => {
+  assert.match(createInviteFormSource, /type="date"/);
+  assert.match(createInviteFormSource, /type="time"/);
+  assert.doesNotMatch(createInviteFormSource, /DatePicker|TimePicker|date-fns|react-datepicker/);
+  assert.doesNotMatch(createInviteFormSource, /live preview|preview pane|previewMode/i);
+});
+
+test("Sprint 4.0 Pass B2 success screen keeps recipient and sender links separate", () => {
+  assert.match(createInviteFormSource, /Share this with the recipient/);
+  assert.match(createInviteFormSource, /This opens the invitation and lets them respond/);
+  assert.match(createInviteFormSource, /Keep this private link/);
+  assert.match(createInviteFormSource, /Anyone with this link can view the sender page/);
+  assert.match(createInviteFormSource, /WINK cannot recover it later/);
+  assert.match(createInviteFormSource, /Send only the recipient link/);
+  assert.match(createInviteFormSource, /ShareRecipientLinkControl/);
+  assert.match(createInviteFormSource, /CopyPrivateSenderLinkControl/);
+});
+
+test("Sprint 4.0 Pass B2 share behavior stays recipient-only and private sender copy-only", () => {
+  assert.match(createShareRecipientSource, /navigator\.share/);
+  assert.match(createShareRecipientSource, /url: recipientUrl/);
+  assert.doesNotMatch(createShareRecipientSource, /senderPath|senderUrl|\/s\//);
+  assert.match(createCopySenderSource, /navigator\.clipboard/);
+  assert.doesNotMatch(createCopySenderSource, /navigator\.share|Share private/);
+});
+
+test("Sprint 4.0 Pass B2 create surface stays private non-tracking and reduced-motion safe", () => {
+  const createSurfaceSource = [
+    createInviteFormSource,
+    createShareRecipientSource,
+    createCopySenderSource
+  ].join("\n");
+
+  assert.match(createSurfaceSource, /motion-reduce/);
+  assert.doesNotMatch(createSurfaceSource, /fetch\(/);
+  assert.doesNotMatch(createSurfaceSource, /XMLHttpRequest/);
+  assert.doesNotMatch(createSurfaceSource, /sendBeacon/);
+  assert.doesNotMatch(createSurfaceSource, /localStorage/);
+  assert.doesNotMatch(createSurfaceSource, /document\.cookie/);
+  assert.doesNotMatch(createSurfaceSource, /analytics|openCount|readReceipt/i);
+  assert.doesNotMatch(createSurfaceSource, /geolocation|hover tracking|cursor tracking|cursorPath/i);
+  assert.doesNotMatch(createSurfaceSource, /mailto:|tel:|SMS|WhatsApp|Instagram/);
   assert.doesNotMatch(packageJsonSource, /framer-motion|@radix-ui|lucide-react|shadcn/);
 });
 

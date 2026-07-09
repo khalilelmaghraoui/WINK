@@ -11,6 +11,16 @@ import {
 import { CopyPrivateSenderLinkControl } from "./copy-private-sender-link-control";
 import { ShareRecipientLinkControl } from "./share-recipient-link-control";
 import type { CreateInviteField } from "@/lib/create-invite-validation";
+import {
+  FormField,
+  InviteCard,
+  PageShell,
+  PrimaryButton,
+  PrivateLinkNotice,
+  SecondaryButton,
+  SectionDivider,
+  StepIndicator
+} from "../../components/ui";
 
 const initialState: CreateInviteActionState = {
   errors: {}
@@ -20,6 +30,12 @@ const steps = [
   "Recipient and sender",
   "Message and mode",
   "Date plan and place"
+] as const;
+
+const stepDescriptions = [
+  "Who is making the ask, and who gets the private invitation?",
+  "Write the line they will read first, then choose the personality.",
+  "Set the when and where with native date and time controls."
 ] as const;
 
 const stepFields: CreateInviteField[][] = [
@@ -53,21 +69,18 @@ export function CreateInviteForm() {
 
   if (recipientPath && senderPath) {
     return (
-      <main className="mx-auto flex min-h-screen w-full max-w-2xl flex-col justify-center bg-wink-background px-5 py-10 text-wink-text">
-        <div className="space-y-6 rounded-lg border border-wink-border bg-wink-surface p-5 shadow-[0_18px_50px_rgba(24,21,18,0.08)]">
-          <div className="space-y-2">
-            <p className="text-sm font-medium text-wink-text-secondary">
-              Invite created
-            </p>
-            <h1 className="font-display text-3xl font-semibold text-wink-text">
-              Save these links carefully
-            </h1>
-            <p className="text-base leading-7 text-wink-text-secondary">
-              The recipient gets one link. You keep the private sender link.
-            </p>
-          </div>
+      <PageShell className="flex items-center py-8 sm:py-12" maxWidth="form">
+        <InviteCard
+          eyebrow="Invite created"
+          title="Save these links carefully"
+          titleId="create-success-heading"
+          variant="live"
+        >
+          <p className="text-base leading-7 text-wink-text-secondary">
+            The recipient gets one link. You keep the private sender link.
+          </p>
 
-          <section className="space-y-4 rounded-lg border border-wink-primary bg-wink-surface p-4">
+          <section className="space-y-4 border-t border-wink-border pt-5">
             <div className="space-y-1">
               <p className="text-xs font-semibold uppercase text-wink-primary">
                 Recipient link
@@ -81,16 +94,16 @@ export function CreateInviteForm() {
             </div>
             <ShareRecipientLinkControl recipientPath={recipientPath} />
             <Link
-              className="inline-flex min-h-11 w-full items-center justify-center rounded-md border border-wink-border bg-wink-surface px-4 py-2 text-sm font-semibold text-wink-text transition-colors hover:border-wink-primary hover:text-wink-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-wink-focus focus-visible:ring-offset-2 sm:w-auto"
+              className="inline-flex min-h-11 w-full items-center justify-center rounded-md border border-wink-border bg-wink-surface px-4 py-2 text-sm font-semibold text-wink-text transition-colors duration-200 hover:border-wink-primary hover:text-wink-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-wink-focus focus-visible:ring-offset-2 focus-visible:ring-offset-wink-background motion-reduce:transition-none sm:w-auto"
               href={recipientPath}
             >
               View invite
             </Link>
           </section>
 
-          <section className="space-y-4 rounded-lg border border-wink-border bg-wink-surface-muted/40 p-4">
+          <section className="space-y-4 border-t border-wink-border pt-5">
             <div className="space-y-1">
-              <p className="text-xs font-semibold uppercase text-wink-danger">
+              <p className="text-xs font-semibold uppercase text-wink-text-secondary">
                 Private sender link
               </p>
               <h2 className="text-lg font-semibold text-wink-text">
@@ -101,51 +114,68 @@ export function CreateInviteForm() {
                 again, cancel before they answer, and read an optional declined
                 message.
               </p>
-              <p className="text-sm font-semibold leading-6 text-wink-danger">
-                Anyone with this link can view the sender page. Save it now -
-                WINK cannot recover it later.
-              </p>
             </div>
             <CopyPrivateSenderLinkControl senderPath={senderPath} />
+            <PrivateLinkNotice eyebrow="Private sender link">
+              Anyone with this link can view the sender page. Save it now -
+              WINK cannot recover it later.
+            </PrivateLinkNotice>
           </section>
 
           <p className="border-t border-wink-border pt-4 text-sm leading-6 text-wink-text-secondary">
             Send only the recipient link. Keep the sender link somewhere
             private.
           </p>
-        </div>
-      </main>
+        </InviteCard>
+      </PageShell>
     );
   }
 
   return (
-    <main className="mx-auto flex min-h-screen w-full max-w-xl flex-col px-5 py-8">
-      <form action={formAction} className="space-y-6" noValidate>
-        <header className="space-y-3">
-          <p className="text-sm font-medium text-stone-600">
-            Step {stepIndex + 1} of {steps.length}
-          </p>
-          <h1 className="text-2xl font-semibold text-stone-950">
-            {steps[stepIndex]}
-          </h1>
+    <PageShell className="py-8 sm:py-12" maxWidth="form">
+      <form
+        action={formAction}
+        className="space-y-8 rounded-lg border border-wink-border bg-wink-surface p-8 shadow-[0_14px_36px_rgba(24,21,18,0.06)] sm:p-10"
+        noValidate
+      >
+        <header className="space-y-4">
+          <StepIndicator
+            currentStep={stepIndex + 1}
+            label={steps[stepIndex]}
+            totalSteps={steps.length}
+          />
+          <div className="space-y-2">
+            <p className="text-xs font-semibold uppercase text-wink-text-secondary">
+              WINK private invitation
+            </p>
+            <h1 className="font-display text-3xl leading-tight text-wink-text sm:text-4xl">
+              {steps[stepIndex]}
+            </h1>
+            <p className="text-base leading-7 text-wink-text-secondary">
+              {stepDescriptions[stepIndex]}
+            </p>
+          </div>
           {currentStepHasErrors ? (
-            <p className="text-sm text-red-700" role="status">
+            <p className="text-sm font-semibold text-wink-danger" role="status">
               Fix the highlighted fields before continuing.
             </p>
           ) : null}
           {state.serviceError ? (
-            <p className="text-sm text-red-700" role="status">
+            <p className="text-sm font-semibold text-wink-danger" role="status">
               {state.serviceError}
             </p>
           ) : null}
         </header>
 
-        <section hidden={stepIndex !== 0} className="space-y-4">
+        <SectionDivider variant="accent" />
+
+        <section hidden={stepIndex !== 0} className="space-y-6">
           <TextField
             error={state.errors.senderName}
             id="senderName"
             label="Your name"
             name="senderName"
+            helperText="This appears inside the invitation content, not metadata."
             required
           />
           <TextField
@@ -153,16 +183,18 @@ export function CreateInviteForm() {
             id="recipientName"
             label="Recipient name"
             name="recipientName"
+            helperText="Use the name they will recognize when the private link opens."
             required
           />
         </section>
 
-        <section hidden={stepIndex !== 1} className="space-y-4">
+        <section hidden={stepIndex !== 1} className="space-y-6">
           <TextAreaField
             error={state.errors.message}
             id="message"
             label="Message"
             name="message"
+            helperText="This is the line they will read first."
             required
           />
           <SelectField
@@ -170,6 +202,7 @@ export function CreateInviteForm() {
             id="tone"
             label="Tone"
             name="tone"
+            helperText="Tone changes the framing, not the consent mechanics."
             options={[
               { label: "Cute", value: "cute" },
               { label: "Funny", value: "funny" },
@@ -178,25 +211,18 @@ export function CreateInviteForm() {
             ]}
             required
           />
-          <SelectField
+          <ModeChoiceField
             error={state.errors.mode}
-            id="mode"
-            label="Mode"
-            name="mode"
-            options={[
-              { label: "Lawyer", value: "lawyer" },
-              { label: "Unbothered", value: "unbothered" }
-            ]}
-            required
           />
         </section>
 
-        <section hidden={stepIndex !== 2} className="space-y-4">
+        <section hidden={stepIndex !== 2} className="space-y-6">
           <SelectField
             error={state.errors.dateType}
             id="dateType"
             label="Date type"
             name="dateType"
+            helperText="Pick the kind of moment this invitation is setting up."
             options={[
               { label: "Date", value: "date" },
               { label: "Apology", value: "apology" },
@@ -210,6 +236,7 @@ export function CreateInviteForm() {
             id="date"
             label="Date"
             name="date"
+            helperText="Native date input, so the browser handles the picker."
             required
             type="date"
           />
@@ -218,6 +245,7 @@ export function CreateInviteForm() {
             id="time"
             label="Time"
             name="time"
+            helperText="Native time input; no custom picker added."
             required
             type="time"
           />
@@ -226,6 +254,7 @@ export function CreateInviteForm() {
             id="placeName"
             label="Place name"
             name="placeName"
+            helperText="Restaurant, cafe, venue, or wherever the plan starts."
             required
           />
           <TextField
@@ -233,34 +262,35 @@ export function CreateInviteForm() {
             id="placeAddress"
             label="Place address"
             name="placeAddress"
+            helperText="Used later for the accepted plan view."
             required
           />
         </section>
 
-        <div className="flex flex-col gap-3 pt-2 sm:flex-row">
+        <div className="flex flex-col gap-3 pt-2 sm:flex-row sm:justify-end">
           {stepIndex > 0 ? (
-            <button
+            <SecondaryButton
+              className="w-full sm:w-auto"
               type="button"
-              className="min-h-11 rounded-md border border-stone-300 px-4 py-2 text-sm font-medium text-stone-950"
               onClick={() => setStepIndex((current) => current - 1)}
             >
               Back
-            </button>
+            </SecondaryButton>
           ) : null}
           {stepIndex < steps.length - 1 ? (
-            <button
+            <PrimaryButton
+              className="w-full sm:w-auto"
               type="button"
-              className="min-h-11 rounded-md bg-stone-950 px-4 py-2 text-sm font-medium text-white"
               onClick={() => setStepIndex((current) => current + 1)}
             >
               Continue
-            </button>
+            </PrimaryButton>
           ) : (
             <SubmitButton />
           )}
         </div>
       </form>
-    </main>
+    </PageShell>
   );
 }
 
@@ -268,18 +298,20 @@ function SubmitButton() {
   const { pending } = useFormStatus();
 
   return (
-    <button
+    <PrimaryButton
+      className="w-full sm:w-auto"
       type="submit"
-      className="min-h-11 rounded-md bg-stone-950 px-4 py-2 text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-60"
       disabled={pending}
+      loading={pending}
     >
       {pending ? "Creating..." : "Create invite"}
-    </button>
+    </PrimaryButton>
   );
 }
 
 interface FieldProps {
   error?: string;
+  helperText?: string;
   id: CreateInviteField;
   label: string;
   name: CreateInviteField;
@@ -288,107 +320,152 @@ interface FieldProps {
 
 function TextField({
   error,
+  helperText,
   id,
   label,
   name,
   required = false,
   type = "text"
 }: FieldProps & { type?: "date" | "text" | "time" }) {
-  const errorId = `${id}-error`;
-
   return (
-    <div className="space-y-2">
-      <label className="block text-sm font-medium text-stone-950" htmlFor={id}>
-        {label}
-      </label>
-      <input
-        aria-describedby={error ? errorId : undefined}
-        aria-invalid={error ? "true" : undefined}
-        className="min-h-11 w-full rounded-md border border-stone-300 bg-white px-3 py-2 text-base text-stone-950 outline-none focus:border-stone-950 focus:ring-2 focus:ring-stone-950/20"
-        id={id}
-        name={name}
-        required={required}
-        type={type}
-      />
-      <ErrorMessage error={error} id={errorId} />
-    </div>
+    <FormField
+      errorText={error}
+      helperText={helperText}
+      id={id}
+      label={label}
+      name={name}
+      required={required}
+      type={type}
+    />
   );
 }
 
 function TextAreaField({
   error,
+  helperText,
   id,
   label,
   name,
   required = false
 }: FieldProps) {
-  const errorId = `${id}-error`;
-
   return (
-    <div className="space-y-2">
-      <label className="block text-sm font-medium text-stone-950" htmlFor={id}>
-        {label}
-      </label>
-      <textarea
-        aria-describedby={error ? errorId : undefined}
-        aria-invalid={error ? "true" : undefined}
-        className="min-h-32 w-full rounded-md border border-stone-300 bg-white px-3 py-2 text-base text-stone-950 outline-none focus:border-stone-950 focus:ring-2 focus:ring-stone-950/20"
-        id={id}
-        name={name}
-        required={required}
-        rows={5}
-      />
-      <ErrorMessage error={error} id={errorId} />
-    </div>
+    <FormField
+      errorText={error}
+      helperText={helperText}
+      id={id}
+      label={label}
+      name={name}
+      required={required}
+      rows={5}
+      type="textarea"
+    />
   );
 }
 
 function SelectField({
   error,
+  helperText,
   id,
   label,
   name,
   options,
   required = false
 }: FieldProps & { options: Array<{ label: string; value: string }> }) {
-  const errorId = `${id}-error`;
-
   return (
-    <div className="space-y-2">
-      <label className="block text-sm font-medium text-stone-950" htmlFor={id}>
-        {label}
-      </label>
-      <select
-        aria-describedby={error ? errorId : undefined}
-        aria-invalid={error ? "true" : undefined}
-        className="min-h-11 w-full rounded-md border border-stone-300 bg-white px-3 py-2 text-base text-stone-950 outline-none focus:border-stone-950 focus:ring-2 focus:ring-stone-950/20"
-        defaultValue=""
-        id={id}
-        name={name}
-        required={required}
-      >
-        <option disabled value="">
-          Choose one
-        </option>
-        {options.map((option) => (
-          <option key={option.value} value={option.value}>
-            {option.label}
-          </option>
-        ))}
-      </select>
-      <ErrorMessage error={error} id={errorId} />
-    </div>
+    <FormField
+      defaultValue=""
+      errorText={error}
+      helperText={helperText}
+      id={id}
+      label={label}
+      name={name}
+      options={options}
+      placeholder="Choose one"
+      required={required}
+      type="select"
+    />
   );
 }
 
-function ErrorMessage({ error, id }: { error?: string; id: string }) {
-  if (!error) {
-    return null;
-  }
+function ModeChoiceField({ error }: { error?: string }) {
+  const errorId = error ? "mode-error" : undefined;
+  const helperId = "mode-helper";
 
   return (
-    <p className="text-sm text-red-700" id={id}>
-      {error}
-    </p>
+    <fieldset
+      aria-describedby={[helperId, errorId].filter(Boolean).join(" ")}
+      className="space-y-3"
+    >
+      <legend className="text-sm font-semibold text-wink-text">
+        Mode
+        <span className="ml-2 text-wink-danger" aria-hidden="true">
+          Required
+        </span>
+      </legend>
+      <p className="text-sm leading-6 text-wink-text-secondary" id={helperId}>
+        Choose the invitation personality. The submitted values stay exactly
+        lawyer or unbothered.
+      </p>
+      <div className="grid gap-3">
+        <ModeOption
+          description="Mock-formal, structured, and charmingly persuasive."
+          label="Lawyer"
+          value="lawyer"
+        />
+        <ModeOption
+          description="Cool, low-pressure, dry, and restrained."
+          label="Unbothered"
+          value="unbothered"
+        />
+      </div>
+      {error ? (
+        <p className="text-sm font-semibold leading-6 text-wink-danger" id={errorId}>
+          Error: {error}
+        </p>
+      ) : null}
+    </fieldset>
+  );
+}
+
+function ModeOption({
+  description,
+  label,
+  value
+}: {
+  description: string;
+  label: string;
+  value: "lawyer" | "unbothered";
+}) {
+  return (
+    <label className="group block cursor-pointer">
+      <input
+        className="peer sr-only"
+        name="mode"
+        required
+        type="radio"
+        value={value}
+      />
+      <span className="flex min-h-11 items-start gap-3 rounded-md border border-wink-border bg-wink-surface px-3 py-3 text-wink-text transition-colors duration-200 peer-checked:border-wink-primary peer-checked:bg-wink-surface-muted peer-focus-visible:ring-2 peer-focus-visible:ring-wink-focus peer-focus-visible:ring-offset-2 peer-focus-visible:ring-offset-wink-background motion-reduce:transition-none">
+        <span
+          aria-hidden="true"
+          className="mt-1 flex h-4 w-4 shrink-0 items-center justify-center rounded-full border border-wink-border bg-wink-surface group-has-[:checked]:border-wink-primary"
+        >
+          <span className="hidden h-2 w-2 rounded-full bg-wink-primary group-has-[:checked]:block" />
+        </span>
+        <span className="min-w-0 space-y-1">
+          <span className="flex flex-wrap items-center gap-2">
+            <span className="text-sm font-semibold">{label}</span>
+            <span
+              className="hidden rounded-full border border-wink-primary px-2 py-0.5 text-xs font-semibold text-wink-primary group-has-[:checked]:inline-flex"
+            >
+              Selected
+            </span>
+          </span>
+          <span className="block text-sm leading-6 text-wink-text-secondary">
+            {description}
+          </span>
+        </span>
+      </span>
+    </label>
   );
 }

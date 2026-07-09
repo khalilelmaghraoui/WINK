@@ -82,7 +82,7 @@ export function ShareRecipientLinkControl({
       <div className="flex flex-col gap-3 sm:flex-row">
         {shareSupported ? (
           <button
-            className="min-h-11 rounded-md bg-wink-primary px-4 py-2 text-sm font-semibold text-wink-surface transition-colors hover:bg-wink-primary-hover focus:outline-none focus-visible:ring-2 focus-visible:ring-wink-focus focus-visible:ring-offset-2"
+            className="min-h-11 rounded-md bg-wink-primary px-4 py-2 text-sm font-semibold text-wink-surface transition-colors duration-200 hover:bg-wink-primary-hover focus:outline-none focus-visible:ring-2 focus-visible:ring-wink-focus focus-visible:ring-offset-2 focus-visible:ring-offset-wink-background motion-reduce:transition-none"
             type="button"
             onClick={shareRecipientLink}
           >
@@ -90,7 +90,7 @@ export function ShareRecipientLinkControl({
           </button>
         ) : null}
         <button
-          className="min-h-11 rounded-md border border-wink-border bg-wink-surface px-4 py-2 text-sm font-semibold text-wink-text transition-colors hover:border-wink-primary hover:text-wink-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-wink-focus focus-visible:ring-offset-2"
+          className="min-h-11 rounded-md border border-wink-border bg-wink-surface px-4 py-2 text-sm font-semibold text-wink-text transition-colors duration-200 hover:border-wink-primary hover:text-wink-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-wink-focus focus-visible:ring-offset-2 focus-visible:ring-offset-wink-background motion-reduce:transition-none"
           type="button"
           onClick={copyRecipientLink}
         >
