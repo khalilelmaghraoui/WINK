@@ -21,7 +21,7 @@ export function ResponseButtonGroup({
           {label}
         </p>
       ) : null}
-      <div className="grid gap-3 sm:grid-cols-3">{children}</div>
+      <div className="grid gap-3 sm:grid-cols-3 [&>form]:min-w-0">{children}</div>
     </div>
   );
 }

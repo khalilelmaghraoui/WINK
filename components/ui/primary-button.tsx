@@ -23,8 +23,8 @@ export function PrimaryButton({
       className={[
         "inline-flex min-h-11 items-center justify-center rounded-md",
         "bg-wink-primary px-5 py-2.5 text-sm font-semibold text-wink-surface",
-        "transition-colors duration-200 hover:bg-wink-primary-hover",
-        "active:bg-wink-primary-hover active:shadow-[inset_0_1px_0_rgba(24,21,18,0.28)]",
+        "transition duration-200 hover:-translate-y-0.5 hover:bg-wink-primary-hover active:translate-y-px",
+        "active:bg-wink-primary-hover active:shadow-[inset_0_1px_0_rgba(24,21,18,0.28)] motion-reduce:transform-none motion-reduce:transition-none",
         "focus:outline-none focus-visible:ring-2 focus-visible:ring-wink-focus focus-visible:ring-offset-2 focus-visible:ring-offset-wink-background",
         "disabled:cursor-not-allowed disabled:bg-wink-surface-muted disabled:text-wink-text-secondary disabled:hover:bg-wink-surface-muted",
         className

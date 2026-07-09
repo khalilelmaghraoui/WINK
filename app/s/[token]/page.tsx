@@ -10,10 +10,17 @@ import { inviteStore } from "@/lib/invite-store";
 import { formatInviteDateTime } from "@/lib/invite-date-time";
 import {
   getSenderStatusViewModel,
+  type SenderStatusKind,
   type SenderStatusRaincheck,
   type SenderStatusViewModel
 } from "@/lib/sender-status";
 import { isInvitePersistenceConfigurationError } from "@/lib/storage/invite-store-config";
+import {
+  PageShell,
+  PrivateLinkNotice,
+  SectionDivider,
+  StatusCard
+} from "../../../components/ui";
 
 export const dynamic = "force-dynamic";
 export const fetchCache = "force-no-store";
@@ -97,28 +104,39 @@ function SenderStatusView({
   viewModel: SenderStatusViewModel;
 }) {
   return (
-    <main className="mx-auto flex min-h-screen w-full max-w-2xl flex-col px-5 py-8">
-      <article className="space-y-6 rounded-lg border border-stone-300 bg-white p-5">
-        <header className="space-y-3">
-          <p className="text-sm font-medium uppercase text-stone-600">
+    <PageShell className="py-8 sm:py-12" maxWidth="invite">
+      <div className="space-y-5">
+        <PrivateLinkNotice eyebrow="Private post office receipt">
+          Anyone with this link can see this page. WINK cannot recover it if
+          lost.
+        </PrivateLinkNotice>
+
+        <StatusCard
+          description={
+            <span>
+              {viewModel.heading} {viewModel.summary}
+            </span>
+          }
+          quotedMessage={viewModel.recipientMessage ?? undefined}
+          status={toReceiptStatus(viewModel.kind)}
+          title={getReceiptTitle(viewModel.kind)}
+        >
+          <p className="text-xs font-semibold uppercase text-wink-text-secondary">
             {viewModel.label}
           </p>
-          <h1 className="text-2xl font-semibold text-stone-950">
-            {viewModel.heading}
-          </h1>
-          <p className="text-base text-stone-700">{viewModel.summary}</p>
-        </header>
 
         {viewModel.plan ? <PlanSummary viewModel={viewModel} /> : null}
         {viewModel.raincheck ? (
           <RaincheckSummary raincheck={viewModel.raincheck} />
         ) : null}
-        {viewModel.kind === "declined" ? (
+        {viewModel.kind === "declined" && !viewModel.recipientMessage ? (
           <DeclineMessage
             noMessageText={viewModel.noMessageText}
             recipientMessage={viewModel.recipientMessage}
           />
         ) : null}
+
+          <SectionDivider />
 
         <SenderControls
           canCancel={viewModel.kind === "pending" || viewModel.kind === "opened"}
@@ -127,11 +145,12 @@ function SenderStatusView({
           recipientPath={recipientPath}
         />
 
-        <p className="border-t border-stone-200 pt-4 text-sm text-stone-600">
+        <p className="border-t border-wink-border pt-4 text-sm text-wink-text-secondary">
           Keep this private link. Anyone with it can view this status page.
         </p>
-      </article>
-    </main>
+        </StatusCard>
+      </div>
+    </PageShell>
   );
 }
 
@@ -145,10 +164,10 @@ function PlanSummary({ viewModel }: { viewModel: SenderStatusViewModel }) {
   return (
     <section
       aria-labelledby="sender-plan-heading"
-      className="space-y-3 border-t border-stone-200 pt-4"
+      className="space-y-3 border-t border-wink-border pt-4"
     >
       <h2
-        className="text-lg font-semibold text-stone-950"
+        className="text-lg font-semibold text-wink-text"
         id="sender-plan-heading"
       >
         Plan summary
@@ -171,10 +190,10 @@ function RaincheckSummary({
   return (
     <section
       aria-labelledby="sender-raincheck-heading"
-      className="space-y-3 border-t border-stone-200 pt-4"
+      className="space-y-3 border-t border-wink-border pt-4"
     >
       <h2
-        className="text-lg font-semibold text-stone-950"
+        className="text-lg font-semibold text-wink-text"
         id="sender-raincheck-heading"
       >
         Raincheck details
@@ -188,7 +207,7 @@ function RaincheckSummary({
         <Detail label="Suggested place" value={raincheck.proposedPlace} />
       </dl>
       {raincheck.message ? (
-        <p className="whitespace-pre-wrap break-words text-base leading-7 text-stone-800">
+        <p className="whitespace-pre-wrap break-words text-base leading-7 text-wink-text">
           {raincheck.message}
         </p>
       ) : null}
@@ -206,20 +225,20 @@ function DeclineMessage({
   return (
     <section
       aria-labelledby="sender-message-heading"
-      className="space-y-3 border-t border-stone-200 pt-4"
+      className="space-y-3 border-t border-wink-border pt-4"
     >
       <h2
-        className="text-lg font-semibold text-stone-950"
+        className="text-lg font-semibold text-wink-text"
         id="sender-message-heading"
       >
         A message from the recipient
       </h2>
       {recipientMessage ? (
-        <p className="whitespace-pre-wrap break-words rounded-md border border-stone-200 bg-stone-50 px-3 py-3 text-base leading-7 text-stone-900">
+        <p className="whitespace-pre-wrap break-words rounded-md border border-wink-border bg-wink-surface-muted px-3 py-3 text-base leading-7 text-wink-text">
           {recipientMessage}
         </p>
       ) : (
-        <p className="text-base text-stone-700">{noMessageText}</p>
+        <p className="text-base text-wink-text-secondary">{noMessageText}</p>
       )}
     </section>
   );
@@ -227,43 +246,33 @@ function DeclineMessage({
 
 function SenderUnavailableState() {
   return (
-    <main className="mx-auto flex min-h-screen w-full max-w-2xl flex-col justify-center px-5 py-10">
-      <section className="space-y-3 rounded-lg border border-stone-300 bg-white p-5">
-        <p className="text-sm font-medium text-stone-600">Private status</p>
-        <h1 className="text-2xl font-semibold text-stone-950">
-          This invitation is no longer available.
-        </h1>
-        <p className="text-base text-stone-700">
-          This private link cannot show invitation details.
-        </p>
-      </section>
-    </main>
+    <PageShell className="flex items-center" maxWidth="invite">
+      <StatusCard
+        description="This private link cannot show invitation details."
+        status="expired"
+        title="This invitation is no longer available."
+      />
+    </PageShell>
   );
 }
 
 function SenderTemporaryUnavailableState() {
   return (
-    <main className="mx-auto flex min-h-screen w-full max-w-2xl flex-col justify-center px-5 py-10">
-      <section className="space-y-3 rounded-lg border border-stone-300 bg-white p-5">
-        <p className="text-sm font-medium text-stone-600">
-          Temporarily unavailable
-        </p>
-        <h1 className="text-2xl font-semibold text-stone-950">
-          This status could not be loaded right now.
-        </h1>
-        <p className="text-base text-stone-700">
-          Please try again in a moment.
-        </p>
-      </section>
-    </main>
+    <PageShell className="flex items-center" maxWidth="invite">
+      <StatusCard
+        description="Please try again in a moment."
+        status="pending"
+        title="This status could not be loaded right now."
+      />
+    </PageShell>
   );
 }
 
 function Detail({ label, value }: { label: string; value?: string | null }) {
   return (
     <div className="space-y-1">
-      <dt className="font-medium text-stone-600">{label}</dt>
-      <dd className="break-words text-base text-stone-950">
+      <dt className="font-medium text-wink-text-secondary">{label}</dt>
+      <dd className="break-words text-base text-wink-text">
         {value || "Not provided"}
       </dd>
     </div>
@@ -276,4 +285,41 @@ function normalizeCancelStatus(
   const status = Array.isArray(value) ? value[0] : value;
 
   return status === "success" || status === "unavailable" ? status : null;
+}
+
+type ReceiptStatus =
+  | "pending"
+  | "opened"
+  | "accepted"
+  | "rainchecked"
+  | "declined"
+  | "cancelled"
+  | "expired"
+  | "flagged";
+
+function toReceiptStatus(kind: SenderStatusKind): ReceiptStatus {
+  if (kind === "raincheck") {
+    return "rainchecked";
+  }
+
+  if (kind === "unavailable") {
+    return "expired";
+  }
+
+  return kind;
+}
+
+function getReceiptTitle(kind: SenderStatusKind): string {
+  const titles: Record<SenderStatusKind, string> = {
+    accepted: "Accepted.",
+    cancelled: "Cancelled.",
+    declined: "Declined.",
+    expired: "Expired.",
+    opened: "Opened.",
+    pending: "Pending.",
+    raincheck: "Rainchecked.",
+    unavailable: "Unavailable."
+  };
+
+  return titles[kind];
 }

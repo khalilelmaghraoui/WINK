@@ -19,6 +19,168 @@
   }
 }
 
+@layer components {
+  .paper-grain {
+    background-image:
+      radial-gradient(circle at 18% 24%, rgba(24, 21, 18, 0.035) 0 1px, transparent 1.4px),
+      radial-gradient(circle at 78% 64%, rgba(201, 162, 78, 0.06) 0 1px, transparent 1.6px),
+      linear-gradient(135deg, rgba(255, 252, 247, 0.8), rgba(239, 231, 218, 0.28));
+    background-size: 18px 18px, 26px 26px, 100% 100%;
+  }
+
+  .nocturnal-atlas {
+    background:
+      radial-gradient(circle at 50% 40%, rgba(255, 252, 247, 0.92), rgba(248, 243, 234, 0.75) 52%, rgba(24, 21, 18, 0.16) 100%),
+      #F8F3EA;
+  }
+
+  .wink-envelope {
+    transform-style: preserve-3d;
+  }
+
+  .wink-accepted-burst {
+    background:
+      radial-gradient(circle, rgba(201, 162, 78, 0.95) 0 2px, transparent 2.5px),
+      radial-gradient(circle, rgba(143, 36, 56, 0.9) 0 2px, transparent 2.5px);
+    background-position: 0 0, 12px 16px;
+    background-size: 28px 28px, 34px 34px;
+    mask-image: radial-gradient(circle, #000 0 45%, transparent 72%);
+  }
+}
+
+@layer utilities {
+  .animate-wink-map-fade {
+    animation: wink-map-fade 500ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  .animate-wink-route-draw {
+    animation: wink-route-draw 1200ms cubic-bezier(0.16, 1, 0.3, 1) 420ms both;
+  }
+
+  .animate-wink-envelope-travel {
+    animation: wink-envelope-travel 1800ms cubic-bezier(0.16, 1, 0.3, 1) 900ms both;
+  }
+
+  .animate-wink-arrival-zoom {
+    animation:
+      wink-arrival-zoom 800ms cubic-bezier(0.16, 1, 0.3, 1) 2200ms both,
+      wink-idle-float 4s ease-in-out 3300ms infinite;
+  }
+
+  .animate-wink-letter-reveal {
+    animation: wink-letter-reveal 700ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  .animate-wink-stamp-thud {
+    animation: wink-stamp-thud 300ms cubic-bezier(0.7, 0, 0.84, 0) both;
+  }
+
+  .animate-wink-seal-slam {
+    animation: wink-seal-slam 250ms cubic-bezier(0.7, 0, 0.84, 0) both;
+  }
+}
+
+@keyframes wink-map-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 0.8;
+  }
+}
+
+@keyframes wink-route-draw {
+  from {
+    stroke-dashoffset: 1;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes wink-envelope-travel {
+  0% {
+    opacity: 0;
+    transform: translate(188px, 418px) rotate(-16deg);
+  }
+  35% {
+    opacity: 1;
+    transform: translate(520px, 274px) rotate(-22deg);
+  }
+  70% {
+    opacity: 1;
+    transform: translate(862px, 234px) rotate(18deg);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(1000px, 326px) rotate(12deg);
+  }
+}
+
+@keyframes wink-arrival-zoom {
+  from {
+    opacity: 0;
+    transform: translateY(18px) scale(0.72) rotateY(40deg);
+  }
+  70% {
+    opacity: 1;
+    transform: translateY(-4px) scale(1.02) rotateY(0deg);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1) rotateY(0deg);
+  }
+}
+
+@keyframes wink-idle-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-2px);
+  }
+}
+
+@keyframes wink-letter-reveal {
+  from {
+    filter: blur(2px);
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    filter: blur(0);
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes wink-stamp-thud {
+  from {
+    opacity: 0;
+    transform: rotate(-8deg) scale(1.18);
+  }
+  70% {
+    opacity: 1;
+    transform: rotate(-8deg) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: rotate(-8deg) scale(1);
+  }
+}
+
+@keyframes wink-seal-slam {
+  from {
+    opacity: 0;
+    transform: scale(1.4);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -27,5 +189,12 @@
     transition-duration: 0.01ms !important;
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
+  }
+
+  .animate-wink-envelope-travel,
+  .animate-wink-arrival-zoom {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
   }
 }

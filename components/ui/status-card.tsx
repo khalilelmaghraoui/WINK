@@ -43,8 +43,8 @@ export function StatusCard({
   return (
     <article
       className={[
-        "w-full rounded-lg border border-l-4 border-wink-border bg-wink-surface",
-        "p-8 text-wink-text shadow-[0_14px_36px_rgba(24,21,18,0.06)] sm:p-10",
+        "paper-grain w-full rounded-lg border border-l-4 border-wink-border bg-wink-surface",
+        "p-8 text-wink-text shadow-[0_3px_8px_rgba(24,21,18,0.1),0_20px_54px_rgba(24,21,18,0.08)] sm:p-10",
         "break-words",
         statusToneClasses[status],
         className

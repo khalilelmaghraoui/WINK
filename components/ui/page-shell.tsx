@@ -30,7 +30,7 @@ export function PageShell({
   return (
     <main
       className={[
-        "min-h-screen overflow-x-hidden text-wink-text",
+        "paper-grain min-h-screen overflow-x-hidden text-wink-text",
         "px-5 py-10 sm:px-8 sm:py-12 lg:px-12",
         variantClasses[variant],
         className

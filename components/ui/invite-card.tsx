@@ -38,9 +38,10 @@ export function InviteCard({
     <article
       aria-labelledby={titleId}
       className={[
-        "w-full overflow-hidden rounded-lg border bg-wink-surface",
-        "p-8 text-wink-text shadow-[0_18px_50px_rgba(24,21,18,0.08)] sm:p-10",
+        "paper-grain w-full overflow-hidden rounded-lg border bg-wink-surface",
+        "p-8 text-wink-text shadow-[0_3px_8px_rgba(24,21,18,0.12),0_24px_64px_rgba(24,21,18,0.1)] sm:p-10",
         "break-words",
+        "motion-safe:animate-wink-letter-reveal motion-reduce:animate-none",
         variantClasses[variant],
         className
       ]

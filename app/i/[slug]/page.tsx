@@ -28,6 +28,7 @@ import { getModePresentation } from "@/lib/mode-engine";
 import { createGoogleMapsLocationProvider } from "@/lib/providers/google-maps-location-provider";
 import { getAcceptedRevealViewModel } from "@/lib/reveal-engine";
 import {
+  CinematicEnvelope,
   InviteCard,
   ModeBadge,
   PageShell,
@@ -105,6 +106,12 @@ export default async function InvitePage({
           <p className="rounded-md border border-wink-border bg-wink-background px-3 py-2 text-sm text-wink-text-secondary">
             Preview mode is on. No opens or actions will be saved.
           </p>
+        ) : null}
+
+        {pageState === "respondable" ? (
+          <div aria-hidden="true" className="mx-auto max-w-[520px] opacity-45 blur-[1px]">
+            <CinematicEnvelope open recipient={invite.recipientName} size="md" />
+          </div>
         ) : null}
 
         <InviteCard

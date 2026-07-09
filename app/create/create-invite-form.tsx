@@ -1,7 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { useActionState, useEffect, useMemo, useState } from "react";
+import {
+  type ChangeEvent,
+  useActionState,
+  useEffect,
+  useMemo,
+  useState
+} from "react";
 import { useFormStatus } from "react-dom";
 
 import {
@@ -12,9 +18,12 @@ import { CopyPrivateSenderLinkControl } from "./copy-private-sender-link-control
 import { ShareRecipientLinkControl } from "./share-recipient-link-control";
 import type { CreateInviteField } from "@/lib/create-invite-validation";
 import {
+  CinematicEnvelope,
   FormField,
   InviteCard,
   PageShell,
+  PaperLetter,
+  PostalStamp,
   PrimaryButton,
   PrivateLinkNotice,
   SecondaryButton,
@@ -47,6 +56,25 @@ const stepFields: CreateInviteField[][] = [
 export function CreateInviteForm() {
   const [state, formAction] = useActionState(createInviteAction, initialState);
   const [stepIndex, setStepIndex] = useState(0);
+  const [draft, setDraft] = useState<CreateDraft>({
+    date: "",
+    dateType: "",
+    message: "",
+    mode: "",
+    placeAddress: "",
+    placeName: "",
+    recipientName: "",
+    senderName: "",
+    time: "",
+    tone: ""
+  });
+
+  function updateDraft(field: CreateInviteField, value: string) {
+    setDraft((current) => ({
+      ...current,
+      [field]: value
+    }));
+  }
 
   const currentStepFields = stepFields[stepIndex];
   const currentStepHasErrors = useMemo(
@@ -69,10 +97,17 @@ export function CreateInviteForm() {
 
   if (recipientPath && senderPath) {
     return (
-      <PageShell className="flex items-center py-8 sm:py-12" maxWidth="form">
+      <PageShell className="py-8 sm:py-12" maxWidth="landing">
+        <div className="grid gap-8 lg:grid-cols-[minmax(280px,420px)_minmax(0,560px)] lg:items-center lg:justify-center">
+          <div className="space-y-5">
+            <CinematicEnvelope recipient="Recipient" size="lg" />
+            <p className="text-center text-sm text-wink-text-secondary">
+              A sealed invitation object, ready to send.
+            </p>
+          </div>
         <InviteCard
           eyebrow="Invite created"
-          title="Save these links carefully"
+          title="Your letter is ready."
           titleId="create-success-heading"
           variant="live"
         >
@@ -127,15 +162,17 @@ export function CreateInviteForm() {
             private.
           </p>
         </InviteCard>
+        </div>
       </PageShell>
     );
   }
 
   return (
-    <PageShell className="py-8 sm:py-12" maxWidth="form">
+    <PageShell className="py-8 sm:py-12" maxWidth="landing">
+      <div className="grid gap-8 lg:grid-cols-[minmax(0,560px)_minmax(320px,1fr)] lg:items-start">
       <form
         action={formAction}
-        className="space-y-8 rounded-lg border border-wink-border bg-wink-surface p-8 shadow-[0_14px_36px_rgba(24,21,18,0.06)] sm:p-10"
+        className="paper-grain space-y-8 rounded-lg border border-wink-border bg-wink-surface p-8 shadow-[0_3px_8px_rgba(24,21,18,0.12),0_24px_64px_rgba(24,21,18,0.1)] sm:p-10"
         noValidate
       >
         <header className="space-y-4">
@@ -176,7 +213,9 @@ export function CreateInviteForm() {
             label="Your name"
             name="senderName"
             helperText="This appears inside the invitation content, not metadata."
+            onValueChange={(value) => updateDraft("senderName", value)}
             required
+            value={draft.senderName}
           />
           <TextField
             error={state.errors.recipientName}
@@ -184,7 +223,9 @@ export function CreateInviteForm() {
             label="Recipient name"
             name="recipientName"
             helperText="Use the name they will recognize when the private link opens."
+            onValueChange={(value) => updateDraft("recipientName", value)}
             required
+            value={draft.recipientName}
           />
         </section>
 
@@ -195,7 +236,9 @@ export function CreateInviteForm() {
             label="Message"
             name="message"
             helperText="This is the line they will read first."
+            onValueChange={(value) => updateDraft("message", value)}
             required
+            value={draft.message}
           />
           <SelectField
             error={state.errors.tone}
@@ -203,6 +246,7 @@ export function CreateInviteForm() {
             label="Tone"
             name="tone"
             helperText="Tone changes the framing, not the consent mechanics."
+            onValueChange={(value) => updateDraft("tone", value)}
             options={[
               { label: "Cute", value: "cute" },
               { label: "Funny", value: "funny" },
@@ -210,9 +254,12 @@ export function CreateInviteForm() {
               { label: "Bold", value: "bold" }
             ]}
             required
+            value={draft.tone}
           />
           <ModeChoiceField
             error={state.errors.mode}
+            onValueChange={(value) => updateDraft("mode", value)}
+            value={draft.mode}
           />
         </section>
 
@@ -223,6 +270,7 @@ export function CreateInviteForm() {
             label="Date type"
             name="dateType"
             helperText="Pick the kind of moment this invitation is setting up."
+            onValueChange={(value) => updateDraft("dateType", value)}
             options={[
               { label: "Date", value: "date" },
               { label: "Apology", value: "apology" },
@@ -230,6 +278,7 @@ export function CreateInviteForm() {
               { label: "Romantic moment", value: "romantic_moment" }
             ]}
             required
+            value={draft.dateType}
           />
           <TextField
             error={state.errors.date}
@@ -237,8 +286,10 @@ export function CreateInviteForm() {
             label="Date"
             name="date"
             helperText="Native date input, so the browser handles the picker."
+            onValueChange={(value) => updateDraft("date", value)}
             required
             type="date"
+            value={draft.date}
           />
           <TextField
             error={state.errors.time}
@@ -246,8 +297,10 @@ export function CreateInviteForm() {
             label="Time"
             name="time"
             helperText="Native time input; no custom picker added."
+            onValueChange={(value) => updateDraft("time", value)}
             required
             type="time"
+            value={draft.time}
           />
           <TextField
             error={state.errors.placeName}
@@ -255,7 +308,9 @@ export function CreateInviteForm() {
             label="Place name"
             name="placeName"
             helperText="Restaurant, cafe, venue, or wherever the plan starts."
+            onValueChange={(value) => updateDraft("placeName", value)}
             required
+            value={draft.placeName}
           />
           <TextField
             error={state.errors.placeAddress}
@@ -263,7 +318,9 @@ export function CreateInviteForm() {
             label="Place address"
             name="placeAddress"
             helperText="Used later for the accepted plan view."
+            onValueChange={(value) => updateDraft("placeAddress", value)}
             required
+            value={draft.placeAddress}
           />
         </section>
 
@@ -290,6 +347,8 @@ export function CreateInviteForm() {
           )}
         </div>
       </form>
+      <CreateLetterPreview draft={draft} />
+      </div>
     </PageShell>
   );
 }
@@ -315,7 +374,9 @@ interface FieldProps {
   id: CreateInviteField;
   label: string;
   name: CreateInviteField;
+  onValueChange?: (value: string) => void;
   required?: boolean;
+  value?: string;
 }
 
 function TextField({
@@ -324,8 +385,10 @@ function TextField({
   id,
   label,
   name,
+  onValueChange,
   required = false,
-  type = "text"
+  type = "text",
+  value
 }: FieldProps & { type?: "date" | "text" | "time" }) {
   return (
     <FormField
@@ -334,8 +397,10 @@ function TextField({
       id={id}
       label={label}
       name={name}
+      onChange={toValueChange(onValueChange)}
       required={required}
       type={type}
+      value={value}
     />
   );
 }
@@ -346,7 +411,9 @@ function TextAreaField({
   id,
   label,
   name,
-  required = false
+  onValueChange,
+  required = false,
+  value
 }: FieldProps) {
   return (
     <FormField
@@ -355,9 +422,11 @@ function TextAreaField({
       id={id}
       label={label}
       name={name}
+      onChange={toValueChange(onValueChange)}
       required={required}
       rows={5}
       type="textarea"
+      value={value}
     />
   );
 }
@@ -368,26 +437,37 @@ function SelectField({
   id,
   label,
   name,
+  onValueChange,
   options,
-  required = false
+  required = false,
+  value
 }: FieldProps & { options: Array<{ label: string; value: string }> }) {
   return (
     <FormField
-      defaultValue=""
       errorText={error}
       helperText={helperText}
       id={id}
       label={label}
       name={name}
+      onChange={toValueChange(onValueChange)}
       options={options}
       placeholder="Choose one"
       required={required}
       type="select"
+      value={value}
     />
   );
 }
 
-function ModeChoiceField({ error }: { error?: string }) {
+function ModeChoiceField({
+  error,
+  onValueChange,
+  value
+}: {
+  error?: string;
+  onValueChange: (value: string) => void;
+  value: string;
+}) {
   const errorId = error ? "mode-error" : undefined;
   const helperId = "mode-helper";
 
@@ -408,13 +488,17 @@ function ModeChoiceField({ error }: { error?: string }) {
       </p>
       <div className="grid gap-3">
         <ModeOption
+          checked={value === "lawyer"}
           description="Mock-formal, structured, and charmingly persuasive."
           label="Lawyer"
+          onValueChange={onValueChange}
           value="lawyer"
         />
         <ModeOption
+          checked={value === "unbothered"}
           description="Cool, low-pressure, dry, and restrained."
           label="Unbothered"
+          onValueChange={onValueChange}
           value="unbothered"
         />
       </div>
@@ -428,19 +512,25 @@ function ModeChoiceField({ error }: { error?: string }) {
 }
 
 function ModeOption({
+  checked,
   description,
   label,
+  onValueChange,
   value
 }: {
+  checked: boolean;
   description: string;
   label: string;
+  onValueChange: (value: string) => void;
   value: "lawyer" | "unbothered";
 }) {
   return (
     <label className="group block cursor-pointer">
       <input
+        checked={checked}
         className="peer sr-only"
         name="mode"
+        onChange={() => onValueChange(value)}
         required
         type="radio"
         value={value}
@@ -467,5 +557,57 @@ function ModeOption({
         </span>
       </span>
     </label>
+  );
+}
+
+type CreateDraft = Record<CreateInviteField, string>;
+
+function toValueChange(
+  onValueChange?: (value: string) => void
+):
+  | ((event: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => void)
+  | undefined {
+  return onValueChange
+    ? (event) => onValueChange(event.currentTarget.value)
+    : undefined;
+}
+
+function CreateLetterPreview({ draft }: { draft: CreateDraft }) {
+  const mode = draft.mode === "unbothered" ? "unbothered" : "lawyer";
+  const recipient = draft.recipientName || "Maya";
+  const sender = draft.senderName || "Alex";
+  const message =
+    draft.message ||
+    "Dinner Thursday. I have a small case to make, and the evidence is coffee.";
+  const place = draft.placeName || "The Corner Cafe";
+  const date = draft.date || "Thursday";
+  const time = draft.time || "7:30 PM";
+
+  return (
+    <aside className="hidden space-y-5 lg:sticky lg:top-8 lg:block">
+      <CinematicEnvelope recipient={recipient} size="md" />
+      <PaperLetter
+        eyebrow={mode === "lawyer" ? "EXHIBIT A: THE ASK" : "private note"}
+        title={`For ${recipient}`}
+        variant={mode}
+      >
+        <div className="flex flex-wrap items-center gap-3">
+          <PostalStamp label={mode === "lawyer" ? "EXHIBIT A" : "PAR AVION"} />
+          <p className="text-xs font-semibold uppercase text-wink-text-secondary">
+            Live letter preview
+          </p>
+        </div>
+        <p className="whitespace-pre-wrap font-display text-xl italic leading-relaxed text-wink-text">
+          {message}
+        </p>
+        <div className="rounded-md border border-wink-border bg-wink-surface-muted px-4 py-3 text-sm leading-6">
+          <p className="font-semibold text-wink-text">Printed ticket strip</p>
+          <p className="text-wink-text-secondary">
+            {date} - {time} - {place}
+          </p>
+        </div>
+        <p className="text-sm text-wink-text-secondary">From {sender}</p>
+      </PaperLetter>
+    </aside>
   );
 }

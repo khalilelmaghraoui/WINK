@@ -42,8 +42,28 @@ const responseButtonGroupSource = readFileSync(
   "components/ui/response-button-group.tsx",
   "utf8"
 );
+const cinematicEnvelopeSource = readFileSync(
+  "components/ui/cinematic-envelope.tsx",
+  "utf8"
+);
+const flightPathMapSource = readFileSync(
+  "components/ui/flight-path-map.tsx",
+  "utf8"
+);
+const paperLetterSource = readFileSync("components/ui/paper-letter.tsx", "utf8");
+const waxSealSource = readFileSync("components/ui/wax-seal.tsx", "utf8");
+const motionSpecTableSource = readFileSync(
+  "components/ui/motion-spec-table.tsx",
+  "utf8"
+);
+const prototypeSource = readFileSync(
+  "components/prototype/nocturnal-postal-prototype.tsx",
+  "utf8"
+);
+const globalsSource = readFileSync("app/globals.css", "utf8");
 const uiIndexSource = readFileSync("components/ui/index.ts", "utf8");
 const recipientPageSource = readFileSync("app/i/[slug]/page.tsx", "utf8");
+const senderPageSource = readFileSync("app/s/[token]/page.tsx", "utf8");
 const compatibilityReportSource = readFileSync(
   "app/i/[slug]/compatibility-report.tsx",
   "utf8"
@@ -416,6 +436,80 @@ test("Sprint 4.0 Pass A3 PrivateLinkNotice exists exports and is not an alert", 
   assert.match(uiIndexSource, /export \{ PrivateLinkNotice \}/);
 });
 
+test("Nocturnal postal prototype components exist and export correctly", () => {
+  assert.equal(existsSync("components/ui/cinematic-envelope.tsx"), true);
+  assert.equal(existsSync("components/ui/wax-seal.tsx"), true);
+  assert.equal(existsSync("components/ui/postal-stamp.tsx"), true);
+  assert.equal(existsSync("components/ui/postmark.tsx"), true);
+  assert.equal(existsSync("components/ui/flight-path-map.tsx"), true);
+  assert.equal(existsSync("components/ui/paper-letter.tsx"), true);
+  assert.equal(existsSync("components/ui/kind-reply-suggestions.tsx"), true);
+  assert.equal(existsSync("components/ui/motion-spec-table.tsx"), true);
+  assert.match(cinematicEnvelopeSource, /export function CinematicEnvelope/);
+  assert.match(waxSealSource, /export function WaxSeal/);
+  assert.match(flightPathMapSource, /export function FlightPathMap/);
+  assert.match(paperLetterSource, /export function PaperLetter/);
+  assert.match(motionSpecTableSource, /export function MotionSpecTable/);
+  assert.match(uiIndexSource, /export \{ CinematicEnvelope \}/);
+  assert.match(uiIndexSource, /export \{ WaxSeal \}/);
+  assert.match(uiIndexSource, /export \{ FlightPathMap \}/);
+  assert.match(uiIndexSource, /export \{ PaperLetter \}/);
+  assert.match(uiIndexSource, /export \{ MotionSpecTable \}/);
+});
+
+test("Nocturnal postal prototype includes required pages states and consent controls", () => {
+  for (const state of [
+    "landing",
+    "create",
+    "share",
+    "recipient-sealed",
+    "recipient-open",
+    "recipient-lawyer",
+    "recipient-unbothered",
+    "recipient-lawyer-no",
+    "recipient-accepted",
+    "recipient-raincheck",
+    "recipient-declined",
+    "recipient-unknown",
+    "recipient-expired",
+    "recipient-cancelled",
+    "recipient-not-found",
+    "sender-pending",
+    "sender-opened",
+    "sender-accepted",
+    "sender-raincheck",
+    "sender-declined",
+    "sender-flagged",
+    "motion"
+  ]) {
+    assert.match(prototypeSource, new RegExp(state));
+  }
+
+  assert.match(prototypeSource, /Prototype-only state switcher/);
+  assert.match(prototypeSource, /Break the seal/);
+  assert.match(prototypeSource, />Yes<\/PrimaryButton>/);
+  assert.match(prototypeSource, />Raincheck<\/SecondaryButton>/);
+  assert.match(prototypeSource, />No<\/SecondaryButton>/);
+  assert.match(prototypeSource, /I don&apos;t know this person/);
+  assert.match(prototypeSource, /Final answer: No/);
+  assert.match(prototypeSource, /Close invitation/);
+  assert.doesNotMatch(prototypeSource, /ceo|desperate|scratch|classic/i);
+});
+
+test("Nocturnal motion system is reduced-motion safe and transform-based", () => {
+  assert.match(globalsSource, /prefers-reduced-motion: reduce/);
+  assert.match(globalsSource, /animate-wink-map-fade/);
+  assert.match(globalsSource, /animate-wink-route-draw/);
+  assert.match(globalsSource, /animate-wink-envelope-travel/);
+  assert.match(globalsSource, /animate-wink-arrival-zoom/);
+  assert.match(globalsSource, /animation: none !important/);
+  assert.match(motionSpecTableSource, /landing map fade/);
+  assert.match(motionSpecTableSource, /seal crack/);
+  assert.match(motionSpecTableSource, /wax and gold burst/);
+  assert.match(motionSpecTableSource, /Declined fold close/);
+  assert.match(flightPathMapSource, /strokeDasharray/);
+});
+
 test("Sprint 4.0 Pass B1 keeps recipient route location and uses premium primitives", () => {
   assert.equal(existsSync("app/i/[slug]/page.tsx"), true);
   assert.match(recipientPageSource, /PageShell/);
@@ -521,12 +615,15 @@ test("Sprint 4.0 Pass B2 keeps create route location and uses premium primitives
   assert.equal(existsSync("app/create/page.tsx"), true);
   assert.match(createPageSource, /CreateInviteForm/);
   assert.match(createInviteFormSource, /PageShell/);
-  assert.match(createInviteFormSource, /maxWidth="form"/);
+  assert.match(createInviteFormSource, /maxWidth="landing"/);
   assert.match(createInviteFormSource, /StepIndicator/);
   assert.match(createInviteFormSource, /FormField/);
   assert.match(createInviteFormSource, /PrimaryButton/);
   assert.match(createInviteFormSource, /SecondaryButton/);
   assert.match(createInviteFormSource, /PrivateLinkNotice/);
+  assert.match(createInviteFormSource, /CinematicEnvelope/);
+  assert.match(createInviteFormSource, /PaperLetter/);
+  assert.match(createInviteFormSource, /CreateLetterPreview/);
 });
 
 test("Sprint 4.0 Pass B2 preserves create form field names", () => {
@@ -558,11 +655,14 @@ test("Sprint 4.0 Pass B2 mode selector uses accessible radios and MVP values onl
   assert.doesNotMatch(createInviteFormSource, /ceo|desperate|scratch|classic/i);
 });
 
-test("Sprint 4.0 Pass B2 keeps native date and time controls and no live preview", () => {
+test("Sprint 4.0 Pass B2 keeps native date and time controls with desk preview", () => {
   assert.match(createInviteFormSource, /type="date"/);
   assert.match(createInviteFormSource, /type="time"/);
   assert.doesNotMatch(createInviteFormSource, /DatePicker|TimePicker|date-fns|react-datepicker/);
-  assert.doesNotMatch(createInviteFormSource, /live preview|preview pane|previewMode/i);
+  assert.match(createInviteFormSource, /Live letter preview/);
+  assert.match(createInviteFormSource, /Printed ticket strip/);
+  assert.match(createInviteFormSource, /lg:block/);
+  assert.doesNotMatch(createInviteFormSource, /previewMode/i);
 });
 
 test("Sprint 4.0 Pass B2 success screen keeps recipient and sender links separate", () => {
@@ -601,6 +701,17 @@ test("Sprint 4.0 Pass B2 create surface stays private non-tracking and reduced-m
   assert.doesNotMatch(createSurfaceSource, /geolocation|hover tracking|cursor tracking|cursorPath/i);
   assert.doesNotMatch(createSurfaceSource, /mailto:|tel:|SMS|WhatsApp|Instagram/);
   assert.doesNotMatch(packageJsonSource, /framer-motion|@radix-ui|lucide-react|shadcn/);
+});
+
+test("Nocturnal sender status page uses receipt primitives without changing controls", () => {
+  assert.match(senderPageSource, /PageShell/);
+  assert.match(senderPageSource, /StatusCard/);
+  assert.match(senderPageSource, /PrivateLinkNotice/);
+  assert.match(senderPageSource, /SenderControls/);
+  assert.match(senderPageSource, /cancelSenderInviteFormAction/);
+  assert.match(senderPageSource, /toReceiptStatus/);
+  assert.match(senderPageSource, /rainchecked/);
+  assert.doesNotMatch(senderPageSource, /openCount|readReceipt|navigator\.geolocation/i);
 });
 
 test("required create fields expose native required semantics", () => {
